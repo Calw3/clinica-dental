@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base de Datos · Alumnos</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --coral-50:#FAECE7;--coral-800:#712B13;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;
+  --green-50:#EAF3DE;--green-800:#27500A;
+  --blue-50:#E6F1FB;--blue-800:#0C447C;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:980px;margin:0 auto;padding:20px 20px 80px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.stat-label{font-size:11px;color:var(--text-secondary);}
+.stat-value{font-size:22px;font-weight:600;margin-top:3px;color:var(--teal-900);}
+/* Toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:240px;}
+.search-input:focus{outline:none;border-color:var(--teal-600);}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.btn-danger{background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-family:inherit;font-size:13px;cursor:pointer;}
+.btn-danger:disabled{opacity:.4;cursor:default;}
+/* Sel bar */
+.sel-bar{display:none;align-items:center;justify-content:space-between;background:var(--teal-50);border:1px solid var(--teal-600);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+.sel-bar.open{display:flex;}
+.sel-bar span{font-size:13px;color:var(--teal-800);font-weight:600;}
+/* Filtros */
+.filtros{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.filtro-select{height:34px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:12px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.filtro-select:focus{outline:none;border-color:var(--teal-600);}
+/* Lista */
+.lista-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.list-row:first-child{border-top:none;}
+.list-row:hover{background:var(--teal-50);}
+.list-row.selected{background:var(--teal-50);}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--coral-50);color:var(--coral-800);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.row-info{flex:1;min-width:0;}
+.row-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+.sem-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--teal-50);color:var(--teal-800);white-space:nowrap;}
+.row-check{width:16px;height:16px;accent-color:var(--teal-600);cursor:pointer;flex-shrink:0;}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:14px;flex-shrink:0;}
+.btn-icon:hover{background:var(--red-50);color:var(--red-600);}
+.empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
+.empty-state p:first-child{font-weight:600;color:var(--text-primary);font-size:15px;}
+.empty-state p:last-child{font-size:13px;margin-top:4px;}
+/* Panel */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.35);z-index:40;}
+.panel-overlay.open{display:block;}
+.panel{position:fixed;top:0;right:-100%;width:min(500px,100vw);height:100vh;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);transition:right .25s ease;}
+.panel.open{right:0;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.panel-actions{display:flex;gap:8px;}
+.panel-body{flex:1;overflow-y:auto;padding:20px;}
+/* Form */
+.section-title{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.section-title:first-child{margin-top:0;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.field input,.field select{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.field input:focus,.field select:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+.field input[readonly]{background:var(--surface-1);color:var(--text-muted);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+/* Foto */
+.foto-label{display:flex;align-items:center;justify-content:center;height:140px;border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;background:#fff;transition:border-color .15s;}
+.foto-label:hover{border-color:var(--teal-600);}
+.foto-label img{width:100%;height:100%;object-fit:cover;}
+.foto-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-muted);font-size:12px;}
+/* Modal ver */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;z-index:60;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:520px;width:100%;padding:24px;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-head h3{font-size:18px;font-weight:600;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;}
+.detail-row{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-top:1px solid var(--border);font-size:13px;}
+.detail-row:first-child{border-top:none;}
+.detail-row span:first-child{color:var(--text-secondary);flex-shrink:0;}
+.detail-row span:last-child{font-weight:500;text-align:right;}
+/* Confirm modal */
+.confirm-modal{max-width:380px;}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Base de Datos · Alumnos</h1>
+      </div>
+      <span style="font-size:11px;color:var(--text-muted);">Los datos se guardan en este navegador</span>
+    </header>
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-input" id="buscar" placeholder="Buscar alumno, ID...">
+      <select class="filtro-select" id="filtro-sem">
+        <option value="">Todos los semestres</option>
+        <option>1°</option><option>2°</option><option>3°</option><option>4°</option>
+        <option>5°</option><option>6°</option><option>7°</option><option>8°</option>
+        <option>9°</option><option>10°+</option>
+      </select>
+      <button class="btn-secondary" id="btn-sel">Seleccionar</button>
+    </div>
+    <button class="btn-primary" id="btn-nuevo">+ Nuevo alumno</button>
+  </div>
+
+  <div class="sel-bar" id="sel-bar">
+    <span id="sel-count">0 seleccionados</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-secondary" id="btn-sel-todos" style="height:32px;font-size:12px;padding:0 10px;">Seleccionar todos</button>
+      <button class="btn-secondary" id="btn-cancel-sel" style="height:32px;font-size:12px;padding:0 10px;">Cancelar</button>
+      <button class="btn-danger" id="btn-del-sel" disabled>Eliminar seleccionados</button>
+    </div>
+  </div>
+
+  <div class="lista-wrap">
+    <div id="lista-alumnos"></div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <p>No hay alumnos registrados.</p>
+      <p>Agrega el primer alumno con el botón "+ Nuevo alumno".</p>
+    </div>
+  </div>
+
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<!-- Panel lateral -->
+<div class="panel-overlay" id="panel-overlay"></div>
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <h3 id="panel-title">Nuevo alumno</h3>
+    <div class="panel-actions">
+      <button class="btn-secondary" id="btn-cancel-panel" style="height:32px;font-size:13px;padding:0 12px;">Cancelar</button>
+      <button class="btn-primary" id="btn-save-panel" style="height:32px;">Guardar</button>
+    </div>
+  </div>
+  <div class="panel-body">
+    <form id="form-alumno" autocomplete="off">
+
+      <p class="section-title">Identificación</p>
+
+      <div class="field">
+        <label>ID del programa (auto)</label>
+        <input type="text" name="id" id="f-id" readonly>
+      </div>
+      <div class="field">
+        <label>ID institucional *</label>
+        <input type="text" name="idInstitucional" id="f-idInstitucional" placeholder="Ej. AU2023001" required>
+      </div>
+      <div class="field">
+        <label>Nombre completo *</label>
+        <input type="text" name="nombre" id="f-nombre" placeholder="Apellidos y nombre" required>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Semestre actual *</label>
+          <select name="semestre" id="f-semestre" required>
+            <option value=""></option>
+            <option>1°</option><option>2°</option><option>3°</option><option>4°</option>
+            <option>5°</option><option>6°</option><option>7°</option><option>8°</option>
+            <option>9°</option><option>10°+</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Generación</label>
+          <input type="text" name="generacion" id="f-generacion" placeholder="Ej. 2021-2026">
+        </div>
+      </div>
+
+      <p class="section-title">Contacto</p>
+
+      <div class="field">
+        <label>Correo electrónico personal</label>
+        <input type="email" name="correo" id="f-correo" placeholder="correo@gmail.com">
+      </div>
+      <div class="field">
+        <label>Correo institucional</label>
+        <input type="email" name="correoInstitucional" id="f-correoInstitucional" placeholder="alumno@anahuac.mx">
+      </div>
+      <div class="field">
+        <label>Teléfono</label>
+        <input type="tel" name="telefono" id="f-telefono" placeholder="10 dígitos">
+      </div>
+
+      <p class="section-title">Fotografía</p>
+
+      <label class="foto-label" for="inp-foto" id="foto-label">
+        <img id="prev-foto" style="display:none;">
+        <div class="foto-placeholder" id="ph-foto">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Subir fotografía del alumno
+        </div>
+      </label>
+      <input type="file" accept="image/*" id="inp-foto" style="display:none;">
+
+    </form>
+  </div>
+</div>
+
+<!-- Modal ver alumno -->
+<div class="modal-bg" id="modal-ver">
+  <div class="modal">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="avatar" id="ver-avatar" style="width:48px;height:48px;font-size:16px;"></div>
+        <div>
+          <h3 id="ver-nombre"></h3>
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:2px;" id="ver-sub"></p>
+        </div>
+      </div>
+      <button class="btn-icon" id="cerrar-ver">✕</button>
+    </div>
+    <div id="ver-body"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-ver-editar">Editar</button>
+      <button class="btn-secondary" id="btn-ver-eliminar" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-primary" id="btn-ver-cerrar">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmar eliminación -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal confirm-modal">
+    <div class="modal-head">
+      <h3>Eliminar alumno(s)</h3>
+      <button class="btn-icon" id="cerrar-confirm">✕</button>
+    </div>
+    <p id="confirm-msg" style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;"></p>
+    <input type="text" id="inp-confirm" placeholder="Escribe ELIMINAR para confirmar"
+      style="width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelar-confirm">Cancelar</button>
+      <button id="btn-confirm-del" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Eliminar definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='clinica_alumnos_v1';
+function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{alumnos:[]};}
+function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+
+const S={data:loadData(),selMode:false,sel:new Set(),editId:null,verId:null};
+
+function uid(){return'AL-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase();}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+
+/* Stats */
+function renderStats(){
+  const total=S.data.alumnos.length;
+  const sems={};
+  S.data.alumnos.forEach(a=>{sems[a.semestre]=(sems[a.semestre]||0)+1;});
+  const semMas=Object.entries(sems).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Total alumnos</p><p class="stat-value">${total}</p></div>
+    <div class="stat"><p class="stat-label">Semestres registrados</p><p class="stat-value">${Object.keys(sems).length}</p></div>
+    <div class="stat"><p class="stat-label">Semestre más activo</p><p class="stat-value" style="font-size:16px;">${semMas?semMas[0]+' ('+semMas[1]+')':'—'}</p></div>`;
+}
+
+/* Lista */
+function renderLista(){
+  const term=(document.getElementById('buscar').value||'').toLowerCase();
+  const semFiltro=document.getElementById('filtro-sem').value;
+  let rows=S.data.alumnos.filter(a=>{
+    const matchTerm=(a.nombre||'').toLowerCase().includes(term)||(a.idInstitucional||'').toLowerCase().includes(term);
+    const matchSem=!semFiltro||a.semestre===semFiltro;
+    return matchTerm&&matchSem;
+  }).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+
+  const lista=document.getElementById('lista-alumnos');
+  const empty=document.getElementById('empty-state');
+  if(!rows.length){lista.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  lista.innerHTML=rows.map(a=>{
+    const sel=S.sel.has(a.id);
+    const av=a.foto?`<img src="${a.foto}">`:`${initials(a.nombre)}`;
+    return`<div class="list-row${sel?' selected':''}" data-id="${a.id}" onclick="handleRowClick(event,'${a.id}')">
+      ${S.selMode?`<input type="checkbox" class="row-check" ${sel?'checked':''} onclick="toggleSel(event,'${a.id}')">`:''}
+      <div class="avatar">${av}</div>
+      <div class="row-info">
+        <p class="row-title">${esc(a.nombre)}</p>
+        <p class="row-sub">${esc(a.idInstitucional||'Sin ID')}${a.correoInstitucional?' · '+esc(a.correoInstitucional):''}${a.telefono?' · '+esc(a.telefono):''}</p>
+      </div>
+      <span class="sem-badge">${esc(a.semestre||'—')}</span>
+      ${!S.selMode?`<button class="btn-icon" onclick="abrirEliminar(event,'${a.id}')">✕</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderAll(){renderStats();renderLista();}
+
+/* Panel */
+function openPanel(id){
+  S.editId=id||null;
+  document.getElementById('form-alumno').reset();
+  const img=document.getElementById('prev-foto');
+  img.style.display='none';img.removeAttribute('src');
+  document.getElementById('ph-foto').style.display='flex';
+
+  if(id){
+    const a=S.data.alumnos.find(x=>x.id===id);
+    document.getElementById('panel-title').textContent='Editar alumno';
+    document.getElementById('f-id').value=a.id;
+    document.getElementById('f-idInstitucional').value=a.idInstitucional||'';
+    document.getElementById('f-nombre').value=a.nombre||'';
+    document.getElementById('f-semestre').value=a.semestre||'';
+    document.getElementById('f-generacion').value=a.generacion||'';
+    document.getElementById('f-correo').value=a.correo||'';
+    document.getElementById('f-correoInstitucional').value=a.correoInstitucional||'';
+    document.getElementById('f-telefono').value=a.telefono||'';
+    if(a.foto){img.src=a.foto;img.style.display='block';document.getElementById('ph-foto').style.display='none';}
+  } else {
+    document.getElementById('panel-title').textContent='Nuevo alumno';
+    document.getElementById('f-id').value=uid();
+  }
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+}
+function closePanel(){
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+}
+
+document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
+document.getElementById('btn-cancel-panel').addEventListener('click',closePanel);
+document.getElementById('panel-overlay').addEventListener('click',closePanel);
+
+/* Foto */
+document.getElementById('inp-foto').addEventListener('change',e=>{
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=document.getElementById('prev-foto');
+    img.src=reader.result;img.style.display='block';
+    document.getElementById('ph-foto').style.display='none';
+  };
+  reader.readAsDataURL(file);
+});
+
+/* Guardar */
+document.getElementById('btn-save-panel').addEventListener('click',()=>{
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const semestre=document.getElementById('f-semestre').value;
+  if(!nombre){document.getElementById('f-nombre').focus();return;}
+  if(!semestre){document.getElementById('f-semestre').focus();return;}
+  const foto=document.getElementById('prev-foto').src||'';
+  const rec={
+    id:S.editId||document.getElementById('f-id').value,
+    idInstitucional:document.getElementById('f-idInstitucional').value.trim(),
+    nombre,semestre,
+    generacion:document.getElementById('f-generacion').value.trim(),
+    correo:document.getElementById('f-correo').value.trim(),
+    correoInstitucional:document.getElementById('f-correoInstitucional').value.trim(),
+    telefono:document.getElementById('f-telefono').value.trim(),
+    foto:document.getElementById('prev-foto').style.display==='none'?'':foto,
+  };
+  if(S.editId){const i=S.data.alumnos.findIndex(x=>x.id===S.editId);if(i>-1)S.data.alumnos[i]=rec;}
+  else S.data.alumnos.push(rec);
+  saveData();renderAll();closePanel();
+});
+
+/* Ver alumno */
+function verAlumno(id){
+  const a=S.data.alumnos.find(x=>x.id===id);if(!a)return;
+  S.verId=id;
+  const avEl=document.getElementById('ver-avatar');
+  if(a.foto){avEl.innerHTML=`<img src="${a.foto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;}
+  else{avEl.textContent=initials(a.nombre);}
+  document.getElementById('ver-nombre').textContent=a.nombre||'Alumno';
+  document.getElementById('ver-sub').textContent=(a.idInstitucional||'')+(a.semestre?' · Semestre '+a.semestre:'');
+  const campos=[
+    ['ID del programa',a.id],['ID institucional',a.idInstitucional],
+    ['Semestre',a.semestre],['Generación',a.generacion],
+    ['Correo personal',a.correo],['Correo institucional',a.correoInstitucional],
+    ['Teléfono',a.telefono],
+  ];
+  document.getElementById('ver-body').innerHTML=campos.filter(([,v])=>v).map(([l,v])=>`
+    <div class="detail-row"><span>${l}</span><span>${esc(v)}</span></div>`).join('');
+  document.getElementById('modal-ver').classList.add('open');
+}
+function handleRowClick(e,id){
+  if(e.target.closest('.btn-icon,.row-check'))return;
+  if(S.selMode){toggleSel(e,id);return;}
+  verAlumno(id);
+}
+document.getElementById('cerrar-ver').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+document.getElementById('btn-ver-cerrar').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+document.getElementById('btn-ver-editar').addEventListener('click',()=>{
+  document.getElementById('modal-ver').classList.remove('open');
+  openPanel(S.verId);
+});
+document.getElementById('btn-ver-eliminar').addEventListener('click',()=>{
+  document.getElementById('modal-ver').classList.remove('open');
+  abrirConfirm([S.verId]);
+});
+
+/* Eliminación */
+function abrirEliminar(e,id){e.stopPropagation();abrirConfirm([id]);}
+function abrirConfirm(ids){
+  const n=ids.length;
+  document.getElementById('confirm-msg').innerHTML=`¿Eliminar <strong>${n} alumno${n>1?'s':''}</strong>? Escribe <strong>ELIMINAR</strong> para confirmar.`;
+  document.getElementById('inp-confirm').value='';
+  document.getElementById('inp-confirm').style.borderColor='';
+  document.getElementById('modal-confirm').dataset.ids=JSON.stringify(ids);
+  document.getElementById('modal-confirm').classList.add('open');
+}
+document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+  if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
+    document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
+  }
+  const ids=JSON.parse(document.getElementById('modal-confirm').dataset.ids||'[]');
+  S.data.alumnos=S.data.alumnos.filter(a=>!ids.includes(a.id));
+  saveData();document.getElementById('modal-confirm').classList.remove('open');
+  salirSel();renderAll();
+});
+
+/* Selección */
+function toggleSel(e,id){
+  e.stopPropagation();
+  if(S.sel.has(id))S.sel.delete(id);else S.sel.add(id);
+  actualizarSel();renderLista();
+}
+function actualizarSel(){
+  const n=S.sel.size;
+  document.getElementById('sel-count').textContent=n===1?'1 seleccionado':`${n} seleccionados`;
+  const btn=document.getElementById('btn-del-sel');
+  btn.disabled=n===0;
+}
+function entrarSel(){
+  S.selMode=true;S.sel.clear();
+  document.getElementById('sel-bar').classList.add('open');
+  document.getElementById('btn-sel').textContent='Cancelar';
+  document.getElementById('btn-nuevo').style.display='none';
+  actualizarSel();renderLista();
+}
+function salirSel(){
+  S.selMode=false;S.sel.clear();
+  document.getElementById('sel-bar').classList.remove('open');
+  document.getElementById('btn-sel').textContent='Seleccionar';
+  document.getElementById('btn-nuevo').style.display='';
+  renderLista();
+}
+document.getElementById('btn-sel').addEventListener('click',()=>S.selMode?salirSel():entrarSel());
+document.getElementById('btn-cancel-sel').addEventListener('click',salirSel);
+document.getElementById('btn-sel-todos').addEventListener('click',()=>{
+  const todos=S.data.alumnos.map(a=>a.id);
+  const all=todos.every(id=>S.sel.has(id));
+  if(all)S.sel.clear();else todos.forEach(id=>S.sel.add(id));
+  actualizarSel();renderLista();
+});
+document.getElementById('btn-del-sel').addEventListener('click',()=>{
+  if(!S.sel.size)return;
+  abrirConfirm([...S.sel]);
+});
+
+document.getElementById('buscar').addEventListener('input',renderLista);
+document.getElementById('filtro-sem').addEventListener('change',renderLista);
+
+renderAll();
+</script>
+</body>
+</html>

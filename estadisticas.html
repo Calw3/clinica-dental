@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estadísticas Generales</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --green-50:#EAF3DE;--green-600:#2E7D0E;--green-800:#27500A;
+  --blue-50:#E6F1FB;--blue-800:#0C447C;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;--amber-800:#5C3308;
+  --purple-50:#EEEDFE;--purple-800:#3C3489;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --coral-50:#FAECE7;--coral-800:#712B13;
+  --pink-50:#FBEAF0;--pink-800:#72243E;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:1020px;margin:0 auto;padding:20px 20px 80px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 14px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;display:flex;align-items:center;gap:6px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.btn-secondary svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+/* Section label */
+.section-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin:28px 0 12px;}
+.section-label:first-child{margin-top:0;}
+/* Stat hero row */
+.hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:28px;}
+.hero-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
+.hero-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.hero-icon svg{width:18px;height:18px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.hero-value{font-size:28px;font-weight:700;line-height:1;color:var(--teal-900);}
+.hero-label{font-size:12px;color:var(--text-secondary);margin-top:4px;}
+/* Module cards */
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:24px;}
+.mod-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.mod-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.mod-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mod-icon svg{width:18px;height:18px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.mod-title{font-size:13px;font-weight:700;color:var(--text-primary);}
+.mod-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);font-size:13px;}
+.stat-row:first-child{border-top:none;}
+.stat-row span:first-child{color:var(--text-secondary);}
+.stat-row strong{color:var(--text-primary);}
+/* Bar */
+.bar-wrap{margin-top:10px;}
+.bar-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.bar-label{font-size:11px;color:var(--text-secondary);width:140px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:8px;background:var(--surface-1);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;background:var(--teal-600);transition:width .4s ease;}
+.bar-count{font-size:11px;font-weight:700;color:var(--text-secondary);width:28px;text-align:right;flex-shrink:0;}
+/* Hoy badge */
+.hoy-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--green-50);color:var(--green-800);}
+/* Empty */
+.no-data{font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center;}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:40px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Estadísticas Generales</h1>
+      </div>
+    </header>
+  <div id="dashboard"></div>
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<script>
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function todayISO(){const d=new Date();const p=v=>String(v).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
+function mesISO(){return todayISO().slice(0,7);}
+function fmtFecha(s){if(!s)return'—';const[y,m,d]=s.split('-');const ms=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${parseInt(d)} ${ms[parseInt(m)-1]} ${y}`;}
+function tryParse(key){try{const r=localStorage.getItem(key);return r?JSON.parse(r):null;}catch(e){return null;}}
+
+function icon(paths,strokeColor){
+  return`<svg viewBox="0 0 24 24" style="stroke:${strokeColor}">${paths}</svg>`;
+}
+
+function barChart(items,max){
+  if(!items||!items.length)return`<p class="no-data">Sin datos</p>`;
+  return`<div class="bar-wrap">${items.map(([label,count])=>{
+    const pct=max>0?Math.round((count/max)*100):0;
+    return`<div class="bar-item">
+      <span class="bar-label" title="${esc(label)}">${esc(label)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <span class="bar-count">${count}</span>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function statRows(rows){
+  return rows.map(([l,v,hoy])=>`<div class="stat-row"><span>${l}</span><div style="display:flex;align-items:center;gap:6px;"><strong>${v}</strong>${hoy?`<span class="hoy-badge">+${hoy} hoy</span>`:''}</div></div>`).join('');
+}
+
+function renderAll(){
+  const hoy=todayISO(),mes=mesISO();
+  let html='';
+
+  /* ── Resumen global ── */
+  const pac=tryParse('clinica_dental_data_v1');
+  const alumnos=tryParse('clinica_alumnos_v1');
+  const maestros=tryParse('clinica_maestros_v1');
+  const just=tryParse('clinica_justificantes_v1');
+  const prest=tryParse('clinica_prestamos_v1');
+  const ceye=tryParse('clinica_ceye_v1');
+  const banco=tryParse('clinica_banco_pacientes_v1');
+  const asist=tryParse('clinica_asistencia_v1');
+  const cons=tryParse('clinica_consentimientos_v1');
+
+  const totalPac=(pac?.expedientes||[]).length;
+  const totalAlumnos=(alumnos?.alumnos||[]).length;
+  const totalMaestros=(maestros?.maestros||[]).length;
+  const totalJust=(just?.justificantes||[]).length+(just?.recetas||[]).length;
+  const totalPrest=(prest?.prestamos||[]).length;
+  const totalCeye=(ceye?.registros||[]).length;
+  const totalBanco=(banco?.pacientes||[]).length;
+  const totalCons=(cons?.consentimientos||[]).length;
+
+  html+=`<p class="section-label">Resumen global</p>
+  <div class="hero-grid">
+    <div class="hero-card">
+      <div class="hero-icon" style="background:var(--coral-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>','#712B13')}</div>
+      <p class="hero-value">${totalPac}</p><p class="hero-label">Expedientes</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-icon" style="background:var(--purple-50);">${icon('<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>','#3C3489')}</div>
+      <p class="hero-value">${totalAlumnos}</p><p class="hero-label">Alumnos</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-icon" style="background:var(--red-50);">${icon('<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>','#A32D2D')}</div>
+      <p class="hero-value">${totalMaestros}</p><p class="hero-label">Maestros</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-icon" style="background:var(--blue-50);">${icon('<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M17 11h4M19 9v4"/>','#0C447C')}</div>
+      <p class="hero-value">${totalBanco}</p><p class="hero-label">Banco pacientes</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-icon" style="background:var(--green-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>','#27500A')}</div>
+      <p class="hero-value">${totalJust}</p><p class="hero-label">Justif. y Recetas</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-icon" style="background:var(--teal-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h2"/><path d="M15 16l1.5 1.5L19 14"/>','#8C3F09')}</div>
+      <p class="hero-value">${totalCons}</p><p class="hero-label">Consentimientos</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-icon" style="background:var(--amber-50);">${icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>','#854F0B')}</div>
+      <p class="hero-value">${totalCeye}</p><p class="hero-label">Registros CeYE</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-icon" style="background:var(--pink-50);">${icon('<path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2M6 17v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2"/>','#72243E')}</div>
+      <p class="hero-value">${totalPrest}</p><p class="hero-label">Préstamos</p>
+    </div>
+  </div>`;
+
+  html+=`<p class="section-label">Detalle por módulo</p><div class="mod-grid">`;
+
+  /* ── Expedientes ── */
+  const exps=pac?.expedientes||[];
+  const expHoy=exps.filter(e=>e.fecha===hoy||e.fechaRegistro===hoy).length;
+  const tiposPac={};
+  exps.forEach(e=>{tiposPac[e.tipo||'Sin tipo']=(tiposPac[e.tipo||'Sin tipo']||0)+1;});
+  const tiposTop=Object.entries(tiposPac).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxTipo=Math.max(...tiposTop.map(t=>t[1]),1);
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--coral-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>','#712B13')}</div>
+    <div><p class="mod-title">Expedientes clínicos</p><p class="mod-sub">Base de pacientes</p></div></div>
+    ${statRows([['Total pacientes',exps.length,expHoy||null],['Este mes',exps.filter(e=>(e.fecha||e.fechaRegistro||'').startsWith(mes)).length,null]])}
+    ${barChart(tiposTop,maxTipo)}
+  </div>`;
+
+  /* ── Alumnos ── */
+  const alus=alumnos?.alumnos||[];
+  const semestres={};
+  alus.forEach(a=>{semestres[a.semestre||'Sin sem']=(semestres[a.semestre||'Sin sem']||0)+1;});
+  const semsTop=Object.entries(semestres).sort((a,b)=>{const na=parseInt(a[0]),nb=parseInt(b[0]);return isNaN(na)||isNaN(nb)?a[0].localeCompare(b[0]):na-nb;}).slice(0,6);
+  const maxSem=Math.max(...semsTop.map(s=>s[1]),1);
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--purple-50);">${icon('<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>','#3C3489')}</div>
+    <div><p class="mod-title">Alumnos</p><p class="mod-sub">Base de datos</p></div></div>
+    ${statRows([['Total alumnos',alus.length,null]])}
+    ${barChart(semsTop.map(([s,n])=>['Sem. '+s,n]),maxSem)}
+  </div>`;
+
+  /* ── Maestros ── */
+  const maes=maestros?.maestros||[];
+  const puestos={};
+  maes.forEach(m=>{puestos[m.puesto||'Sin puesto']=(puestos[m.puesto||'Sin puesto']||0)+1;});
+  const puestosTop=Object.entries(puestos).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxP=Math.max(...puestosTop.map(p=>p[1]),1);
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--red-50);">${icon('<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>','#A32D2D')}</div>
+    <div><p class="mod-title">Maestros</p><p class="mod-sub">Personal docente</p></div></div>
+    ${statRows([['Total maestros',maes.length,null],['Matutino',maes.filter(m=>m.turno==='Matutino').length,null],['Vespertino',maes.filter(m=>m.turno==='Vespertino').length,null]])}
+    ${barChart(puestosTop.map(([p,n])=>[p.replace('DOCENTE DE ','').replace('DIRECTOR ','DIR. '),n]),maxP)}
+  </div>`;
+
+  /* ── Banco pacientes ── */
+  const bPacs=banco?.pacientes||[];
+  const bHoy=bPacs.filter(p=>p.fechaRegistro===hoy).length;
+  const bEspera=bPacs.filter(p=>p.estado==='en_espera'||!p.alumnoAsignado).length;
+  const bAsig=bPacs.filter(p=>p.alumnoAsignado).length;
+  const tipos3={Pediátrico:0,Adulto:0,Geriátrico:0};
+  bPacs.forEach(p=>{if(tipos3[p.tipo]!==undefined)tipos3[p.tipo]++;});
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--blue-50);">${icon('<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M17 11h4M19 9v4"/>','#0C447C')}</div>
+    <div><p class="mod-title">Banco de Pacientes</p><p class="mod-sub">Lista de espera</p></div></div>
+    ${statRows([['Total',bPacs.length,bHoy||null],['En espera',bEspera,null],['Asignados',bAsig,null]])}
+    ${barChart(Object.entries(tipos3),Math.max(...Object.values(tipos3),1))}
+  </div>`;
+
+  /* ── Justificantes & Recetas ── */
+  const justs=just?.justificantes||[];
+  const recs=just?.recetas||[];
+  const jHoy=justs.filter(j=>j.fechaEmision===hoy).length;
+  const rHoy=recs.filter(r=>r.fechaEmision===hoy).length;
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--green-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>','#27500A')}</div>
+    <div><p class="mod-title">Justificantes y Recetas</p><p class="mod-sub">Documentos emitidos</p></div></div>
+    ${statRows([['Justificantes total',justs.length,jHoy||null],['Justificantes este mes',justs.filter(j=>(j.fechaEmision||'').startsWith(mes)).length,null],['Recetas total',recs.length,rHoy||null],['Recetas este mes',recs.filter(r=>(r.fechaEmision||'').startsWith(mes)).length,null]])}
+  </div>`;
+
+  /* ── Consentimientos ── */
+  const consList=cons?.consentimientos||[];
+  const consHoy=consList.filter(c=>c.fecha===hoy).length;
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--teal-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h2"/><path d="M15 16l1.5 1.5L19 14"/>','#8C3F09')}</div>
+    <div><p class="mod-title">Consentimientos</p><p class="mod-sub">Cartas informadas</p></div></div>
+    ${statRows([['Total',consList.length,consHoy||null],['Este mes',consList.filter(c=>(c.fecha||'').startsWith(mes)).length,null]])}
+  </div>`;
+
+  /* ── CeYE ── */
+  const ceyeRegs=ceye?.registros||[];
+  const ceyeHoy=ceyeRegs.filter(r=>new Date(r.timestamp).toISOString().slice(0,10)===hoy).length;
+  const ceyePend=ceyeRegs.filter(r=>r.estado==='pendiente').length;
+  const ceyeEst=ceyeRegs.filter(r=>r.estado==='esteril').length;
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--amber-50);">${icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>','#854F0B')}</div>
+    <div><p class="mod-title">Registro CeYE</p><p class="mod-sub">Esterilización de instrumental</p></div></div>
+    ${statRows([['Total registros',ceyeRegs.length,ceyeHoy||null],['Pendientes',ceyePend,null],['Esterilizados',ceyeEst,null],['Matutino',ceyeRegs.filter(r=>r.turno==='Matutino').length,null],['Vespertino',ceyeRegs.filter(r=>r.turno==='Vespertino').length,null]])}
+  </div>`;
+
+  /* ── Préstamos ── */
+  const prests=prest?.prestamos||[];
+  const prestHoy=prests.filter(p=>p.fechaSalida===hoy).length;
+  const prestPend=prests.filter(p=>p.estado!=='devuelto').length;
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--pink-50);">${icon('<path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2M6 17v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2"/>','#72243E')}</div>
+    <div><p class="mod-title">Préstamos de Equipos</p><p class="mod-sub">Control de salida y devolución</p></div></div>
+    ${statRows([['Total préstamos',prests.length,prestHoy||null],['Activos / pendientes',prestPend,null],['Devueltos',prests.filter(p=>p.estado==='devuelto').length,null]])}
+  </div>`;
+
+  /* ── Asistencia docentes ── */
+  const asistRegs=asist?.registros||[];
+  const asistHoy=asistRegs.filter(r=>r.fecha===hoy).length;
+  const entradasHoy=asistRegs.filter(r=>r.fecha===hoy&&r.tipo==='Entrada').length;
+  const salidasHoy=asistRegs.filter(r=>r.fecha===hoy&&r.tipo==='Salida').length;
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--teal-50);">${icon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>','#8C3F09')}</div>
+    <div><p class="mod-title">Asistencia Docentes</p><p class="mod-sub">Registro de entrada y salida</p></div></div>
+    ${statRows([['Total registros',asistRegs.length,asistHoy||null],['Entradas hoy',entradasHoy,null],['Salidas hoy',salidasHoy,null]])}
+  </div>`;
+
+  html+=`</div>`;
+
+  /* ═══════════════════════════════════════════════
+     ANÁLISIS CLÍNICO
+  ═══════════════════════════════════════════════ */
+  html+=`<h2 style="margin:2rem 0 1rem;font-size:1.15rem;font-weight:700;color:var(--teal-800);border-bottom:2px solid var(--teal-600);padding-bottom:.4rem;">Análisis Clínico</h2>
+  <div class="mod-grid">`;
+
+  /* ── Atención por clínica ── */
+  const pagosRecs=pagos||[];
+  const clinMap={};
+  pagosRecs.forEach(p=>{const c=p.clinica||'Sin clínica';clinMap[c]=(clinMap[c]||0)+1;});
+  const clinTop=Object.entries(clinMap).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const maxClin=Math.max(...clinTop.map(e=>e[1]),1);
+  html+=`<div class="mod-card" style="grid-column:span 2;">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--blue-50);">${icon('<path d="M3 21V9l9-6 9 6v12"/><path d="M9 21V12h6v9"/>','#0C447C')}</div>
+    <div><p class="mod-title">Atención por Clínica</p><p class="mod-sub">Visitas registradas en pagos</p></div></div>
+    ${clinTop.length?barChart(clinTop.map(([c,n])=>[c.length>25?c.slice(0,23)+'…':c,n]),maxClin):'<p style="color:#888;font-size:.85rem;">Sin registros aún</p>'}
+  </div>`;
+
+  /* ── Atención por mes ── */
+  const mesMapa={};
+  const now2=new Date();
+  for(let i=11;i>=0;i--){const d=new Date(now2.getFullYear(),now2.getMonth()-i,1);const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');mesMapa[key]=0;}
+  pagosRecs.forEach(p=>{if(p.fecha){const k=(p.fecha||'').slice(0,7);if(mesMapa[k]!==undefined)mesMapa[k]++;}});
+  const mesArr=Object.entries(mesMapa);
+  const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const mesLabels=mesArr.map(([k,v])=>{const[y,m]=k.split('-');return[MESES[parseInt(m)-1]+' '+y.slice(2),v];});
+  const maxMes=Math.max(...mesLabels.map(e=>e[1]),1);
+  html+=`<div class="mod-card" style="grid-column:span 2;">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--green-50);">${icon('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>','#27500A')}</div>
+    <div><p class="mod-title">Atención por Mes</p><p class="mod-sub">Últimos 12 meses</p></div></div>
+    ${barChart(mesLabels,maxMes)}
+  </div>`;
+
+  /* ── Tratamientos por estudiante ── */
+  const estudMap={};
+  pagosRecs.forEach(p=>{
+    const est=p.estudiante||'Sin asignar';
+    estudMap[est]=(estudMap[est]||0)+1;
+  });
+  const estudTop=Object.entries(estudMap).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const maxEstud=Math.max(...estudTop.map(e=>e[1]),1);
+
+  /* tratamientos (conteo de líneas tratA/B/C con valor) por estudiante */
+  const tratMap={};
+  pagosRecs.forEach(p=>{
+    const est=p.estudiante||'Sin asignar';
+    let t=0;
+    if(p.tratA)t++;
+    if(p.tratB)t++;
+    if(p.tratC)t++;
+    tratMap[est]=(tratMap[est]||0)+t;
+  });
+  const tratTop=Object.entries(tratMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxTrat=Math.max(...tratTop.map(e=>e[1]),1);
+
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--purple-50);">${icon('<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M19 8v8M22 12h-6"/>','#3C3489')}</div>
+    <div><p class="mod-title">Visitas por Estudiante</p><p class="mod-sub">Top 12 por registros</p></div></div>
+    ${estudTop.length?barChart(estudTop.map(([e,n])=>[e.split(' ').slice(-1)[0],n]),maxEstud):'<p style="color:#888;font-size:.85rem;">Sin registros aún</p>'}
+  </div>`;
+
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--amber-50);">${icon('<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>','#854F0B')}</div>
+    <div><p class="mod-title">Tratamientos por Estudiante</p><p class="mod-sub">Top 10 por nº de tratamientos</p></div></div>
+    ${tratTop.length?barChart(tratTop.map(([e,n])=>[e.split(' ').slice(-1)[0],n]),maxTrat):'<p style="color:#888;font-size:.85rem;">Sin registros aún</p>'}
+  </div>`;
+
+  html+=`</div>`;
+
+  /* ═══════════════════════════════════════════════
+     PERFIL DE PACIENTES
+  ═══════════════════════════════════════════════ */
+  html+=`<h2 style="margin:2rem 0 1rem;font-size:1.15rem;font-weight:700;color:var(--teal-800);border-bottom:2px solid var(--teal-600);padding-bottom:.4rem;">Perfil de Pacientes</h2>
+  <div class="mod-grid">`;
+
+  const expedientes=dental?.expedientes||[];
+
+  /* ── Religión del paciente ── */
+  const relMap={};
+  expedientes.forEach(e=>{const r=e.religion||'No especificada';relMap[r]=(relMap[r]||0)+1;});
+  const relTop=Object.entries(relMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxRel=Math.max(...relTop.map(e=>e[1]),1);
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--teal-50);">${icon('<circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/>','#8C3F09')}</div>
+    <div><p class="mod-title">Religión del Paciente</p><p class="mod-sub">Distribución de expedientes</p></div></div>
+    ${relTop.length?barChart(relTop,maxRel):'<p style="color:#888;font-size:.85rem;">Sin expedientes aún</p>'}
+  </div>`;
+
+  /* ── Tipo de paciente ── */
+  const tpMap={'externo':0,'comunidad Anáhuac':0,'estudiante':0};
+  expedientes.forEach(e=>{const t=e.tipoPaciente||'externo';if(tpMap[t]!==undefined)tpMap[t]++;else tpMap[t]=(tpMap[t]||0)+1;});
+  const tpArr=Object.entries(tpMap).filter(([,v])=>v>0);
+  const maxTp=Math.max(...tpArr.map(e=>e[1]),1);
+  const tpLabels={'externo':'Externo','comunidad Anáhuac':'Com. Anáhuac','estudiante':'Estudiante'};
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--blue-50);">${icon('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','#0C447C')}</div>
+    <div><p class="mod-title">Tipo de Paciente</p><p class="mod-sub">Externo / Anáhuac / Estudiante</p></div></div>
+    ${tpArr.length?statRows(tpArr.map(([k,v])=>[tpLabels[k]||k,v,null]))+''+barChart(tpArr.map(([k,v])=>[tpLabels[k]||k,v]),maxTp):'<p style="color:#888;font-size:.85rem;">Sin expedientes aún</p>'}
+  </div>`;
+
+  /* ── Tipo de historia clínica ── */
+  const thMap={'adulto':0,'pediátrico':0};
+  expedientes.forEach(e=>{const t=(e.tipoHistoria||'adulto').toLowerCase();if(thMap[t]!==undefined)thMap[t]++;else thMap[t]=(thMap[t]||0)+1;});
+  const thArr=Object.entries(thMap);
+  const maxTh=Math.max(...thArr.map(e=>e[1]),1);
+  const thLabels={'adulto':'Adulto','pediátrico':'Pediátrico'};
+  html+=`<div class="mod-card">
+    <div class="mod-header"><div class="mod-icon" style="background:var(--pink-50);">${icon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>','#72243E')}</div>
+    <div><p class="mod-title">Tipo de Historia Clínica</p><p class="mod-sub">Adulto vs Pediátrico</p></div></div>
+    ${statRows(thArr.map(([k,v])=>[thLabels[k]||k,v,null]))}
+    ${barChart(thArr.map(([k,v])=>[thLabels[k]||k,v]),maxTh)}
+  </div>`;
+
+  html+=`</div>`;
+
+  document.getElementById('dashboard').innerHTML=html;
+}
+
+renderAll();
+</script>
+</body>
+</html>

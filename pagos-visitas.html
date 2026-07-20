@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Pagos y Visitas</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --coral-50:#FAECE7;--coral-800:#712B13;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;
+  --green-50:#EAF3DE;--green-800:#27500A;
+  --blue-50:#E6F1FB;--blue-800:#0C447C;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 20px 60px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:220px;}
+.search-input:focus{outline:none;border-color:var(--teal-600);}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-family:inherit;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.btn-danger{background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-family:inherit;font-size:13px;cursor:pointer;opacity:.4;}
+.btn-danger:not([disabled]){opacity:1;}
+#sel-bar{display:none;align-items:center;justify-content:space-between;background:var(--teal-50);border:1px solid var(--teal-600);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+#sel-count{font-size:13px;color:var(--teal-800);font-weight:600;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.stat-label{font-size:11px;color:var(--text-secondary);}
+.stat-value{font-size:22px;font-weight:600;margin-top:3px;}
+.stat-value.money{color:var(--teal-800);}
+.stat-value.alert{color:var(--red-600);}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.table-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--surface-1);padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;border-bottom:1px solid var(--border);}
+tbody tr{border-top:1px solid var(--border);cursor:pointer;}
+tbody tr:first-child{border-top:none;}
+tbody tr:hover{background:var(--teal-50);}
+tbody tr.sel-row{background:var(--teal-50);}
+td{padding:10px 12px;white-space:nowrap;vertical-align:middle;}
+.patient-cell{display:flex;align-items:center;gap:8px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--coral-50);color:var(--coral-800);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;overflow:hidden;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.patient-name{font-weight:600;font-size:13px;max-width:140px;overflow:hidden;text-overflow:ellipsis;}
+.badge-pago{font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;white-space:nowrap;}
+.badge-efectivo{background:var(--amber-50);color:var(--amber-600);}
+.badge-debito{background:var(--blue-50);color:var(--blue-800);}
+.badge-credito{background:var(--teal-50);color:var(--teal-800);}
+.badge-pendiente{background:var(--red-50);color:var(--red-600);}
+.qr-thumb{width:28px;height:28px;border-radius:4px;object-fit:cover;border:1px solid var(--border);}
+.money-cell{font-weight:600;color:var(--teal-800);}
+.row-checkbox{width:16px;height:16px;accent-color:var(--teal-600);cursor:pointer;}
+.empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
+.empty-state p:first-child{font-weight:600;color:var(--text-primary);font-size:15px;}
+.empty-state p:last-child{font-size:13px;margin-top:4px;}
+/* Panel */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.35);z-index:40;}
+.panel-overlay.open{display:block;}
+.panel{position:fixed;top:0;right:-100%;width:min(480px,100vw);height:100vh;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);transition:right .25s ease;}
+.panel.open{right:0;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-primary);}
+.panel-head-actions{display:flex;gap:8px;}
+.panel-body{flex:1;overflow-y:auto;padding:20px;}
+/* Form */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.field input[type="text"],
+.field input[type="date"],
+.field select{
+  width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;
+  font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);
+}
+.field input[type="text"]:focus,
+.field input[type="date"]:focus,
+.field select:focus,
+.field textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+.field input[readonly]{background:var(--surface-1);color:var(--text-muted);cursor:default;}
+.field textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;min-height:60px;}
+.field-money{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;}
+.field-money span{padding:0 6px 0 10px;color:var(--text-secondary);font-size:13px;white-space:nowrap;flex-shrink:0;}
+.field-money input{flex:1;border:none!important;border-radius:0!important;padding-left:0!important;background:transparent;}
+.stepper{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;height:36px;}
+.stepper-val{flex:1;text-align:center;font-size:14px;font-weight:600;border:none;background:#fff;font-family:inherit;width:100%;}
+.stepper button{width:36px;height:36px;border:none;background:#fff;cursor:pointer;font-size:18px;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stepper button:hover{background:var(--surface-1);}
+.opt-group{display:flex;gap:6px;flex-wrap:wrap;}
+.opt-btn{flex:1;min-width:80px;border:1px solid var(--border);background:#fff;border-radius:var(--radius);padding:8px 10px;font-size:12px;color:var(--text-secondary);text-align:center;cursor:pointer;font-family:inherit;font-weight:500;}
+.opt-btn.selected{border-color:var(--teal-600);background:var(--teal-50);color:var(--teal-800);font-weight:700;}
+.opt-btn.pay-efectivo.selected{border-color:var(--amber-600);background:var(--amber-50);color:var(--amber-600);}
+.opt-btn.pay-debito.selected{border-color:var(--blue-800);background:var(--blue-50);color:var(--blue-800);}
+.opt-btn.pay-credito.selected{border-color:var(--teal-600);background:var(--teal-50);color:var(--teal-800);}
+.opt-btn.pay-pendiente.selected{border-color:var(--red-600);background:var(--red-50);color:var(--red-600);}
+.trat-card{background:var(--surface-1);border-radius:var(--radius);padding:12px;margin-bottom:10px;border:1px solid var(--border);}
+.trat-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.trat-card-num{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.04em;}
+.btn-remove-trat{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:13px;}
+.btn-remove-trat:hover{background:var(--red-50);color:var(--red-600);border-color:var(--red-50);}
+.add-trat-btn{width:100%;border:1px dashed var(--border);background:#fff;border-radius:var(--radius);padding:10px;font-size:13px;color:var(--text-secondary);cursor:pointer;font-family:inherit;margin-bottom:12px;}
+.add-trat-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.photo-tile{display:flex;align-items:center;justify-content:center;height:120px;border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;background:#fff;}
+.photo-tile:hover{border-color:var(--teal-600);}
+.photo-tile img{max-width:100%;max-height:100%;object-fit:contain;}
+/* Autocomplete */
+.ac-wrap{position:relative;}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--teal-600);border-top:none;border-radius:0 0 var(--radius) var(--radius);max-height:200px;overflow-y:auto;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.1);display:none;}
+.ac-list.open{display:block;}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover,.ac-item.active{background:var(--teal-50);color:var(--teal-800);}
+.ac-item mark{background:transparent;color:var(--teal-600);font-weight:700;}
+.ac-empty{padding:10px 12px;font-size:12px;color:var(--text-muted);font-style:italic;}
+.photo-tile-empty{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);}
+.total-display{background:var(--teal-900);color:#fff;border-radius:var(--radius);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+.total-display span:first-child{font-size:12px;font-weight:700;letter-spacing:.04em;opacity:.7;}
+.total-display span:last-child{font-size:22px;font-weight:700;}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:center;justify-content:center;z-index:60;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:380px;width:100%;padding:22px;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.modal-head h3{font-size:16px;font-weight:600;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:14px;}
+.btn-icon:hover{background:var(--red-50);color:var(--red-600);}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Control de Pagos y Visitas</h1>
+      </div>
+      <span style="font-size:11px;color:var(--text-muted);">Los datos se guardan en este navegador</span>
+    </header>
+  <!-- Pestañas -->
+  <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;">
+    <button id="tab-registros" onclick="switchTab('registros')" style="padding:10px 20px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:700;color:var(--teal-800);border-bottom:2px solid var(--teal-600);margin-bottom:-2px;cursor:pointer;">Registros</button>
+    <button id="tab-eliminados" onclick="switchTab('eliminados')" style="padding:10px 20px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;">Eliminados <span id="badge-pap" style="display:none;background:var(--red-600);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;font-weight:700;margin-left:4px;"></span></button>
+  </div>
+
+  <!-- Sección Registros -->
+  <div id="sec-registros">
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-input" id="buscar" placeholder="Buscar paciente...">
+      <button class="btn-secondary" id="btn-sel">Seleccionar</button>
+      <button class="btn-secondary" id="btn-corte" style="border-color:var(--teal-600);color:var(--teal-800);display:flex;align-items:center;gap:5px;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 9h4"/></svg>
+        Corte del día
+      </button>
+    </div>
+    <button class="btn-primary" id="btn-nuevo">+ Nuevo registro</button>
+  </div>
+
+  <div id="sel-bar">
+    <span id="sel-count">0 seleccionados</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-secondary" id="btn-sel-todos" style="height:32px;font-size:12px;padding:0 10px;">Seleccionar todos</button>
+      <button class="btn-secondary" id="btn-cancel-sel" style="height:32px;font-size:12px;padding:0 10px;">Cancelar</button>
+      <button class="btn-danger" id="btn-del-sel" disabled>Eliminar seleccionados</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th id="th-check" style="display:none;width:40px;"></th>
+            <th>Paciente</th>
+            <th>Fecha</th>
+            <th>Tratamientos</th>
+            <th>Descuento</th>
+            <th>Total</th>
+            <th>Forma de pago</th>
+            <th>Registrado por</th>
+            <th>Lugar de pago</th>
+            <th>Observaciones</th>
+            <th>QR Pago</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>
+      </table>
+    </div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <p>No hay registros de pagos.</p>
+      <p>Agrega el primer registro con el botón "+ Nuevo registro".</p>
+    </div>
+  </div>
+
+  </div><!-- /sec-registros -->
+
+  <!-- Sección Eliminados -->
+  <div id="sec-eliminados" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn-secondary" id="btn-sel-pap">Seleccionar</button>
+      </div>
+      <button id="btn-vaciar" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Vaciar papelera</button>
+    </div>
+    <div id="sel-bar-pap" style="display:none;align-items:center;justify-content:space-between;background:var(--red-50);border:1px solid var(--red-600);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;gap:10px;flex-wrap:wrap;">
+      <span id="sel-pap-count" style="font-size:13px;color:var(--red-600);font-weight:600;">0 seleccionados</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-secondary" id="btn-sel-pap-todos" style="height:32px;font-size:12px;padding:0 10px;">Seleccionar todos</button>
+        <button class="btn-secondary" id="btn-cancel-pap-sel" style="height:32px;font-size:12px;padding:0 10px;">Cancelar</button>
+        <button id="btn-restaurar-sel" disabled style="background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:32px;padding:0 12px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;opacity:.4;">↩ Restaurar</button>
+        <button id="btn-del-pap-sel" disabled style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:32px;padding:0 12px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;opacity:.4;">Eliminar definitivamente</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th id="th-check-pap" style="display:none;width:40px;"></th>
+              <th>Paciente</th>
+              <th>Fecha</th>
+              <th>Tratamiento(s)</th>
+              <th>Total</th>
+              <th>Forma de pago</th>
+              <th>Registrado por</th>
+              <th>Eliminado el</th>
+              <th style="text-align:center;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-pap"></tbody>
+        </table>
+      </div>
+      <div id="empty-pap" class="empty-state" style="display:none;">
+        <p>La papelera está vacía.</p>
+        <p>Los registros eliminados aparecerán aquí.</p>
+      </div>
+    </div>
+  </div><!-- /sec-eliminados -->
+
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<!-- Panel lateral -->
+<div class="panel-overlay" id="panel-overlay"></div>
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <h3 id="panel-title">CONTROL DE PAGOS Y VISITAS Form</h3>
+    <div class="panel-head-actions">
+      <button class="btn-secondary" id="btn-panel-cancel" style="height:32px;font-size:13px;padding:0 12px;">Cancel</button>
+      <button class="btn-primary" id="btn-panel-save" style="height:32px;">Save</button>
+    </div>
+  </div>
+  <div class="panel-body">
+    <form id="form-pago" autocomplete="off">
+
+      <div class="field">
+        <label>ID de registro *</label>
+        <input type="text" name="id" id="f-id" readonly>
+      </div>
+      <div class="field">
+        <label>Marca de tiempo *</label>
+        <input type="text" name="timestamp" id="f-timestamp" readonly>
+      </div>
+      <div class="field">
+        <label>Fecha de ingreso *</label>
+        <input type="date" name="fecha" id="f-fecha" required>
+      </div>
+      <div class="field">
+        <label>Paciente</label>
+        <div class="ac-wrap">
+          <input type="text" name="paciente" id="f-paciente" placeholder="Escribe el nombre del paciente" autocomplete="off">
+          <div class="ac-list" id="ac-paciente"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Materia / Clínica</label>
+        <div class="ac-wrap">
+          <input type="text" name="clinica" id="f-clinica" placeholder="Buscar materia o clínica..." autocomplete="off">
+          <div class="ac-list" id="ac-clinica"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Estudiante que atiende</label>
+        <div class="ac-wrap">
+          <input type="text" name="estudiante" id="f-estudiante" placeholder="Escribe el nombre del estudiante" autocomplete="off">
+          <div class="ac-list" id="ac-estudiante"></div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;">Tratamientos</span>
+        <button type="button" id="btn-add-trat" class="btn-secondary" style="height:30px;font-size:12px;padding:0 10px;">+ Agregar tratamiento</button>
+      </div>
+      <div id="trat-lista"></div>
+
+      <div class="field">
+        <label>Descuento (%)</label>
+        <div class="stepper">
+          <button type="button" onclick="stepDesc(-5)">−</button>
+          <input class="stepper-val" type="text" name="descuento" id="f-descuento" value="0" oninput="calcTotal()">
+          <button type="button" onclick="stepDesc(5)">+</button>
+        </div>
+      </div>
+
+      <div class="total-display">
+        <span>TOTAL</span>
+        <span id="f-total-display">$0.00</span>
+      </div>
+      <input type="hidden" name="total" id="f-total" value="0">
+
+      <hr class="divider">
+
+      <div class="field">
+        <label>Forma de pago</label>
+        <div class="opt-group" data-group="formaPago">
+          <button type="button" class="opt-btn pay-efectivo" data-value="EFECTIVO">🟡 EFECTIVO</button>
+          <button type="button" class="opt-btn pay-debito" data-value="TARJETA DEBITO">💳 TARJETA DÉBITO</button>
+          <button type="button" class="opt-btn pay-credito" data-value="TARJETA CREDITO">💳 TARJETA CRÉDITO</button>
+          <button type="button" class="opt-btn pay-pendiente" data-value="PENDIENTE DE PAGO" style="flex-basis:100%;">🚫 PENDIENTE DE PAGO</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Registrado por</label>
+        <input type="text" name="registradoPor" id="f-registradoPor" placeholder="Escribe el nombre de quien registra">
+      </div>
+
+      <div class="field">
+        <label>Lugar de pago</label>
+        <div class="opt-group" data-group="lugarPago">
+          <button type="button" class="opt-btn" data-value="RECEPCIÓN 1">RECEPCIÓN 1</button>
+          <button type="button" class="opt-btn" data-value="RECEPCIÓN 4">RECEPCIÓN 4</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Observaciones</label>
+        <textarea name="observaciones" id="f-observaciones" placeholder="Notas adicionales..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>QR Pago</label>
+        <label class="photo-tile" for="inp-qr">
+          <img id="prev-qr" style="display:none;">
+          <span class="photo-tile-empty" id="ph-qr">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>
+            Subir QR de pago
+          </span>
+        </label>
+        <input type="file" accept="image/*" id="inp-qr" style="display:none;">
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Modal eliminación permanente -->
+<div class="modal-bg" id="modal-perm">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 style="color:var(--red-600);">⚠ Eliminar permanentemente</h3>
+      <button class="btn-icon" id="cerrar-perm">✕</button>
+    </div>
+    <p id="confirm-perm-msg" style="font-size:13px;color:var(--text-secondary);margin:8px 0 12px;"></p>
+    <input type="text" id="inp-confirm-perm" placeholder="Escribe ELIMINAR" style="width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelar-perm" style="height:36px;padding:0 14px;">Cancelar</button>
+      <button id="btn-confirm-perm" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Eliminar para siempre</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmar eliminar -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Eliminar registros</h3>
+      <button class="btn-icon" id="cerrar-confirm">✕</button>
+    </div>
+    <p id="confirm-msg" style="font-size:13px;color:var(--text-secondary);margin:8px 0 12px;"></p>
+    <input type="text" id="inp-confirm" placeholder="Escribe ELIMINAR" style="width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelar-confirm" style="height:36px;padding:0 14px;">Cancelar</button>
+      <button id="btn-confirm-del" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Eliminar definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MATERIAS=[
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral I'},
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral II'},
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral III'},
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral IV'},
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral V'},
+  {grupo:'Clínicas Integrales',nombre:'Servicio Social'},
+  {grupo:'Especialidades Clínicas',nombre:'Endodoncia I'},
+  {grupo:'Especialidades Clínicas',nombre:'Endodoncia II'},
+  {grupo:'Especialidades Clínicas',nombre:'Rehabilitación Bucal Fija'},
+  {grupo:'Especialidades Clínicas',nombre:'Prótesis Removible'},
+  {grupo:'Especialidades Clínicas',nombre:'Prostodoncia Total'},
+  {grupo:'Especialidades Clínicas',nombre:'Bases Quirúrgicas'},
+  {grupo:'Especialidades Clínicas',nombre:'Cirugía Bucal'},
+  {grupo:'Especialidades Clínicas',nombre:'Periodoncia'},
+  {grupo:'Especialidades Clínicas',nombre:'Periodoncia Avanzada'},
+  {grupo:'Especialidades Clínicas',nombre:'Odontopediatría'},
+  {grupo:'Especialidades Clínicas',nombre:'Odontopediatría Avanzada'},
+  {grupo:'Especialidades Clínicas',nombre:'Diagnóstico Imagen'},
+  {grupo:'Especialidades Clínicas',nombre:'Imagenología'},
+  {grupo:'Especialidades Clínicas',nombre:'Integración Clínica'},
+  {grupo:'Especialidades Clínicas',nombre:'Bases Protésicas en Implantología'},
+  {grupo:'Especialidades Clínicas',nombre:'Atención de Paciente Comprometido Sistémicamente'},
+  {grupo:'Especialidades Clínicas',nombre:'Urgencias Médicas'},
+  {grupo:'Especialidades Clínicas',nombre:'Diagnóstico en Ortodoncia'},
+  {grupo:'Especialidades Clínicas',nombre:'Anestesiología'},
+  {grupo:'Especialidades Clínicas',nombre:'Terapia de Odontología de Mínima Invasión'},
+  {grupo:'Especialidades Clínicas',nombre:'Terapia Odontológica de Mínima Invasión'},
+  {grupo:'Ciencias Básicas',nombre:'Anatomía de Cabeza y Cuello'},
+  {grupo:'Ciencias Básicas',nombre:'Histología Bucal'},
+  {grupo:'Ciencias Básicas',nombre:'Biomateriales Dentales II'},
+  {grupo:'Ciencias Básicas',nombre:'Fisiología'},
+  {grupo:'Ciencias Básicas',nombre:'Biología Celular'},
+  {grupo:'Ciencias Básicas',nombre:'Bioquímica'},
+  {grupo:'Ciencias Básicas',nombre:'Microbiología Oral'},
+  {grupo:'Ciencias Básicas',nombre:'Inmunología'},
+  {grupo:'Ciencias Básicas',nombre:'Genómica y Proteómica'},
+  {grupo:'Ciencias Básicas',nombre:'Probabilidad y Estadística'},
+  {grupo:'Diagnóstico y Clínica',nombre:'Diagnóstico Integral en Odontología'},
+  {grupo:'Diagnóstico y Clínica',nombre:'Patología Bucal'},
+  {grupo:'Diagnóstico y Clínica',nombre:'Odontología Legal y Forense'},
+  {grupo:'Diagnóstico y Clínica',nombre:'Odontología Preventiva'},
+  {grupo:'Diagnóstico y Clínica',nombre:'Odontología Basada en Evidencia'},
+  {grupo:'Diagnóstico y Clínica',nombre:'Medicina Estomatológica'},
+  {grupo:'Formación Universitaria',nombre:'Habilidades Universitarias para la Comunicación'},
+  {grupo:'Formación Universitaria',nombre:'Antropología Fundamental'},
+  {grupo:'Formación Universitaria',nombre:'Formación Universitaria B'},
+  {grupo:'Formación Universitaria',nombre:'Emprendimiento e Innovación'},
+  {grupo:'Formación Universitaria',nombre:'Competencias Digitales'},
+  {grupo:'Formación Universitaria',nombre:'Ética'},
+  {grupo:'Formación Universitaria',nombre:'Habilidades del Emprendimiento'},
+  {grupo:'Formación Universitaria',nombre:'Electiva Interdisciplinaria EGEL'},
+  {grupo:'Formación Universitaria',nombre:'Metodología de la Investigación'},
+];
+
+const TRATAMIENTOS=[
+  /* ── Clínica Dental Universitaria ── */
+  {grupo:'Clínica Dental',codigo:'BQ-001', nombre:'Extracción Dental Simple',costo:250},
+  {grupo:'Clínica Dental',codigo:'C3-001', nombre:'Resina',costo:250},
+  {grupo:'Clínica Dental',codigo:'C3-002', nombre:'Microabrasión',costo:180},
+  {grupo:'Clínica Dental',codigo:'C4.5-001',nombre:'Aclaramiento Interno',costo:450},
+  {grupo:'Clínica Dental',codigo:'C4.5-0010',nombre:'Carilla de Resina',costo:350},
+  {grupo:'Clínica Dental',codigo:'C4.5-0011',nombre:'Resina Clase I',costo:280},
+  {grupo:'Clínica Dental',codigo:'C4.5-0012',nombre:'Prótesis Fija',costo:850},
+  {grupo:'Clínica Dental',codigo:'C4.5-0013',nombre:'Prótesis Removible',costo:800},
+  {grupo:'Clínica Dental',codigo:'C4.5-0014',nombre:'Resina Clase II',costo:300},
+  {grupo:'Clínica Dental',codigo:'C4.5-0015',nombre:'Prótesis Total',costo:1120},
+  {grupo:'Clínica Dental',codigo:'C4.5-0016',nombre:'Corona',costo:900},
+  {grupo:'Clínica Dental',codigo:'C4.5-002',nombre:'Análisis Oclusal',costo:250},
+  {grupo:'Clínica Dental',codigo:'C4.5-003',nombre:'Blanqueamiento',costo:900},
+  {grupo:'Clínica Dental',codigo:'C4.5-004',nombre:'Endoposte',costo:600},
+  {grupo:'Clínica Dental',codigo:'C4.5-005',nombre:'Incrustación',costo:700},
+  {grupo:'Clínica Dental',codigo:'C4.5-006',nombre:'Provisional de Acrílico',costo:360},
+  {grupo:'Clínica Dental',codigo:'C4.5-007',nombre:'Aplicación de Flúor',costo:200},
+  {grupo:'Clínica Dental',codigo:'C4.5-008',nombre:'Aplicación de Flúor Diamino de Plata',costo:250},
+  {grupo:'Clínica Dental',codigo:'C4.5-009',nombre:'Aplicación de Flúor en Gel',costo:150},
+  {grupo:'Clínica Dental',codigo:'CB-001', nombre:'Cirugía Bucal',costo:300},
+  {grupo:'Clínica Dental',codigo:'CB-002', nombre:'Cirugía Terceros Molares',costo:320},
+  {grupo:'Clínica Dental',codigo:'CDU-001',nombre:'Consulta de Diagnóstico',costo:200},
+  {grupo:'Clínica Dental',codigo:'CDU-002',nombre:'Consulta de Seguimiento',costo:100},
+  {grupo:'Clínica Dental',codigo:'CDU-003',nombre:'Profilaxis Dental',costo:150},
+  {grupo:'Clínica Dental',codigo:'CDU-004',nombre:'Uso de Simulador',costo:150},
+  {grupo:'Clínica Dental',codigo:'E-001',  nombre:'Endodoncia',costo:420},
+  {grupo:'Clínica Dental',codigo:'OP-001', nombre:'Curación',costo:150},
+  {grupo:'Clínica Dental',codigo:'OP-002', nombre:'Resina Pediátrica',costo:200},
+  {grupo:'Clínica Dental',codigo:'OP-003', nombre:'Selladores',costo:150},
+  {grupo:'Clínica Dental',codigo:'OP-004', nombre:'Resina Infiltrativa',costo:300},
+  {grupo:'Clínica Dental',codigo:'P-001',  nombre:'Curetaje Abierto',costo:310},
+  {grupo:'Clínica Dental',codigo:'P-002',  nombre:'Gingivectomía',costo:250},
+  {grupo:'Clínica Dental',codigo:'P-004',  nombre:'Raspado y Alisado Radicular',costo:150},
+  /* ── Radiografías Extraorales ── */
+  {grupo:'Radiografías Extraorales',codigo:'RX-001', nombre:'Panorámica',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-0010',nombre:'PA Towne',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-0011',nombre:'Caldwell',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-0012',nombre:'Senos Paranasales (Waters, PA y Lateral)',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-0013',nombre:'Waters',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-002', nombre:'ATM Panorámica',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-003', nombre:'Lateral de Cráneo',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-004', nombre:'Panorámica Infantil',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-005', nombre:'Panorámica de Senos',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-006', nombre:'Panorámica Sin Rama',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-007', nombre:'Dígito Palmar/Carpal',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-008', nombre:'AP',costo:165},
+  {grupo:'Radiografías Extraorales',codigo:'RX-009', nombre:'PA',costo:165},
+  /* ── Radiografías Intraorales ── */
+  {grupo:'Radiografías Intraorales',codigo:'RX-0014',nombre:'Periapical: Superior o Inferior',costo:100},
+  {grupo:'Radiografías Intraorales',codigo:'RX-0015',nombre:'Serie Periapical: 14Rx y 16Rx',costo:700},
+  {grupo:'Radiografías Intraorales',codigo:'RX-0016',nombre:'Aleta de Mordida',costo:165},
+  {grupo:'Radiografías Intraorales',codigo:'RX-0017',nombre:'Oclusal: Superior o Inferior',costo:100},
+  /* ── Tomografías ── */
+  {grupo:'Tomografías',codigo:'TX-001',nombre:'Tomografía 3D Completa',costo:1000},
+  {grupo:'Tomografías',codigo:'TX-002',nombre:'Tomografía 3D Endodoncia',costo:575},
+  {grupo:'Tomografías',codigo:'TX-003',nombre:'Tomografía 3D ATM',costo:575},
+  {grupo:'Tomografías',codigo:'TX-004',nombre:'Tomografía 3D Maxilar Superior o Inferior',costo:900},
+  {grupo:'Tomografías',codigo:'TX-005',nombre:'Tomografía 3D Senos Paranasales',costo:540},
+];
+
+const KEY='clinica_pagos_v1';
+const KEY_P='clinica_pagos_papelera_v1';
+function loadPagos(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return[];}
+function savePagos(){localStorage.setItem(KEY,JSON.stringify(S.pagos));}
+function loadPapelera(){try{const r=localStorage.getItem(KEY_P);if(r)return JSON.parse(r);}catch(e){}return[];}
+function savePapelera(){localStorage.setItem(KEY_P,JSON.stringify(S.papelera));}
+
+const S={pagos:loadPagos(),papelera:loadPapelera(),selMode:false,sel:new Set(),editId:null,tab:'registros',selPapMode:false,selPap:new Set()};
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function fmtDate(f){if(!f)return'';const d=new Date(f+'T00:00:00');return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtMoney(v){return'$'+Number(v||0).toFixed(2);}
+
+/* ── Tratamientos dinámicos ── */
+let tratCount=0;
+
+function setupTratAC(inp, list, cardId){
+  let activeIdx=-1;
+  function renderList(matches,term){
+    if(!matches.length){list.innerHTML='<div class="ac-empty">Sin coincidencias</div>';list.classList.add('open');return;}
+    let lastGrupo='';
+    list.innerHTML=matches.map((t,i)=>{
+      const re=new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi');
+      const hl=('['+t.codigo+'] '+t.nombre).replace(re,'<mark>$1</mark>');
+      const header=t.grupo!==lastGrupo?(lastGrupo=t.grupo,`<div style="padding:4px 12px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;background:var(--surface-1);border-bottom:1px solid var(--border);">${t.grupo}</div>`):'';
+      return`${header}<div class="ac-item" data-idx="${i}" data-val="${esc(t.nombre)}" data-costo="${t.costo}">${hl} <span style="float:right;color:var(--teal-800);font-weight:700;">$${t.costo}</span></div>`;
+    }).join('');
+    list.classList.add('open');activeIdx=-1;
+  }
+  function hide(){list.classList.remove('open');activeIdx=-1;}
+  function selectItem(nombre,costo){
+    inp.value=nombre;
+    const card=document.getElementById('trat-card-'+cardId);
+    if(card){
+      const costoEl=card.querySelector('.trat-costo');
+      const cantEl=card.querySelector('.trat-cant');
+      const totEl=card.querySelector('.trat-tot');
+      const c=costo!==undefined?Number(costo):(TRATAMIENTOS.find(x=>x.nombre===nombre)?.costo||0);
+      costoEl.value=c.toFixed(2);
+      const cant=Number(cantEl.value)||1;
+      cantEl.value=cant;
+      totEl.value=(c*cant).toFixed(2);
+    }
+    hide();calcTotal();
+  }
+  inp.addEventListener('input',()=>{
+    const term=inp.value.trim();
+    if(!term){hide();calcTotal();return;}
+    renderList(TRATAMIENTOS.filter(t=>t.nombre.toLowerCase().includes(term.toLowerCase())||t.codigo.toLowerCase().includes(term.toLowerCase())).slice(0,15),term);
+  });
+  inp.addEventListener('focus',()=>{
+    const term=inp.value.trim();
+    if(term)inp.dispatchEvent(new Event('input'));
+    else renderList(TRATAMIENTOS.slice(0,20),'');
+  });
+  inp.addEventListener('keydown',e=>{
+    const items=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();activeIdx=Math.min(activeIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx));}
+    else if(e.key==='ArrowUp'){e.preventDefault();activeIdx=Math.max(activeIdx-1,0);items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx));}
+    else if(e.key==='Enter'&&activeIdx>=0){e.preventDefault();const it=items[activeIdx];selectItem(it.dataset.val,it.dataset.costo);}
+    else if(e.key==='Escape')hide();
+  });
+  list.addEventListener('mousedown',e=>{
+    const item=e.target.closest('.ac-item');
+    if(item){e.preventDefault();selectItem(item.dataset.val,item.dataset.costo);}
+  });
+  document.addEventListener('click',e=>{if(!inp.contains(e.target)&&!list.contains(e.target))hide();});
+}
+
+function addTrat(data){
+  tratCount++;
+  const id=tratCount;
+  const num=document.querySelectorAll('.trat-card').length+1;
+  const div=document.createElement('div');
+  div.className='trat-card'; div.id='trat-card-'+id;
+  div.innerHTML=`
+    <div class="trat-card-header">
+      <span class="trat-card-num" id="trat-num-${id}">Tratamiento ${num}</span>
+      <button type="button" class="btn-remove-trat" onclick="removeTrat('trat-card-${id}')">✕</button>
+    </div>
+    <div class="field">
+      <label>Tratamiento</label>
+      <div class="ac-wrap">
+        <input type="text" class="trat-inp" placeholder="Buscar tratamiento..." autocomplete="off" value="${esc(data?.nombre||'')}">
+        <div class="ac-list" id="trat-acl-${id}"></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Cantidad</label>
+        <div class="stepper">
+          <button type="button" onclick="stepTratCant(${id},-1)">−</button>
+          <input class="stepper-val trat-cant" type="text" value="${data?.cantidad||1}" oninput="recalcCard(${id})">
+          <button type="button" onclick="stepTratCant(${id},1)">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Total</label>
+        <div class="field-money"><span>$</span><input type="text" class="trat-tot" readonly value="${data?.total||'0.00'}"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Costo unitario</label>
+      <div class="field-money"><span>$</span><input type="text" class="trat-costo" readonly value="${data?.costo||'0.00'}"></div>
+    </div>`;
+  document.getElementById('trat-lista').appendChild(div);
+  const inp=div.querySelector('.trat-inp');
+  const list=document.getElementById('trat-acl-'+id);
+  setupTratAC(inp,list,id);
+  if(data?.nombre && data?.costo){
+    recalcCard(id);
+  }
+}
+
+function removeTrat(cardId){
+  const el=document.getElementById(cardId);
+  if(el) el.remove();
+  renumberTrats();
+  calcTotal();
+}
+
+function renumberTrats(){
+  document.querySelectorAll('.trat-card').forEach((card,i)=>{
+    const numEl=card.querySelector('.trat-card-num');
+    if(numEl) numEl.textContent='Tratamiento '+(i+1);
+  });
+}
+
+function recalcCard(id){
+  const card=document.getElementById('trat-card-'+id);
+  if(!card) return;
+  const costo=Number(card.querySelector('.trat-costo').value)||0;
+  const cant=Number(card.querySelector('.trat-cant').value)||0;
+  card.querySelector('.trat-tot').value=(costo*cant).toFixed(2);
+  calcTotal();
+}
+
+function stepTratCant(id,d){
+  const card=document.getElementById('trat-card-'+id);
+  if(!card) return;
+  const inp=card.querySelector('.trat-cant');
+  inp.value=Math.max(0,(Number(inp.value)||0)+d);
+  recalcCard(id);
+}
+
+function getTrats(){
+  return [...document.querySelectorAll('.trat-card')].map(card=>({
+    nombre:card.querySelector('.trat-inp').value.trim(),
+    cantidad:Number(card.querySelector('.trat-cant').value)||0,
+    costo:Number(card.querySelector('.trat-costo').value)||0,
+    total:Number(card.querySelector('.trat-tot').value)||0,
+  }));
+}
+
+function clearTrats(){
+  tratCount=0;
+  document.getElementById('trat-lista').innerHTML='';
+}
+
+document.getElementById('btn-add-trat').addEventListener('click',()=>addTrat());
+
+/* Cálculos */
+function calcTotal(){
+  const trats=getTrats();
+  const subtotal=trats.reduce((s,t)=>s+t.total,0);
+  const pct=Math.min(100,Math.max(0,Number(document.getElementById('f-descuento').value)||0));
+  const total=Math.max(0,subtotal-(subtotal*pct/100));
+  document.getElementById('f-total').value=total.toFixed(2);
+  document.getElementById('f-total-display').textContent='$'+total.toFixed(2);
+}
+function stepDesc(d){
+  const inp=document.getElementById('f-descuento');
+  inp.value=Math.min(100,Math.max(0,(Number(inp.value)||0)+d));
+  calcTotal();
+}
+
+/* Opt buttons */
+document.querySelectorAll('.opt-group').forEach(g=>{
+  g.addEventListener('click',e=>{
+    const btn=e.target.closest('.opt-btn');if(!btn)return;
+    g.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+});
+
+/* QR upload */
+document.getElementById('inp-qr').addEventListener('change',e=>{
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=document.getElementById('prev-qr');
+    img.src=reader.result;img.style.display='block';
+    img.setAttribute('data-value',reader.result);
+    document.getElementById('ph-qr').style.display='none';
+  };
+  reader.readAsDataURL(file);
+});
+
+/* Render stats */
+function renderStats(){
+  const total=S.pagos.reduce((s,p)=>s+Number(p.total||0),0);
+  const hoy=new Date().toISOString().slice(0,10);
+  const hoyP=S.pagos.filter(p=>p.fecha===hoy);
+  const hoyT=hoyP.reduce((s,p)=>s+Number(p.total||0),0);
+  const pend=S.pagos.filter(p=>p.formaPago==='PENDIENTE DE PAGO').length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Registros totales</p><p class="stat-value">${S.pagos.length}</p></div>
+    <div class="stat"><p class="stat-label">Visitas hoy</p><p class="stat-value">${hoyP.length}</p></div>
+    <div class="stat"><p class="stat-label">Recaudado hoy</p><p class="stat-value money">${fmtMoney(hoyT)}</p></div>
+    <div class="stat"><p class="stat-label">Total acumulado</p><p class="stat-value money">${fmtMoney(total)}</p></div>
+    <div class="stat"><p class="stat-label">Pendientes de pago</p><p class="stat-value${pend>0?' alert':''}">${pend}</p></div>`;
+}
+
+/* Render tabla */
+function badgePago(f){
+  const map={'EFECTIVO':'efectivo','TARJETA DEBITO':'debito','TARJETA CREDITO':'credito','PENDIENTE DE PAGO':'pendiente'};
+  const cls=map[f]||'efectivo';
+  const icon={efectivo:'🟡',debito:'💳',credito:'💳',pendiente:'🚫'}[cls];
+  return`<span class="badge-pago badge-${cls}">${icon} ${esc(f||'')}</span>`;
+}
+function renderTabla(){
+  const term=(document.getElementById('buscar').value||'').toLowerCase();
+  let rows=S.pagos.filter(p=>(p.paciente||'').toLowerCase().includes(term));
+  rows=rows.slice().sort((a,b)=>b.timestamp.localeCompare(a.timestamp));
+  const tbody=document.getElementById('tabla-body');
+  const empty=document.getElementById('empty-state');
+  if(rows.length===0){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=rows.map(p=>{
+    const sel=S.sel.has(p.id);
+    const av=initials(p.paciente||'?');
+    return`<tr data-id="${p.id}" class="${sel?'sel-row':''}" onclick="handleRowClick(event,'${p.id}')">
+      <td style="display:${S.selMode?'table-cell':'none'};"><input type="checkbox" class="row-checkbox" ${sel?'checked':''} onclick="toggleSel(event,'${p.id}')"></td>
+      <td><div class="patient-cell"><div class="avatar">${av}</div><span class="patient-name">${esc(p.paciente)}</span></div></td>
+      <td>${fmtDate(p.fecha)}</td>
+      <td style="max-width:200px;">${(p.tratamientos||[{nombre:p.tratA,cantidad:p.cantA},{nombre:p.tratB,cantidad:p.cantB},{nombre:p.tratC,cantidad:p.cantC}]).filter(t=>t?.nombre).map(t=>`<div style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;">${esc(t.nombre)} <span style="color:var(--text-muted);">×${t.cantidad||1}</span></div>`).join('')||'—'}</td>
+      <td style="text-align:center;">${Number(p.descuento||0).toFixed(0)}%</td>
+      <td class="money-cell">${fmtMoney(p.total)}</td>
+      <td>${badgePago(p.formaPago)}</td>
+      <td>${esc(p.registradoPor)}</td>
+      <td>${esc(p.lugarPago)}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${esc(p.observaciones)}</td>
+      <td>${p.qrPago?`<img src="${p.qrPago}" class="qr-thumb">`:'—'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('th-check').style.display=S.selMode?'table-cell':'none';
+}
+function renderAll(){
+  renderStats();renderTabla();
+  const badge=document.getElementById('badge-pap');
+  badge.textContent=S.papelera.length;
+  badge.style.display=S.papelera.length?'inline':'none';
+}
+
+/* Panel */
+function openPanel(id){
+  S.editId=id||null;
+  const form=document.getElementById('form-pago');
+  form.reset();
+  document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
+  const img=document.getElementById('prev-qr');
+  img.style.display='none';img.removeAttribute('data-value');
+  document.getElementById('ph-qr').style.display='flex';
+  document.getElementById('f-total-display').textContent='$0.00';
+  document.getElementById('f-total').value='0';
+  clearTrats();
+
+  if(id){
+    const p=S.pagos.find(x=>x.id===id);
+    document.getElementById('panel-title').textContent='Editar registro';
+    document.getElementById('f-id').value=p.id;
+    document.getElementById('f-timestamp').value=p.timestamp;
+    document.getElementById('f-fecha').value=p.fecha;
+    document.getElementById('f-paciente').value=p.paciente||'';
+    document.getElementById('f-clinica').value=p.clinica||'';
+    document.getElementById('f-estudiante').value=p.estudiante||'';
+    document.getElementById('f-registradoPor').value=p.registradoPor||'';
+    document.getElementById('f-observaciones').value=p.observaciones||'';
+    document.getElementById('f-descuento').value=p.descuento||0;
+    /* Cargar tratamientos: nuevo formato array o compat A/B/C */
+    const trats=p.tratamientos||[
+      p.tratA?{nombre:p.tratA,cantidad:Number(p.cantA)||1,costo:Number(p.costoA)||0,total:Number(p.totalA)||0}:null,
+      p.tratB?{nombre:p.tratB,cantidad:Number(p.cantB)||1,costo:Number(p.costoB)||0,total:Number(p.totalB)||0}:null,
+      p.tratC?{nombre:p.tratC,cantidad:Number(p.cantC)||1,costo:Number(p.costoC)||0,total:Number(p.totalC)||0}:null,
+    ].filter(Boolean);
+    trats.forEach(t=>addTrat(t));
+    if(!trats.length) addTrat();
+    calcTotal();
+    if(p.formaPago){const b=document.querySelector(`[data-group="formaPago"] [data-value="${p.formaPago}"]`);if(b)b.classList.add('selected');}
+    if(p.lugarPago){const b=document.querySelector(`[data-group="lugarPago"] [data-value="${p.lugarPago}"]`);if(b)b.classList.add('selected');}
+    if(p.qrPago){img.src=p.qrPago;img.style.display='block';img.setAttribute('data-value',p.qrPago);document.getElementById('ph-qr').style.display='none';}
+  } else {
+    document.getElementById('panel-title').textContent='Nuevo registro de pago';
+    const now=new Date();
+    document.getElementById('f-id').value=uid();
+    document.getElementById('f-timestamp').value=now.toLocaleString('es-MX');
+    document.getElementById('f-fecha').value=now.toISOString().slice(0,10);
+    addTrat();
+  }
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+}
+function closePanel(){
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+}
+
+document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
+document.getElementById('btn-panel-cancel').addEventListener('click',closePanel);
+document.getElementById('panel-overlay').addEventListener('click',closePanel);
+
+document.getElementById('btn-panel-save').addEventListener('click',()=>{
+  const fd=new FormData(document.getElementById('form-pago'));
+  const nuevaFormaPago=document.querySelector('[data-group="formaPago"] .selected')?.dataset.value||'';
+  const anteriorRec=S.editId?S.pagos.find(x=>x.id===S.editId):null;
+  const eraP=anteriorRec?.formaPago==='PENDIENTE DE PAGO';
+  const ahora=new Date();
+  const seActualiza=eraP&&nuevaFormaPago&&nuevaFormaPago!=='PENDIENTE DE PAGO';
+  const rec={
+    id:S.editId||document.getElementById('f-id').value,
+    timestamp:seActualiza?ahora.toLocaleString('es-MX'):document.getElementById('f-timestamp').value,
+    fecha:seActualiza?ahora.toISOString().slice(0,10):fd.get('fecha'),
+    paciente:fd.get('paciente'),
+    clinica:fd.get('clinica'),
+    estudiante:fd.get('estudiante'),
+    tratamientos:getTrats(),
+    /* compat legado */
+    tratA:getTrats()[0]?.nombre||'',cantA:getTrats()[0]?.cantidad||0,costoA:getTrats()[0]?.costo||0,totalA:getTrats()[0]?.total||0,
+    tratB:getTrats()[1]?.nombre||'',cantB:getTrats()[1]?.cantidad||0,costoB:getTrats()[1]?.costo||0,totalB:getTrats()[1]?.total||0,
+    tratC:getTrats()[2]?.nombre||'',cantC:getTrats()[2]?.cantidad||0,costoC:getTrats()[2]?.costo||0,totalC:getTrats()[2]?.total||0,
+    descuento:fd.get('descuento'),
+    total:document.getElementById('f-total').value,
+    formaPago:nuevaFormaPago,
+    registradoPor:fd.get('registradoPor'),
+    lugarPago:document.querySelector('[data-group="lugarPago"] .selected')?.dataset.value||'',
+    observaciones:fd.get('observaciones'),
+    qrPago:document.getElementById('prev-qr').getAttribute('data-value')||'',
+  };
+  if(S.editId){const i=S.pagos.findIndex(x=>x.id===S.editId);if(i>-1)S.pagos[i]=rec;}
+  else S.pagos.push(rec);
+  savePagos();renderAll();closePanel();
+});
+
+/* Click fila */
+function handleRowClick(e,id){
+  if(e.target.closest('input[type="checkbox"]'))return;
+  if(S.selMode){toggleSel(e,id);return;}
+  openPanel(id);
+}
+function toggleSel(e,id){
+  if(e)e.stopPropagation();
+  if(S.sel.has(id))S.sel.delete(id);else S.sel.add(id);
+  actualizarSel();renderTabla();
+}
+function actualizarSel(){
+  const n=S.sel.size;
+  document.getElementById('sel-count').textContent=n===1?'1 seleccionado':`${n} seleccionados`;
+  const btn=document.getElementById('btn-del-sel');
+  btn.disabled=n===0;btn.style.opacity=n>0?'1':'0.4';
+}
+
+/* Modo selección */
+function entrarSeleccion(){
+  S.selMode=true;S.sel.clear();
+  document.getElementById('sel-bar').style.display='flex';
+  document.getElementById('btn-sel').textContent='Cancelar selección';
+  document.getElementById('btn-nuevo').style.display='none';
+  actualizarSel();renderTabla();
+}
+function salirSeleccion(){
+  S.selMode=false;S.sel.clear();
+  document.getElementById('sel-bar').style.display='none';
+  document.getElementById('btn-sel').textContent='Seleccionar';
+  document.getElementById('btn-nuevo').style.display='';
+  renderTabla();
+}
+document.getElementById('btn-sel').addEventListener('click',()=>S.selMode?salirSeleccion():entrarSeleccion());
+document.getElementById('btn-cancel-sel').addEventListener('click',salirSeleccion);
+document.getElementById('btn-sel-todos').addEventListener('click',()=>{
+  const todos=S.pagos.map(p=>p.id);
+  const all=todos.every(id=>S.sel.has(id));
+  if(all)S.sel.clear();else todos.forEach(id=>S.sel.add(id));
+  actualizarSel();renderTabla();
+});
+document.getElementById('btn-del-sel').addEventListener('click',()=>{
+  const n=S.sel.size;if(!n)return;
+  document.getElementById('confirm-msg').innerHTML=`¿Eliminar <strong>${n} registro${n>1?'s':''}</strong>? Escribe <strong>ELIMINAR</strong> para confirmar.`;
+  document.getElementById('inp-confirm').value='';
+  document.getElementById('inp-confirm').style.borderColor='';
+  document.getElementById('modal-confirm').classList.add('open');
+});
+
+/* Modal confirm — mover a papelera */
+document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+  if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
+    document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
+  }
+  const ahora=new Date().toLocaleString('es-MX');
+  const eliminados=S.pagos.filter(p=>S.sel.has(p.id)).map(p=>({...p,_eliminadoEl:ahora}));
+  S.papelera.push(...eliminados);
+  S.pagos=S.pagos.filter(p=>!S.sel.has(p.id));
+  savePagos();savePapelera();
+  document.getElementById('modal-confirm').classList.remove('open');
+  salirSeleccion();renderAll();
+});
+
+/* Pestaña papelera */
+function switchTab(tab){
+  S.tab=tab;
+  const isReg=tab==='registros';
+  document.getElementById('sec-registros').style.display=isReg?'':'none';
+  document.getElementById('sec-eliminados').style.display=isReg?'none':'';
+  const tR=document.getElementById('tab-registros');
+  const tE=document.getElementById('tab-eliminados');
+  tR.style.fontWeight=isReg?'700':'600';
+  tR.style.color=isReg?'var(--teal-800)':'var(--text-secondary)';
+  tR.style.borderBottomColor=isReg?'var(--teal-600)':'transparent';
+  tE.style.fontWeight=isReg?'600':'700';
+  tE.style.color=isReg?'var(--text-secondary)':'var(--teal-800)';
+  tE.style.borderBottomColor=isReg?'transparent':'var(--teal-600)';
+  if(!isReg)renderPapelera();
+}
+
+function renderPapelera(){
+  const pap=S.papelera.slice().sort((a,b)=>(b._eliminadoEl||'').localeCompare(a._eliminadoEl||''));
+  const tbody=document.getElementById('tabla-pap');
+  const empty=document.getElementById('empty-pap');
+  const badge=document.getElementById('badge-pap');
+  badge.textContent=S.papelera.length;
+  badge.style.display=S.papelera.length?'inline':'none';
+  if(pap.length===0){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=pap.map((p,i)=>{
+    const sel=S.selPap.has(p.id);
+    const av=initials(p.paciente||'?');
+    const tratos=[p.tratA,p.tratB,p.tratC].filter(Boolean).join(', ')||'—';
+    return`<tr style="background:${sel?'var(--red-50)':i%2===0?'#fff':'var(--bg)'};">
+      <td style="display:${S.selPapMode?'table-cell':'none'};padding:8px 10px;"><input type="checkbox" class="row-checkbox" ${sel?'checked':''} onclick="toggleSelPap(event,'${p.id}')"></td>
+      <td style="padding:8px 10px;"><div class="patient-cell"><div class="avatar">${av}</div><span class="patient-name">${esc(p.paciente)}</span></div></td>
+      <td style="padding:8px 12px;font-size:13px;">${fmtDate(p.fecha)}</td>
+      <td style="padding:8px 12px;font-size:12px;color:var(--text-secondary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(tratos)}</td>
+      <td style="padding:8px 12px;font-weight:700;color:var(--teal-800);">${fmtMoney(p.total)}</td>
+      <td style="padding:8px 12px;">${badgePago(p.formaPago)}</td>
+      <td style="padding:8px 12px;font-size:12px;color:var(--text-secondary);">${esc(p.registradoPor||'—')}</td>
+      <td style="padding:8px 12px;font-size:11px;color:var(--text-muted);">${p._eliminadoEl||'—'}</td>
+      <td style="padding:8px 12px;text-align:center;white-space:nowrap;">
+        <button onclick="restaurar('${p.id}')" style="background:var(--teal-50);color:var(--teal-800);border:1px solid var(--teal-600);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-right:4px;">↩ Restaurar</button>
+        <button onclick="eliminarDefinitivo('${p.id}')" style="background:var(--red-50);color:var(--red-600);border:1px solid var(--red-600);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Eliminar</button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('th-check-pap').style.display=S.selPapMode?'table-cell':'none';
+}
+
+function restaurar(id){
+  const idx=S.papelera.findIndex(p=>p.id===id);
+  if(idx===-1)return;
+  const rec={...S.papelera[idx]};
+  delete rec._eliminadoEl;
+  S.pagos.push(rec);
+  S.papelera.splice(idx,1);
+  savePagos();savePapelera();
+  renderPapelera();renderStats();
+}
+
+function eliminarDefinitivo(id){
+  abrirModalPerm([id]);
+}
+
+function abrirModalPerm(ids){
+  const n=ids.length;
+  document.getElementById('confirm-perm-msg').innerHTML=`¿Eliminar <strong>${n} registro${n>1?'s':''}</strong> de forma <strong>permanente e irreversible</strong>? Escribe <strong>ELIMINAR</strong> para confirmar.`;
+  document.getElementById('inp-confirm-perm').value='';
+  document.getElementById('inp-confirm-perm').style.borderColor='';
+  document.getElementById('modal-perm').dataset.ids=JSON.stringify(ids);
+  document.getElementById('modal-perm').classList.add('open');
+}
+
+/* Selección papelera */
+function toggleSelPap(e,id){
+  if(e)e.stopPropagation();
+  if(S.selPap.has(id))S.selPap.delete(id);else S.selPap.add(id);
+  actualizarSelPap();renderPapelera();
+}
+function actualizarSelPap(){
+  const n=S.selPap.size;
+  document.getElementById('sel-pap-count').textContent=n===1?'1 seleccionado':`${n} seleccionados`;
+  const r=document.getElementById('btn-restaurar-sel');
+  const d=document.getElementById('btn-del-pap-sel');
+  r.disabled=n===0;r.style.opacity=n?'1':'0.4';
+  d.disabled=n===0;d.style.opacity=n?'1':'0.4';
+}
+function entrarSelPap(){
+  S.selPapMode=true;S.selPap.clear();
+  document.getElementById('sel-bar-pap').style.display='flex';
+  document.getElementById('btn-sel-pap').textContent='Cancelar selección';
+  actualizarSelPap();renderPapelera();
+}
+function salirSelPap(){
+  S.selPapMode=false;S.selPap.clear();
+  document.getElementById('sel-bar-pap').style.display='none';
+  document.getElementById('btn-sel-pap').textContent='Seleccionar';
+  renderPapelera();
+}
+document.getElementById('btn-sel-pap').addEventListener('click',()=>S.selPapMode?salirSelPap():entrarSelPap());
+document.getElementById('btn-cancel-pap-sel').addEventListener('click',salirSelPap);
+document.getElementById('btn-sel-pap-todos').addEventListener('click',()=>{
+  const todos=S.papelera.map(p=>p.id);
+  const all=todos.every(id=>S.selPap.has(id));
+  if(all)S.selPap.clear();else todos.forEach(id=>S.selPap.add(id));
+  actualizarSelPap();renderPapelera();
+});
+document.getElementById('btn-restaurar-sel').addEventListener('click',()=>{
+  [...S.selPap].forEach(id=>{
+    const idx=S.papelera.findIndex(p=>p.id===id);
+    if(idx===-1)return;
+    const rec={...S.papelera[idx]};delete rec._eliminadoEl;
+    S.pagos.push(rec);S.papelera.splice(idx,1);
+  });
+  savePagos();savePapelera();
+  salirSelPap();renderPapelera();renderStats();
+});
+document.getElementById('btn-del-pap-sel').addEventListener('click',()=>{
+  if(!S.selPap.size)return;
+  abrirModalPerm([...S.selPap]);
+});
+document.getElementById('btn-vaciar').addEventListener('click',()=>{
+  if(!S.papelera.length)return;
+  abrirModalPerm(S.papelera.map(p=>p.id));
+});
+
+/* Modal eliminación permanente */
+document.getElementById('cerrar-perm').addEventListener('click',()=>document.getElementById('modal-perm').classList.remove('open'));
+document.getElementById('cancelar-perm').addEventListener('click',()=>document.getElementById('modal-perm').classList.remove('open'));
+document.getElementById('btn-confirm-perm').addEventListener('click',()=>{
+  if(document.getElementById('inp-confirm-perm').value.trim()!=='ELIMINAR'){
+    document.getElementById('inp-confirm-perm').style.borderColor='var(--red-600)';return;
+  }
+  const ids=JSON.parse(document.getElementById('modal-perm').dataset.ids||'[]');
+  S.papelera=S.papelera.filter(p=>!ids.includes(p.id));
+  savePapelera();
+  document.getElementById('modal-perm').classList.remove('open');
+  salirSelPap();renderPapelera();
+});
+
+document.getElementById('buscar').addEventListener('input',renderTabla);
+
+/* Corte del día */
+document.getElementById('btn-corte').addEventListener('click', generarCorte);
+
+function generarCorte(){
+  const hoy=new Date().toISOString().slice(0,10);
+  const todos=S.pagos.filter(p=>p.fecha===hoy&&p.formaPago!=='PENDIENTE DE PAGO').sort((a,b)=>a.timestamp.localeCompare(b.timestamp));
+  const clinica=todos.filter(p=>p.clinica!=='Imagenología');
+  const imagen=todos.filter(p=>p.clinica==='Imagenología');
+
+  const fmt=(v)=>'$'+Number(v).toFixed(2);
+  const fmtFecha=(f)=>{if(!f)return'';const d=new Date(f+'T00:00:00');return d.toLocaleDateString('es-MX',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});};
+  const metodoBadge=(m)=>{
+    const map={
+      'EFECTIVO':['#854F0B','#FAEEDA','🟡'],
+      'TARJETA DEBITO':['#0C447C','#E6F1FB','💳'],
+      'TARJETA CREDITO':['#8C3F09','#FDEEE2','💳'],
+      'PENDIENTE DE PAGO':['#A32D2D','#FCEBEB','🚫'],
+    };
+    const [color,bg,icon]=map[m]||['#555','#eee','·'];
+    return`<span style="display:inline-block;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:700;background:${bg};color:${color};">${icon} ${m||'—'}</span>`;
+  };
+
+  function totalesPor(arr){
+    return{
+      efectivo:arr.filter(p=>p.formaPago==='EFECTIVO').reduce((s,p)=>s+Number(p.total||0),0),
+      debito:arr.filter(p=>p.formaPago==='TARJETA DEBITO').reduce((s,p)=>s+Number(p.total||0),0),
+      credito:arr.filter(p=>p.formaPago==='TARJETA CREDITO').reduce((s,p)=>s+Number(p.total||0),0),
+    };
+  }
+
+  function buildFilas(arr){
+    if(!arr.length) return`<tr><td colspan="5" style="text-align:center;padding:28px;color:#888;font-size:13px;">Sin registros.</td></tr>`;
+    return arr.map((p,i)=>`
+    <tr style="background:${i%2===0?'#fff':'#faf9f5'};">
+      <td style="padding:8px 10px;border-bottom:1px solid #e8e6de;font-size:12px;color:#888;">${p.timestamp||''}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e8e6de;font-weight:600;font-size:13px;">${p.paciente||'—'}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e8e6de;font-size:12px;color:#5F5E5A;">${[p.tratA,p.tratB,p.tratC].filter(Boolean).join(' / ')||'—'}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e8e6de;text-align:center;">${metodoBadge(p.formaPago)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e8e6de;text-align:right;font-weight:700;font-size:14px;color:#5C2906;">${fmt(p.total)}</td>
+    </tr>`).join('');
+  }
+
+  function buildResumen(arr,t,accentColor){
+    const gen=t.efectivo+t.debito+t.credito;
+    return`
+    <div style="margin-top:20px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+        <div style="border-radius:8px;padding:12px 14px;border:1px solid #e8e6de;background:#FAEEDA;">
+          <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#854F0B;opacity:.8;margin-bottom:4px;">🟡 Efectivo</p>
+          <p style="font-size:18px;font-weight:700;color:#5C2906;">${fmt(t.efectivo)}</p>
+          <p style="font-size:10px;opacity:.6;margin-top:2px;">${arr.filter(p=>p.formaPago==='EFECTIVO').length} registro(s)</p>
+        </div>
+        <div style="border-radius:8px;padding:12px 14px;border:1px solid #e8e6de;background:#E6F1FB;">
+          <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#0C447C;opacity:.8;margin-bottom:4px;">💳 Débito</p>
+          <p style="font-size:18px;font-weight:700;color:#0C447C;">${fmt(t.debito)}</p>
+          <p style="font-size:10px;opacity:.6;margin-top:2px;">${arr.filter(p=>p.formaPago==='TARJETA DEBITO').length} registro(s)</p>
+        </div>
+        <div style="border-radius:8px;padding:12px 14px;border:1px solid #e8e6de;background:#FDEEE2;">
+          <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8C3F09;opacity:.8;margin-bottom:4px;">💳 Crédito</p>
+          <p style="font-size:18px;font-weight:700;color:#8C3F09;">${fmt(t.credito)}</p>
+          <p style="font-size:10px;opacity:.6;margin-top:2px;">${arr.filter(p=>p.formaPago==='TARJETA CREDITO').length} registro(s)</p>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;">
+        <div style="border-top:2px solid ${accentColor};padding-top:10px;display:flex;justify-content:space-between;gap:60px;">
+          <span style="font-size:16px;font-weight:700;color:#5F5E5A;">SUBTOTAL</span>
+          <span style="font-size:16px;font-weight:700;color:${accentColor};">${fmt(gen)}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const tC=totalesPor(clinica);
+  const tI=totalesPor(imagen);
+  const tG=tC.efectivo+tC.debito+tC.credito+tI.efectivo+tI.debito+tI.credito;
+  const ahora=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+
+  const html=`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Corte del día — ${hoy}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#fff;color:#1F1F1D;padding:32px 36px;}
+  @media print{body{padding:18px 24px;} .page-break{page-break-before:always;}}
+  .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #C2570D;}
+  .clinic-name{font-size:11px;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;}
+  .doc-title{font-size:22px;font-weight:700;color:#5C2906;}
+  .doc-date{font-size:13px;color:#5F5E5A;margin-top:4px;text-transform:capitalize;}
+  .meta{text-align:right;font-size:11px;color:#888;}
+  .section-title{font-size:15px;font-weight:700;padding:10px 14px;border-radius:8px;margin:24px 0 0;display:flex;align-items:center;gap:8px;}
+  .section-title.clinica{background:#FDEEE2;color:#5C2906;}
+  .section-title.imagen{background:#E6F1FB;color:#0C447C;}
+  table{width:100%;border-collapse:collapse;margin-top:12px;}
+  thead th{padding:9px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+  thead th:last-child{text-align:right;}
+  .th-clinica{background:#5C2906;color:#fff;}
+  .th-imagen{background:#0C447C;color:#fff;}
+  .grand-total{margin-top:32px;border-top:3px solid #C2570D;padding-top:16px;display:flex;justify-content:space-between;align-items:center;}
+  .grand-total span:first-child{font-size:16px;font-weight:700;color:#5F5E5A;}
+  .grand-total span:last-child{font-size:24px;font-weight:700;color:#5C2906;}
+  .footer{margin-top:32px;padding-top:12px;border-top:1px solid #e8e6de;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div>
+    <p class="clinic-name">Clínica Dental Universitaria Anáhuac Xalapa</p>
+    <p class="doc-title">Corte del día</p>
+    <p class="doc-date">${fmtFecha(hoy)}</p>
+  </div>
+  <div class="meta">
+    <p>Generado a las ${ahora}</p>
+    <p style="margin-top:4px;">Total de registros: <strong>${todos.length}</strong></p>
+  </div>
+</div>
+
+<!-- SECCIÓN CLÍNICA DENTAL -->
+<div class="section-title clinica">🦷 Clínica Dental &nbsp;<span style="font-size:12px;font-weight:500;opacity:.7;">${clinica.length} registro(s)</span></div>
+<table>
+  <thead><tr class="th-clinica">
+    <th>Hora</th><th>Paciente</th><th>Tratamiento(s)</th><th>Forma de pago</th><th style="text-align:right;">Total</th>
+  </tr></thead>
+  <tbody>${buildFilas(clinica)}</tbody>
+</table>
+${buildResumen(clinica,tC,'#C2570D')}
+
+<!-- SECCIÓN IMAGENOLOGÍA -->
+<div class="section-title imagen" style="margin-top:36px;">🩻 Imagenología &nbsp;<span style="font-size:12px;font-weight:500;opacity:.7;">${imagen.length} registro(s)</span></div>
+<table>
+  <thead><tr class="th-imagen">
+    <th>Hora</th><th>Paciente</th><th>Tratamiento(s)</th><th>Forma de pago</th><th style="text-align:right;">Total</th>
+  </tr></thead>
+  <tbody>${buildFilas(imagen)}</tbody>
+</table>
+${buildResumen(imagen,tI,'#0C447C')}
+
+<!-- TOTAL GENERAL -->
+<div class="grand-total">
+  <span>TOTAL GENERAL DEL DÍA</span>
+  <span>${fmt(tG)}</span>
+</div>
+
+<div class="footer">
+  <span>Sistema de Gestión Clínica · Clínica Dental Universitaria Anáhuac Xalapa</span>
+  <span>Documento generado el ${new Date().toLocaleString('es-MX')}</span>
+</div>
+
+<script>window.onload=()=>{window.print();}<\/script>
+</body>
+</html>`;
+
+  const win=window.open('','_blank','width=900,height=700');
+  win.document.write(html);
+  win.document.close();
+}
+
+/* ── Autocomplete ── */
+function getExpedienteNombres(){
+  try{
+    const d=localStorage.getItem('clinica_dental_data_v1');
+    if(d){const p=JSON.parse(d);return(p.expedientes||[]).map(e=>e.nombre).filter(Boolean).sort();}
+  }catch(e){}
+  return[];
+}
+function getAlumnoNombres(){
+  try{
+    const d=localStorage.getItem('clinica_alumnos_v1');
+    if(d){const p=JSON.parse(d);return(p.alumnos||p||[]).map(a=>a.nombre||a.nombreCompleto).filter(Boolean).sort();}
+  }catch(e){}
+  return[];
+}
+
+function setupAC(inputId, listId, getFn){
+  const inp=document.getElementById(inputId);
+  const list=document.getElementById(listId);
+  let activeIdx=-1;
+
+  function show(items, term){
+    if(!items.length){
+      list.innerHTML=`<div class="ac-empty">Sin coincidencias</div>`;
+    } else {
+      list.innerHTML=items.map((name,i)=>{
+        const re=new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+        const highlighted=name.replace(re,'<mark>$1</mark>');
+        return`<div class="ac-item" data-idx="${i}" data-val="${name}">${highlighted}</div>`;
+      }).join('');
+    }
+    list.classList.add('open');
+    activeIdx=-1;
+  }
+
+  function hide(){list.classList.remove('open');activeIdx=-1;}
+
+  inp.addEventListener('input',()=>{
+    const term=inp.value.trim();
+    if(!term){hide();return;}
+    const all=getFn();
+    const matches=all.filter(n=>n.toLowerCase().includes(term.toLowerCase())).slice(0,10);
+    show(matches, term);
+  });
+
+  inp.addEventListener('focus',()=>{
+    const term=inp.value.trim();
+    if(term) inp.dispatchEvent(new Event('input'));
+  });
+
+  inp.addEventListener('keydown',e=>{
+    const items=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();activeIdx=Math.min(activeIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx));}
+    else if(e.key==='ArrowUp'){e.preventDefault();activeIdx=Math.max(activeIdx-1,0);items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx));}
+    else if(e.key==='Enter'&&activeIdx>=0){e.preventDefault();inp.value=items[activeIdx].dataset.val;hide();}
+    else if(e.key==='Escape'){hide();}
+  });
+
+  list.addEventListener('mousedown',e=>{
+    const item=e.target.closest('.ac-item');
+    if(item){e.preventDefault();inp.value=item.dataset.val;hide();}
+  });
+
+  document.addEventListener('click',e=>{
+    if(!inp.contains(e.target)&&!list.contains(e.target))hide();
+  });
+}
+
+setupAC('f-paciente',   'ac-paciente',   getExpedienteNombres);
+setupAC('f-estudiante', 'ac-estudiante', getAlumnoNombres);
+
+/* Autocomplete Materia/Clínica con grupos */
+(function(){
+  const inp=document.getElementById('f-clinica');
+  const list=document.getElementById('ac-clinica');
+  let activeIdx=-1;
+
+  function renderList(matches,term){
+    if(!matches.length){list.innerHTML='<div class="ac-empty">Sin coincidencias</div>';list.classList.add('open');return;}
+    let lastGrupo='';
+    list.innerHTML=matches.map((m,i)=>{
+      const re=new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi');
+      const hl=m.nombre.replace(re,'<mark>$1</mark>');
+      const header=m.grupo!==lastGrupo?(lastGrupo=m.grupo,`<div style="padding:4px 12px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;background:var(--surface-1);border-bottom:1px solid var(--border);">${m.grupo}</div>`):'';
+      return`${header}<div class="ac-item" data-idx="${i}" data-val="${m.nombre}">${hl}</div>`;
+    }).join('');
+    list.classList.add('open');activeIdx=-1;
+  }
+  function hide(){list.classList.remove('open');activeIdx=-1;}
+
+  inp.addEventListener('input',()=>{
+    const term=inp.value.trim();
+    if(!term){hide();return;}
+    const matches=getMateriasList().filter(m=>m.nombre.toLowerCase().includes(term.toLowerCase())).slice(0,20);
+    renderList(matches,term);
+  });
+  inp.addEventListener('focus',()=>{
+    const term=inp.value.trim();
+    if(term)inp.dispatchEvent(new Event('input'));
+    else renderList(getMateriasList().slice(0,20),'');
+  });
+  inp.addEventListener('keydown',e=>{
+    const items=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();activeIdx=Math.min(activeIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx));}
+    else if(e.key==='ArrowUp'){e.preventDefault();activeIdx=Math.max(activeIdx-1,0);items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx));}
+    else if(e.key==='Enter'&&activeIdx>=0){e.preventDefault();inp.value=items[activeIdx].dataset.val;hide();}
+    else if(e.key==='Escape'){hide();}
+  });
+  list.addEventListener('mousedown',e=>{
+    const item=e.target.closest('.ac-item');
+    if(item){e.preventDefault();inp.value=item.dataset.val;hide();}
+  });
+  document.addEventListener('click',e=>{
+    if(!inp.contains(e.target)&&!list.contains(e.target))hide();
+  });
+})();
+
+renderAll();
+
+/* ── Materias dinámicas ── */
+function getMateriasList(){
+  try{
+    const d=localStorage.getItem('clinica_materias_v1');
+    if(d){
+      const parsed=JSON.parse(d);
+      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
+      if(mats.length)return mats.map(m=>({nombre:m.nombre,grupo:m.tipo}));
+    }
+  }catch(e){}
+  return MATERIAS;
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Consentimientos Informados – Clínica Dental Anáhuac Xalapa</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--or:#F05A22;--or50:#FFF3EC;--or800:#8C3309;--bk:#111;--gr:#6b7280;--bd:#e5e7eb}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f9fafb;color:var(--bk);min-height:100vh}
+header{background:var(--or);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:12px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.45);border-radius:7px;padding:5px 11px;background:rgba(255,255,255,.15);flex-shrink:0;margin-left:auto}
+.back-btn:hover{background:rgba(255,255,255,.28)}
+header img{width:48px;height:48px;border-radius:6px}
+header h1{font-size:18px;font-weight:800;line-height:1.2}
+header p{font-size:12px;opacity:.85}
+.wrap{max-width:960px;margin:20px auto;padding:0 16px;display:grid;gap:16px}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:22px}
+.card h2{font-size:14px;font-weight:700;color:var(--or800);margin-bottom:14px;border-bottom:2px solid var(--or50);padding-bottom:7px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg.g3{grid-template-columns:1fr 1fr 1fr}
+.full{grid-column:1/-1}
+label{display:block;font-size:11px;font-weight:600;color:var(--gr);margin-bottom:3px}
+input,select,textarea{width:100%;border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-size:13px;color:var(--bk);outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--or)}
+textarea{resize:vertical;min-height:60px}
+.acwrap{position:relative}
+.aclist{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--bd);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:50;max-height:200px;overflow-y:auto;display:none}
+.aclist.open{display:block}
+.acitem{padding:8px 12px;cursor:pointer;font-size:12px}
+.acitem:hover{background:var(--or50)}
+.checkgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.chk{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:1.35;cursor:pointer}
+.chk input{width:14px;height:14px;accent-color:var(--or);flex-shrink:0;margin-top:2px}
+.siggrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sigbox label{font-size:11px;font-weight:600;color:var(--gr);display:block;margin-bottom:5px}
+.sigbox canvas{width:100%;height:100px;border:1px solid var(--bd);border-radius:7px;touch-action:none;cursor:crosshair;background:#fafafa;display:block}
+.sigclear{font-size:10px;color:var(--or);cursor:pointer;float:right;margin-top:3px}
+.li{border:1px solid var(--bd);border-radius:9px;padding:12px 15px;display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.li:hover{border-color:var(--or);background:var(--or50)}
+.li-info{flex:1}
+.li-title{font-weight:700;font-size:13px}
+.li-meta{font-size:11px;color:var(--gr);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:opacity .15s}
+.btn:hover{opacity:.87}
+.bor{background:var(--or);color:#fff}
+.bout{background:#fff;color:var(--or);border:1px solid var(--or)}
+.bred{background:#ef4444;color:#fff}
+.bsm{padding:5px 10px;font-size:11px;border-radius:6px}
+.rowbtn{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tab{padding:7px 16px;border-radius:7px;border:1px solid var(--bd);background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--gr)}
+.tab.active{background:var(--or);color:#fff;border-color:var(--or)}
+.hide{display:none!important}
+.badge{display:inline-block;background:var(--or50);color:var(--or800);border:1px solid var(--or);border-radius:20px;padding:1px 8px;font-size:10px;font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <img src="data:image/jpeg;base64,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" alt="Anáhuac">
+  <div><h1>Clínica Dental Universitaria Anáhuac Xalapa</h1><p>Consentimientos Informados</p></div>
+  <a class="back-btn" href="index.html">← Inicio</a>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('form')">Nuevo Consentimiento</button>
+    <button class="tab" onclick="switchTab('list')">Historial</button>
+  </div>
+
+  <!-- FORM -->
+  <div id="tab-form">
+    <div class="card">
+      <h2>Tipo de Consentimiento</h2>
+      <div>
+        <label>Tipo *</label>
+        <select id="f-tipo" onchange="onTipo()">
+          <option value="">-- Seleccionar --</option>
+          <option value="anestesia">Anestesia</option>
+          <option value="blanqueamiento">Blanqueamiento Dental</option>
+          <option value="cirugia">Cirugía Bucal / Oral</option>
+          <option value="endodoncia">Endodoncia</option>
+          <option value="general">General (Atención Odontológica)</option>
+          <option value="uax">Carta de Autorización UAX</option>
+          <option value="operatoria">Operatoria Dental</option>
+          <option value="pediatria">Pediatría (Menores de Edad)</option>
+          <option value="periodoncia">Periodoncia</option>
+          <option value="rehabilitacion">Rehabilitación Oral</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Datos del Paciente</h2>
+      <div class="fg">
+        <div class="full">
+          <label>Nombre del Paciente *</label>
+          <div class="acwrap">
+            <input id="f-pac" placeholder="Buscar paciente…" autocomplete="off" oninput="acFilt('pac')">
+            <div id="ac-pac" class="aclist"></div>
+          </div>
+        </div>
+        <div>
+          <label id="lbl-tutor">Tutor / Representante Legal</label>
+          <input id="f-tutor" placeholder="Nombre completo (si aplica)">
+        </div>
+        <div>
+          <label>Edad</label>
+          <input id="f-edad" type="number" min="0" max="120" placeholder="años">
+        </div>
+        <div>
+          <label>Teléfono</label>
+          <input id="f-tel" placeholder="10 dígitos">
+        </div>
+        <div>
+          <label>Fecha</label>
+          <input id="f-fecha" type="date">
+        </div>
+        <div id="row-dom" class="full hide">
+          <label>Domicilio</label>
+          <input id="f-dom" placeholder="Calle, Número, Colonia, Ciudad">
+        </div>
+        <div id="row-ced" class="hide">
+          <label>Cédula Profesional del Docente</label>
+          <input id="f-ced" placeholder="Número de cédula">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Estudiante y Docente</h2>
+      <div class="fg">
+        <div>
+          <label>Estudiante</label>
+          <div class="acwrap">
+            <input id="f-alu" placeholder="Buscar alumno…" autocomplete="off" oninput="acFilt('alu')">
+            <div id="ac-alu" class="aclist"></div>
+          </div>
+        </div>
+        <div>
+          <label>Docente</label>
+          <div class="acwrap">
+            <input id="f-doc" placeholder="Buscar docente…" autocomplete="off" oninput="acFilt('doc')">
+            <div id="ac-doc" class="aclist"></div>
+          </div>
+        </div>
+        <div class="full">
+          <label>Diagnóstico</label>
+          <textarea id="f-diag" rows="3" placeholder="Descripción clínica…"></textarea>
+        </div>
+        <div id="row-notas" class="full hide">
+          <label>Notas del Procedimiento Quirúrgico</label>
+          <textarea id="f-notas" rows="2"></textarea>
+        </div>
+        <div id="row-benef-ped" class="full hide">
+          <label>Probables Beneficios</label>
+          <textarea id="f-benef-ped" rows="2"></textarea>
+        </div>
+        <div id="row-comp-ped" class="full hide">
+          <label>Complicaciones</label>
+          <textarea id="f-comp-ped" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div id="card-actos" class="card hide">
+      <h2>Acto Autorizado</h2>
+      <div id="actos-cont" class="checkgrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Campos Adicionales</h2>
+      <div class="fg">
+        <div class="full">
+          <label>Riesgos o molestias añadidas por la condición del paciente</label>
+          <textarea id="f-riesgos" rows="2"></textarea>
+        </div>
+        <div class="full" id="row-efx">
+          <label>Efectos secundarios</label>
+          <textarea id="f-efectos" rows="2"></textarea>
+        </div>
+        <div class="full">
+          <label>Alternativas al tratamiento propuesto</label>
+          <textarea id="f-alt" rows="2"></textarea>
+        </div>
+        <div>
+          <label>Motivo de elección del tratamiento</label>
+          <textarea id="f-motivo" rows="2"></textarea>
+        </div>
+        <div>
+          <label>Probable beneficio del tratamiento</label>
+          <textarea id="f-benef" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="card-preview" style="display:none">
+      <h2>📄 Texto del Consentimiento — Léalo antes de firmar</h2>
+      <div id="preview-body" style="border:1px solid var(--bd);border-radius:8px;padding:18px;background:#fafafa;font-family:'Times New Roman',Times,serif;font-size:13px;line-height:1.7;max-height:60vh;overflow-y:auto"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <h2 style="margin:0">Firmas</h2>
+        <button class="btn bout" style="font-size:12px;padding:6px 14px" onclick="mostrarPreview()">👁 Ver texto del documento</button>
+      </div>
+      <div class="siggrid">
+        <div class="sigbox">
+          <label>Firma del Paciente / Tutor <span class="sigclear" onclick="clrSig('sp')">Limpiar</span></label>
+          <canvas id="sp"></canvas>
+        </div>
+        <div class="sigbox">
+          <label>Firma del Docente <span class="sigclear" onclick="clrSig('sd')">Limpiar</span></label>
+          <canvas id="sd"></canvas>
+        </div>
+        <div class="sigbox" id="box-testigo">
+          <label>Firma del Testigo <span class="sigclear" onclick="clrSig('st')">Limpiar</span></label>
+          <canvas id="st"></canvas>
+          <input id="f-testigo" placeholder="Nombre del testigo" style="margin-top:6px">
+        </div>
+        <div class="sigbox">
+          <label>Firma del Estudiante <span class="sigclear" onclick="clrSig('sa')">Limpiar</span></label>
+          <canvas id="sa"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="rowbtn">
+      <button class="btn bout" onclick="resetForm()">Limpiar</button>
+      <button class="btn bor" onclick="guardar()">💾 Guardar Consentimiento</button>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div id="tab-list" class="hide">
+    <div class="card">
+      <h2>Historial de Consentimientos</h2>
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <input id="fl-busq" placeholder="Buscar paciente, folio…" style="flex:1;min-width:160px" oninput="renderList()">
+        <select id="fl-tipo" onchange="renderList()" style="width:190px">
+          <option value="">Todos los tipos</option>
+          <option value="anestesia">Anestesia</option>
+          <option value="blanqueamiento">Blanqueamiento</option>
+          <option value="cirugia">Cirugía</option>
+          <option value="endodoncia">Endodoncia</option>
+          <option value="general">General</option>
+          <option value="uax">UAX</option>
+          <option value="operatoria">Operatoria</option>
+          <option value="pediatria">Pediatría</option>
+          <option value="periodoncia">Periodoncia</option>
+          <option value="rehabilitacion">Rehabilitación</option>
+        </select>
+      </div>
+      <div id="list-cont"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Storage ─────────────────────────────────────────────────────────────────
+const KEY = 'clinica_consentimientos_v1';
+const load = () => { try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]} };
+const save = a  => localStorage.setItem(KEY, JSON.stringify(a));
+
+// ── Catálogos ────────────────────────────────────────────────────────────────
+const getPacsObjs = () => { try{const d=localStorage.getItem('clinica_dental_data_v1'); if(!d)return[]; const obj=JSON.parse(d); return(obj.expedientes||[]).filter(Boolean);}catch(e){return[]} };
+const getPacs = () => getPacsObjs().map(p=>p.nombre||p.paciente||'').filter(Boolean);
+const getAlus = () => { try{const d=JSON.parse(localStorage.getItem('clinica_alumnos_v1')||'{}'); return(d.alumnos||[]).map(a=>a.nombre||'').filter(Boolean)}catch(e){return[]} };
+const getDocs = () => { try{const d=JSON.parse(localStorage.getItem('clinica_maestros_v1')||'{}'); return(d.maestros||[]).map(m=>m.nombre||'').filter(Boolean)}catch(e){return[]} };
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(t){
+  document.getElementById('tab-form').classList.toggle('hide', t!=='form');
+  document.getElementById('tab-list').classList.toggle('hide', t!=='list');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='form')||(i===1&&t==='list')));
+  if(t==='list') renderList();
+}
+
+// ── TIPOS config ─────────────────────────────────────────────────────────────
+const TLBL = {
+  anestesia:'Anestesia', blanqueamiento:'Blanqueamiento Dental',
+  cirugia:'Cirugía Bucal/Oral', endodoncia:'Endodoncia',
+  general:'General (Atención Odontológica)', uax:'Carta de Autorización UAX',
+  operatoria:'Operatoria Dental', pediatria:'Pediatría (Menores de Edad)',
+  periodoncia:'Periodoncia', rehabilitacion:'Rehabilitación Oral'
+};
+
+const HAS_TESTIGO = new Set(['anestesia','blanqueamiento','cirugia','endodoncia','operatoria','pediatria','periodoncia','rehabilitacion']);
+
+const ACTOS = {
+  cirugia:[
+    'Biopsia de tejidos duros','Extracción de restos radiculares sencilla',
+    'Biopsias intraorales y de tejidos blandos','Extracción por indicación ortodóncica',
+    'Drenado de absceso intraoral','Extracción quirúrgica',
+    'Extracción sencilla','Plasma rico en factores de crecimiento',
+    'Estudios de laboratorio / biopsia tm','Extracción de restos radiculares'
+  ],
+  endodoncia:[
+    'Apícectomía','Apexificación','Blanqueamiento Interno',
+    'Endodoncia Unirradicular','Endodoncia Biradicular','Endodoncia Triradicular o más',
+    'Endoposte','Utilización de sistemas rotatorios',
+    'Pruebas de vitalidad Pulpar','Retiro de Endoposte',
+    'Retiro de instrumento fracturado','Retratamiento Uniradicular',
+    'Retratamiento Biradicular','Retratamiento Triradicular o más','Obturación retrógrada'
+  ],
+  operatoria:[
+    'Revisión y diagnóstico','Aplicación de Flúruro','Ameloplastia','Fisurotomía',
+    'Resina Limitadamente Invasiva','Resina Preventiva',
+    'Resina Clase I','Resina Clase II','Resina Clase III','Resina Clase IV','Resina Clase V',
+    'Guarda Oclusal','Limpieza dental','Control personal de placa','Detartraje',
+    'Toma de radiografía','Modelos de Estudio',
+    'Ionómero de Vidrio Clase I','Ionómero de Vidrio Clase II','Ionómero de Vidrio Clase V',
+    'Amalgama Clase I','Amalgama Clase II',
+    'Reconstrucción con resina o Ionómero','Recementado'
+  ],
+  pediatria:[
+    'Profilaxis','Aplicación de Flúor','Sellador de Fosetas y fisuras',
+    'Ameloplastia','Fisurotomía','Resina','Amalgama','Ionómero de Vidrio',
+    'Corona de celuloide','Corona de frente estético','Corona de Zirconia','Corona Acero cromo',
+    'Terapéutica pulpar','Extracción dental','Prótesis Infantil fija o removible','Mantenedor de espacio'
+  ],
+  periodoncia:[
+    'Alargamiento de corona','Injerto de tejido conectivo','Cirugía de injerto hueso bovino',
+    'Injerto gingival libre','Cirugía de injerto hueso musculo esq.','Radícectomía',
+    'Cirugía de injerto de tejido desplazado','Regeneración ósea guiada',
+    'Cirugía de injerto conectivo (autoinjerto)','Regularización de proceso (perprotésica)',
+    'Cirugía de tracción','Raspado y alisado radicular cerrado','Cuña distal',
+    'Raspado y alisado radicular abierto','Ferulización','Mantenimiento Periodontal',
+    'Frenilectomía','Ventana de erupción','Gingivectomía por arcada','Gingivoplastía'
+  ],
+  rehabilitacion:[
+    'Aditamento intraradicular','Placa Total de Acrílico (superior, inferior o ambas)',
+    'Carillas de porcelana','Placa Total de Acrílico con aditamentos',
+    'Carillas (otro material)','Prótesis Flexible Bilateral',
+    'Cita de mantenimiento rehabilitación','Prótesis Flexible Unilateral',
+    'Corona metal porcelana','Prótesis Inmediata','Corona Zirconia','Prótesis Removible Metal',
+    'Corona Disilicato de Litio','Prótesis Removible Metal con aditamentos',
+    'Domos de resinas','Provisional removible','Incrustación Estética','Provisional Fijo',
+    'Incrustación metálica','Puente de porcelana','Microabrasion por arcada','Puente de Zirconia',
+    'Microabrasion por diente','Reemplazo de dientes Prótesis total o parcial',
+    'Recementado','Guarda oclusal o desprogramadora'
+  ]
+};
+
+function onTipo(){
+  const t = document.getElementById('f-tipo').value;
+  // testigo
+  document.getElementById('box-testigo').classList.toggle('hide', !HAS_TESTIGO.has(t));
+  // actos
+  const hasActos = !!ACTOS[t];
+  document.getElementById('card-actos').classList.toggle('hide', !hasActos);
+  if(hasActos){
+    document.getElementById('actos-cont').innerHTML = ACTOS[t].map((a,i)=>
+      `<label class="chk"><input type="checkbox" id="ac${i}" value="${a.replace(/"/g,'&quot;')}"> ${a}</label>`).join('');
+  }
+  // uax
+  document.getElementById('row-dom').classList.toggle('hide', t!=='uax');
+  document.getElementById('row-ced').classList.toggle('hide', t!=='uax');
+  // cirugia
+  document.getElementById('row-notas').classList.toggle('hide', t!=='cirugia');
+  // pediatria
+  document.getElementById('row-benef-ped').classList.toggle('hide', t!=='pediatria');
+  document.getElementById('row-comp-ped').classList.toggle('hide', t!=='pediatria');
+  // tutor label
+  document.getElementById('lbl-tutor').textContent = t==='pediatria'
+    ? 'Tutor / Padre / Madre (requerido)'
+    : 'Tutor / Representante Legal';
+  // efectos secundarios - hide for tipos that don't have it blank
+  // (all tipos have it as a field here; PDF pre-fills differ but we always collect it)
+}
+
+// ── Autocomplete ──────────────────────────────────────────────────────────────
+const ACS = {pac:{inp:'f-pac',lst:'ac-pac',src:getPacs}, alu:{inp:'f-alu',lst:'ac-alu',src:getAlus}, doc:{inp:'f-doc',lst:'ac-doc',src:getDocs}};
+function acFilt(k){
+  const v=document.getElementById(ACS[k].inp).value.toLowerCase();
+  const l=document.getElementById(ACS[k].lst);
+  const opts=ACS[k].src().filter(n=>n.toLowerCase().includes(v));
+  if(!v||!opts.length){l.classList.remove('open');return;}
+  l.innerHTML=opts.slice(0,8).map(n=>`<div class="acitem" onclick="acSel('${k}','${n.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">${n}</div>`).join('');
+  l.classList.add('open');
+}
+function acSel(k,v){
+  document.getElementById(ACS[k].inp).value=v;
+  document.getElementById(ACS[k].lst).classList.remove('open');
+  // Auto-fill fields when patient is selected
+  if(k==='pac'){
+    const obj=getPacsObjs().find(p=>(p.nombre||p.paciente||'')=== v);
+    if(obj){
+      if(obj.telefono) document.getElementById('f-tel').value=obj.telefono;
+      if(obj.edad)     document.getElementById('f-edad').value=obj.edad;
+      if(obj.alumno)   document.getElementById('f-alu').value=obj.alumno;
+    }
+  }
+}
+document.addEventListener('click',e=>{
+  Object.keys(ACS).forEach(k=>{
+    if(!document.getElementById(ACS[k].inp).contains(e.target))
+      document.getElementById(ACS[k].lst).classList.remove('open');
+  });
+});
+
+// ── Canvas signatures ─────────────────────────────────────────────────────────
+const SIGS = {};
+function setupSig(id){
+  const cv=document.getElementById(id), ctx=cv.getContext('2d');
+  function resize(){
+    const r=cv.getBoundingClientRect();
+    const pr=window.devicePixelRatio||1;
+    cv.width=r.width*pr; cv.height=r.height*pr;
+    ctx.scale(pr,pr);
+    ctx.strokeStyle='#111';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
+  }
+  resize();
+  let drawing=false, lx=0, ly=0;
+  function p(e){const r=cv.getBoundingClientRect(),s=e.touches?e.touches[0]:e;return[s.clientX-r.left,s.clientY-r.top];}
+  cv.addEventListener('mousedown', e=>{drawing=true;[lx,ly]=p(e);});
+  cv.addEventListener('mousemove', e=>{if(!drawing)return;ctx.beginPath();ctx.moveTo(lx,ly);[lx,ly]=p(e);ctx.lineTo(lx,ly);ctx.stroke();});
+  cv.addEventListener('mouseup',   ()=>drawing=false);
+  cv.addEventListener('mouseleave',()=>drawing=false);
+  cv.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;[lx,ly]=p(e);},{passive:false});
+  cv.addEventListener('touchmove', e=>{e.preventDefault();if(!drawing)return;ctx.beginPath();ctx.moveTo(lx,ly);[lx,ly]=p(e);ctx.lineTo(lx,ly);ctx.stroke();},{passive:false});
+  cv.addEventListener('touchend',  ()=>drawing=false);
+  SIGS[id]={cv,get:()=>cv.toDataURL(),clear:()=>ctx.clearRect(0,0,cv.width,cv.height)};
+}
+function clrSig(id){SIGS[id]&&SIGS[id].clear();}
+function getSig(id){return SIGS[id]?SIGS[id].get():'';}
+
+// ── Folio ─────────────────────────────────────────────────────────────────────
+function nextFolio(){
+  const arr=load();
+  if(!arr.length)return'CI-0001';
+  return'CI-'+String(Math.max(...arr.map(c=>parseInt((c.folio||'CI-0000').split('-')[1]||0)))+1).padStart(4,'0');
+}
+
+// ── Vista previa inline ───────────────────────────────────────────────────────
+function mostrarPreview(){
+  const tipo=document.getElementById('f-tipo').value;
+  if(!tipo){alert('Seleccione primero el tipo de consentimiento.');return;}
+  // Build a temporary record from current form values
+  const actos=[];
+  if(ACTOS[tipo]) document.querySelectorAll('#actos-cont input[type=checkbox]:checked').forEach(cb=>actos.push(cb.value));
+  const tmp={
+    tipo, folio:'(pendiente)',
+    paciente:document.getElementById('f-pac').value.trim()||'_______________',
+    tutor:document.getElementById('f-tutor').value.trim(),
+    edad:document.getElementById('f-edad').value,
+    telefono:document.getElementById('f-tel').value.trim(),
+    domicilio:document.getElementById('f-dom').value.trim(),
+    cedula:document.getElementById('f-ced').value.trim(),
+    alumno:document.getElementById('f-alu').value.trim()||'_______________',
+    docente:document.getElementById('f-doc').value.trim()||'_______________',
+    diagnostico:document.getElementById('f-diag').value.trim(),
+    notas:document.getElementById('f-notas').value.trim(),
+    benefPed:document.getElementById('f-benef-ped').value.trim(),
+    compPed:document.getElementById('f-comp-ped').value.trim(),
+    riesgos:document.getElementById('f-riesgos').value.trim(),
+    efectos:document.getElementById('f-efectos').value.trim(),
+    alternativas:document.getElementById('f-alt').value.trim(),
+    motivo:document.getElementById('f-motivo').value.trim(),
+    beneficio:document.getElementById('f-benef').value.trim(),
+    testigo:'', fecha:document.getElementById('f-fecha').value, actos, sigs:{}
+  };
+  const tl=TLBL[tipo]||tipo;
+  const norm='CON FUNDAMENTO EN LA LEY GENERAL DE SALUD. TÍTULO QUINTO Y CAPÍTULO ÚNICO, INVESTIGACIÓN PARA SALUD ARTÍCULO 100 FRACCIÓN IV. ARTÍCULOS 102 Y 103. NOM-168-SSA1-1998';
+  const pacTable = (tipo==='general'||tipo==='uax') ? '' :
+    `<table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px">
+      <tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700;width:45%">NOMBRE DEL PACIENTE:</td><td style="border:1px solid #555;padding:5px 8px">${esc(tmp.paciente)}</td></tr>
+      <tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">TUTOR / REP. LEGAL:</td><td style="border:1px solid #555;padding:5px 8px">${esc(tmp.tutor)||esc(tmp.paciente)}</td></tr>
+      ${tmp.diagnostico?`<tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">DIAGNÓSTICO:</td><td style="border:1px solid #555;padding:5px 8px">${esc(tmp.diagnostico)}</td></tr>`:''}
+      <tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">DR. QUE SUPERVISA:</td><td style="border:1px solid #555;padding:5px 8px">${esc(tmp.docente)}</td></tr>
+      <tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">ESTUDIANTE:</td><td style="border:1px solid #555;padding:5px 8px">${esc(tmp.alumno)}</td></tr>
+    </table>`;
+  const card=document.getElementById('card-preview');
+  document.getElementById('preview-body').innerHTML=
+    `<div style="text-align:center;margin-bottom:14px;font-family:'Times New Roman',serif">
+       <div style="font-size:16px;font-weight:900;color:#F05A22;text-transform:uppercase;margin-bottom:4px">${tl==='Carta de Autorización UAX'?'CARTA DE AUTORIZACIÓN Y CONSENTIMIENTO VALIDAMENTE INFORMADO':'CONSENTIMIENTO INFORMADO '+tl.toUpperCase()}</div>
+       <div style="font-size:9px;color:#666;margin-bottom:6px">${norm}</div>
+       <div style="font-size:12px;font-weight:700">Xalapa de Enríquez, Veracruz &nbsp;—&nbsp; ${tmp.fecha}</div>
+     </div>
+     ${pacTable}${getBody(tmp)}`;
+  card.style.display='block';
+  card.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ── Guardar ───────────────────────────────────────────────────────────────────
+function guardar(){
+  const tipo=document.getElementById('f-tipo').value;
+  if(!tipo){alert('Seleccione el tipo de consentimiento.');return;}
+  const pac=document.getElementById('f-pac').value.trim();
+  if(!pac){alert('Ingrese el nombre del paciente.');return;}
+
+  const actos=[];
+  if(ACTOS[tipo]){
+    document.querySelectorAll('#actos-cont input[type=checkbox]:checked').forEach(cb=>actos.push(cb.value));
+  }
+
+  const rec={
+    folio:nextFolio(), tipo,
+    fecha:document.getElementById('f-fecha').value||new Date().toISOString().slice(0,10),
+    paciente:pac,
+    tutor:document.getElementById('f-tutor').value.trim(),
+    edad:document.getElementById('f-edad').value,
+    telefono:document.getElementById('f-tel').value.trim(),
+    domicilio:document.getElementById('f-dom').value.trim(),
+    cedula:document.getElementById('f-ced').value.trim(),
+    alumno:document.getElementById('f-alu').value.trim(),
+    docente:document.getElementById('f-doc').value.trim(),
+    diagnostico:document.getElementById('f-diag').value.trim(),
+    notas:document.getElementById('f-notas').value.trim(),
+    benefPed:document.getElementById('f-benef-ped').value.trim(),
+    compPed:document.getElementById('f-comp-ped').value.trim(),
+    riesgos:document.getElementById('f-riesgos').value.trim(),
+    efectos:document.getElementById('f-efectos').value.trim(),
+    alternativas:document.getElementById('f-alt').value.trim(),
+    motivo:document.getElementById('f-motivo').value.trim(),
+    beneficio:document.getElementById('f-benef').value.trim(),
+    testigo:document.getElementById('f-testigo').value.trim(),
+    actos,
+    sigs:{pac:getSig('sp'),doc:getSig('sd'),testigo:getSig('st'),alu:getSig('sa')}
+  };
+  const arr=load(); arr.unshift(rec); save(arr);
+  alert('Consentimiento '+rec.folio+' guardado correctamente.');
+  resetForm();
+  switchTab('list');
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+function resetForm(){
+  document.getElementById('card-preview').style.display='none';
+  ['f-tipo','f-pac','f-tutor','f-edad','f-tel','f-fecha','f-dom','f-ced',
+   'f-alu','f-doc','f-diag','f-notas','f-benef-ped','f-comp-ped',
+   'f-riesgos','f-efectos','f-alt','f-motivo','f-benef','f-testigo'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  ['sp','sd','st','sa'].forEach(clrSig);
+  ['card-actos','row-dom','row-ced','row-notas','row-benef-ped','row-comp-ped'].forEach(id=>document.getElementById(id).classList.add('hide'));
+  document.getElementById('box-testigo').classList.remove('hide');
+  document.getElementById('f-fecha').value=new Date().toISOString().slice(0,10);
+}
+
+// ── List ──────────────────────────────────────────────────────────────────────
+function renderList(){
+  const busq=(document.getElementById('fl-busq').value||'').toLowerCase();
+  const tipo=document.getElementById('fl-tipo').value;
+  const arr=load().filter(c=>{
+    return(!tipo||c.tipo===tipo)&&
+      (!busq||(c.paciente||'').toLowerCase().includes(busq)||(c.folio||'').toLowerCase().includes(busq)||(c.alumno||'').toLowerCase().includes(busq));
+  });
+  const cont=document.getElementById('list-cont');
+  if(!arr.length){cont.innerHTML='<p style="color:var(--gr);text-align:center;padding:24px">Sin registros</p>';return;}
+  cont.innerHTML=arr.map(c=>`
+    <div class="li">
+      <div class="li-info">
+        <div class="li-title">${c.folio} &mdash; ${c.paciente} <span class="badge">${TLBL[c.tipo]||c.tipo}</span></div>
+        <div class="li-meta">${c.fecha} &nbsp;|&nbsp; Alumno: ${c.alumno||'&mdash;'} &nbsp;|&nbsp; Docente: ${c.docente||'&mdash;'}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn bout bsm" onclick="imprimir('${c.folio}')">🖨 Imprimir</button>
+        <button class="btn bred bsm" onclick="eliminar('${c.folio}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function eliminar(folio){
+  if(!confirm('¿Eliminar consentimiento '+folio+'?'))return;
+  save(load().filter(c=>c.folio!==folio));
+  renderList();
+}
+
+// ── PRINT ─────────────────────────────────────────────────────────────────────
+const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAb8BvwMBEQACEQEDEQH/xAAcAAEAAgMBAQEAAAAAAAAAAAAABgcBBQgEAwL/xABUEAABAwICAwgMCQoFAwQDAAAAAQIDBAUGERIhkQcTFDFBUVJTFhciVmFxgZKhsdHSCBUyNVVyc5OUIzM0QnSCsrPB4TZDYqLwN1RjJkaEwiQlRP/EABsBAQACAwEBAAAAAAAAAAAAAAABBgIEBQMH/8QAMBEBAAEDAwIFBAIBBAMAAAAAAAECAwQFERITUSExM0FSFBVhcTI0IiMkodFCgfD/2gAMAwEAAhEDEQA/ABRX0kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASPy97WIivc1qLzrkZ0W6q/KHnVcpo/lOz88Ih62Pz0Muhc+MsPqLXyg4RD1sfnoOhc+Mp+otfKDhEPWx+eg6Fz4yfUWvlBwiHrY/PQdC58ZPqLXyg4RD1sfnoOhc+Mn1Fr5QcIh62Pz0HQufGT6i18oOEQ9bH56DoXPjJ9Ra+UHCIetj89B0Lnxk+otfKDhEPWx+eg6Fz4yfUWvlBwiHrY/PQdC58ZPqLXyg4RD1sfnoOhc+Mn1Fr5QcIh62Pz0HQufGT6i18oOEQ9bH56DoXPjJ9Ra+UHCIetj89B0Lnxk+otfKDhEPWx+eg6Fz4yfUWvlBwiHrY/PQdC58ZPqLXyg4RD1sfnoOhc+Mn1Fr5QcIh62Pz0HQufGT6i18oOEQ9bH56DoXPjJ9Ra+UHCIetj89B0Lnxk69v5Q+mf9jymNnpE7+IQyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkRfHiItFS5p/mr6jtaR/OpwdcmYt07IXot6KbDvqxyq7mi3opsByq7minRTYDlV3NFOimwHKruaKdFNgOVXc0U6KbAcqu5op0U2A5VdzRTopsByq7minRTYDlV3NFOimwHKruaKdFNgOVXc0U6KbAcqu5op0U2A5VdzRTopsByq7minRTYDlV3NFOimwHKruaKdFNgOVXc0W9FNgOVXc0W8ybAcqu7DkRGrqTiI/LKiqd4W1D+Zj+qnqKZe9Sr9r7Y9On9P2eL2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAmBGMd/oVL9qvqU7WkfzlwNd9Kn9oWd9V26seEsQYgppKmy219XDHJvb3NlY3J2SLl3Tk5FQG7ZdrTGve/L+Ih98G52tMa970v4iH3wbna0xr3vS/iIffBudrTGve9L+Ih98G52tMa970v4iH3wbna0xr3vS/iIffBudrTGve9L+Ih98G52tMa970v4iH3wbna0xr3vS/iIffBudrTGve9L+Ih98G52tMa970v4iH3wbna0xr3vS/iIffBudrTGve9L+Ih98G52tMa970v4iH3wbna0xr3vS/iIffBudrTGv0BKn/yIffBujtyt9Xaq+aguMKw1UCokkaqi6KqiLxpq4lQDyP+SviMZ8mVPnC2YfzMf1U9RTb3qVftf8f0qf0/Z4vYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACYEYx3+hUv2q+pTtaR/OXA130qf2hZ31XXz8HxP/S9y/b1/lsCJWlkEGQDIBkAyAZAMgGQDIBkAyAZAMgGQDIAqAcvbqaZbot8+2Z/KYGUIo/5K+IxnyZU+cLZh/Mx/VT1FNvepV+1/x/Sp/T9ni9gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJgRjHf6FS/ar6lO1pH85cDXfSp/aFnfVdfPwfP8ADFy/b1/lsCJWmEAAAAAAAAAAAAAAAAABy7uqf9Rb59sz+UwMoRR/yV8RjPkyp84WzD+Zj+qnqKbe9Sr9r/j+lT+n7PF7AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAjGO/0Kl+1X1KdrSP5y4Gu+lT+0LO+q6+fg+f4YuX7ev8tgRK0wgAAAAAAAAAAAAAAAAAOXd1T/qLfPtmfymBlCKP+SviMZ8mVPnC2YfzMf1U9RTb3qVftf8AH9Kn9P2eL2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAmBGMd/oVL9qvqU7WkfzlwNd9Kn9oWd9V093PN0ZuDLVU0S2laxZ6jftNKje8u5amWWivMETCVdvdne2/8anuA2O3uzvbd+NT3AbHb3b3tP8Axqe4EbJzuf4ukxlbai4LbFoYY5t6ZnNviyKiZqvyUyTWnpAlacQGQMO4tYFQ1+7hBS19VTQ2F88cEz42S8LRu+I1ckdloLlnlmE7JRue7oMGNJqyFKFaKemRrtBZt802ry8SZawhNwAGHeACr8UbrjsO36rtM+HnSOp3ZJIlZkj2qmaLloeEDV9vdne2/wDGp7gTsdvdne278anuA2YXd2Yv/tt/41PcBsq7FV57IcR1133jg/CntdvWnpaOTUbx5Jn8nmCYal/yV8RjPkyp84WzD+Zj+qnqKbe9Sr9r/j+lT+n7PF7AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASIxjv8AQqX7VfUdrSP5y4Gu+nShZ31XAAADDtTVVEVVRNSICXWGB7KmH8LW+3aKNkjiRZcumut3pUMW9AARndFvfxDg641rXI2be96h+0f3LfXn5AOWU8K5ryqGSV7l14Wy44t0zn6EFQq002fErX8X+5Ggl1CgYgACj/hA2RYq+3X2FncyMWmnVOdO6YuxXJ5ECYVGGQEAADD/AJK+IiY8GVPnC2YfzMf1U9RS73qVftf7Hp0/p+zyewAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEjxXO2090jZHVI/RYukmiuWs2cfKqsTvS1MnEoyI2ra/sStfNN55t/drzR+zY52JWvmm88n7rePs2O8N5sFrt1tnqUbKr2N7hFfxuXUhs4udfvXYp9mpm6bj2LM1oedtXEr3L7Il9xrQQSN06emdwmZMtSo3iRf3stgRLqBAhkDC8QFK/CCvCPltlkY7NI1WqlTPlyVrM/IrlCYU8Es5ub3Ubla9utrk5F5FA6vwVeWYgwvbbm3LSnhTfGovyXpqcm1FDFvAAEZ3R7Kt+wdc6ONiOnbEssCL1jO6RPLll5QOWGrpJmiZeBQzey1R081xhhrNLeZHaKqi5ZKvEeV+qqm3M0+b3xaaK7sRX5Jn2I2vlbN94cD7rf91m+zY7HYla+ab7wj7tePsuOdiVqXUqS/eD7reTGjY8d29ami1GpxImRzKquVUy6tFPGmIhkxZgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAgCUIhjqtzdT0DXcSb7InoT+p39Js7UzclW9cv+MWoRQ7SvLx+D9ZOD2iuvcre7rJN5iX/wAbOPa7PYGMraQIAPy9URFVVyROUDlHG95W/YsudxzzifO5kH2Te5btRM/KGUNGEgQuv4Pt5R9HcLJI/uoXpURN/wBLtTvT6wxXCAAw5EXUoHLG6JZUsOM7lRsbowvfv8KImSaD9frzQMoRvXyLkvOhExv4MomaZ3j2WhaaxK+3QVP60jEV3j5fSVDLtdK9NK94d7rWYqes1m0EI2AkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhcss11JyqZUxvOzGqrjG6srzWLXXOoqM82udkxfAmpP+eEuONb6dqKVFzL3WvTU8kcck8jIYGq6WRyMjanK5VyRNqoe7Vdb4atUdksVFbYURG08LWKvOvKu3MMGzAARTdNvfxDgy41Ub0bO9m8QfXfqT+q+QDl5E1IGX4bCyW110qpIkzRGROeq+HkTaa+RfizTEz7tvExuvM09mvyVFyVMlTjQ2N/CJa1UcZmOyTbmt4+JMb2yrc/RhkfvE/MrHpl69FfIGDqVoQyAAp34QNk06W33yJi6ULlpp1ToO1tVfEur94JhSoZSmGBqzSjqKJzk7hUkZ4l1Knq2nD1ez5XIWPRL/hNpKzhT5rFHkEJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhq8S1i0VnqHtXJ7272xfCv9szf0+z1L0Q5+p3uljzKuE1ImRa1KTjccsiXjGtPLKzSgtycJdnxaXEz/dr8gYy6TRMghkABR3wgbxvtfbrLE/NsCLUzN/1L3Lc/JpbQmFScgZJxgek3m3SVLkydO/Uv+lNXtK9qt3/ADiiPZadFsbWucx5o3iWk4Hep2ImTJF3xniX++Z1sK71LMS4mo2Olfn8tXrRc2qrVTWipxopttB1ZgK8pf8ACVsuKqiySQ6Mqc0jV0XJtRQxSAABpsXWZL9hu4WzVpzwuSNV/Vemtq7cgOTERyZo9qtempzXJkrV5UXyhm2FhrOA3aCZyojFdoPz6K6vYa2Xa6tqYbmBemzeid1llQqjadl4pneNwxZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABMIlCscVu+VUNG1UVIm6b0/1Lxej1li0mzxomufdVtav8q4t9kZOu4ToDcIsi0GF5bnKxUmuMum1V6pupu1dJfKESswIAPw9yMarnqiNTWqryIBydi+8Ov+J7jdFdmyaZUi5co26m+jX5QyamON0sjIo0ze9yNanhUxqqimmZlnRRNdUUwtOip2UlJDTRpk2JiNTyIU7IuzduTUvmPb6dqKYR3HVJp0kNY1NcbtBy+BeL0+s6ukXf8AKbcuPrljeiLkIZxneVhc/wAHy8/k7lZJF+SqVMKeBe5cieVEXyhiuRAMgAOZN1my/EuNatsbNGGrRKmPm7rPSy/eRdoZQhypmi8wTusuwVvDrVTzOXN+jovX/UmpSpZ1np3phd8C/wBWxEtgabfCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADD3NYxznLk1qZr4jO3Tzqil53KuNM1KtuFStbXT1Lv8x6qni5PQXOzRwtRSoeTd6t2amKCjluNwpaGnTOWqmZCxE53KiZ+nM9Hg66tVDFbbdTUNOmUVPG2NviRMgxesABEN1S9/EeCq+ZjtGedEpovrP1ehM18gHMTe5bknEiZIGTd4QpOFXlj3Jmynar18fEn/ADwGhqNzp2P26mlWerf39oWAVVcnlulKlbb6imd/mMVE8fJ6TYxbs27sVNbMtRds1UqvVqtcrXcaLkpcIneN4USuJpqmmUg3PrytgxlbK5XZROl3mb7N+pdi5L5CWMuqm5cgYsgAKr3e7HwywUl4iRVloJdF+SZ5xvyRdio1doTCh1DJKsDVipNUUTl1ORJI/Gmpf6HH1e1vTFyHe0O9tVNuUxK8s4QkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkaXF1ZwWzSMauT5/yaeJeP0HR0yzzvxPZytWv9KxO3nKvuQtCmwsXcNsiXHFjrjI1Vitsavbq1b47NE2JpbQiXQ4QAAKK+EBeOEXi32eJ3cUsazypn+u/U3YiLtCVUhKc4Ko0gtjqhyd3O5V/dTiK7q13ld4e0LXotnja590hOO7gTCFdYopOB3uZGplFKiSM8vGm3MtuBd6liJ7KVqdnpZE/lqVz5FyXn5jcc51Rud3v4/wfbq5ypvu971MnNIzuV9WflDFJAAHgvtthvNnrLbUJ+SqoXRr4M04wORZ4JqWolpqpqsnhescjV5HNXJfSgZPva6vgFxgqc1yY7uk528voPHIt9S1MNnEu9K9TUtHNF1pxLxFOqp4zML3RO8RIYswgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCJQXGlYs91bTtXuadmS/WXWvoyLPpdrhZ5T5yqWs3ud7hHlCPKqJrVckOk48ujdxWyLacFxVEqKk9xkWpfmmSo1URGJsTPxqoYyn4QAfiV7Y2Oe9URjUzcq8iAck4nu7r9iG43V3FUzK6PwMTU30Im1Qya+KJ00scUet8jka3xqY1VRRTNUs6KJrrimPdadLAympoYIkyZExGJ4kTIpt65NyuapX2xbi3bimH1PJ7gQjOOaRJKKKrRO6hfouXwO/vkdnSbu1U0S4Ot2eVuLnvCFpzoWBV1wfB9vCMkudkeup6pVRIq8uSNd6mhErqTiCGQMLxAc5btdl+KsZOq425Q3GPfk1frpqd/9doZQgKpqVOcJjwWJhes4XZYdJ2b4vyTvJxejIq2o2enentK5aVem7jxHZtznuoEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfOeZtPBJNIuTY2q5fEh62qOdcUvK9XFFE1SqyomdUVEs7/AJUj1cvlLlbpiimKYUG7c6lc193rsNsfer5QWuJM3VU7Y/E3Pul8jUVTN5y64p4I6eCOCJNGONqMaiciImSBi+oACF7rl6+JsE1qxv0Z6tEpotevN3GvkTNQOZ0TJMk4kDJvcG0nCbwkuXc07Ff5V1J/XYc/UrvSsbe8utpFjqX+XtCelWXCGcxsGaDYea4UzaygnpXcUrFbnzLyKe+PXNu7FTwyrPWtVUT7wq9zXRvcxyZOaqtVPChcYmKoiYUKumaapifZusD3hbDi22XDP8m2dI5fDG/uXbM8/ISxl1e1c2oqLmi8oYsgAK43crIlxwilwjbnPbJN9ReXe11PT1L5AmHPQSkmB6tYq+Wld8mZuk36yf29RytVtcrUVR7O3ot/hdmifdNytrXAQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACRHsa1e82lKdFyfUORNXMi5r/AEOtpVnld5z7OLrN/hZ4d0F4kzUsapLS3ArLwq91t4lb3FHHvMf138f+1PSESvpAgAwoFC7v14Wrv1Dao3fk6OFZXonLI/LLY1PSEwq8JemjuFXQo9KSd0SP1u0UTXtPG5Yt3v5xu97OTds79Odt3o+P7t/38uxvsPL6HH+L3+5ZXzOyC7/9/Lsb7B9BjfE+5ZXzOyC7/wDfy7G+wfQY3xPuWV8zsgu//fy7G+wfQ4/xPuWV83glkfNK6WV2k965uXnU2opimNoaddU11TVV5vm5NJqt50JYuo9zO+fH2DLfVvdnNGzeJvrs1L/RfKGKVAAPPX0sVdRT0s6ZxTRujengVMgORbpb5rTc6u21KflaSV0LvDkupfKmS+UMn4o6l1HVQ1LE1xPR3j5zzu0dSiae72sXOlcpr/K0opGSxsljXNj2o5q86LrQptynhXNPZfbVfOiKu79Hm9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4kzJhEq+xdWcKvL42quhTtRieFeNf+eAtWnWunYjvKm6tf6uRtHlDSOcjUzU33MdN7k9jWxYKoopmIlTU51M2rlfrRPI3RTyBgmQAD5zyshhfLK5GxsarnOVdSIgHId/vS3u9110meiOqpnSI1VTNrf1U8iZBk8G/R9Y3aDc36PrG7Qbm/R9Y3aDc36PrG7Qbm/R9Y3aDc36PrG7Qbm/R9Y3aDc36PrG7Qbrd+D5e2MrbpZXyJlMiVMSZ/rImi7LyaOwIleQQAYUDn/d4svAcT090jblFcIsnLyb4zLPyqipsCYVqEp7g+r4RaGxKvdU66C+Lk9BWtUs8LvLuuGj3+pZ4z7N6ct1wgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACR8K6pbR0c1VIvcxNV2XPzHtj25uXIpj3a+Td6VqqpVskjpHukkXNz10l8alypiKaeMKHXXNdUy3GDbO6/YqtltRM2Szo6XVxRt7p3oTLyksJdYMa1rUa1MmtTJE5gxfoABhzUc1UVM0XjReUD5pBEiao40/dQDO8x9WzzUAbzH1bPNQBvMfVs81AG8x9WzzUAbzH1bPNQBvMfVs81AG8x9WzzUAbzH1bPNQAkTEXNrGovOjQPoAAAQfdhsa3vBlSsTNKoonJVRZcfcoqOTytVQOa01oGTfYMq+D3dYV+RUt0f3k1ovr2nO1Kz1LPKPZ19Iv9O9w9pT0q63hCQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlCM44q97o4aRrtcz9JyeBP7na0izvVNbg63f40Rbj3QrxHfVdcHwfrIj6i5XyVnyUSmhcvnOy/2oESuwIAAAAAAAAAAAAAAAAAAB+Jo2SxvjkajmParXIvKi8YHJGJbRJYb/X2uVFTg07msXpMzzauxUDKHghldBMyaP5UbkcmXgMa6YqpmJ92duuaKoq7LTpJ21NLDUR/IlYj08pTb9ubdyaZX3HuRctxVD6nk9wgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGURuiZ28Vc4nrOG3idzVzZGu9s8ScfpzLbg2ot2IjupOpX+rkTPZqlzy1IqryInGptue6p3PbJ2PYRt1vc1EmSLfJsuWR3dO9K5eQMUjAAAAAAAAAAAAAAAAYzAyAAAUZu/wBl3i60F6jbkypYtPKv+tutvo0tgTCpvGGUpxgmt362vpXLm6B65fVX++ZXdWs8a+fdadFv8rXTn2SM5Eu4EJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJQ8d3rEoLbUVK5aTGdxnyuXUibTaxLXVuxS1M290rFVSsc1VVVy5qvGqluiIiNoUaqd5mUk3N7P8AH2NLbSPZpwRv4ROmXExiZ+l2inlJYy6mb4stQYsgAIXur4mqMM4XWa3zpDXVErYoH6KO0V41XJdS6kUJhS/bPxp9OOz/AGaH3QnY7Z+Nfpx34aH3QbHbPxr9OO/DQ+6DY7Z+Nfpx34aH3QbHbPxr9OO/DQ+6DY7Z+Nfpx34aH3QbHbPxr9OO/DQ+6DY7Z+Nfpx34aH3QbHbPxr9OO/DQ+6DY7Z+Nfpx34aH3QbHbPxr9OO/DQ+6DZ6bXuqYpgulHNcrq6eiZO1aiPeI00o8+64m82a+QGzpFjmuRHNVFaqZoqLqUMX6AARTdNsfx/gy4UrG51Ebd/g+uzX6UzTygcvNXNMwzbjClZwS8xI52UcyLG7y8Xp9ZpahZ6tmY7Ojpd/pZER7SsMqkroGKQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACUSieO6vJlNRNXjXfXp6EO7pNnzuSruuX9oi3CIeM7iuLu+D9ZUjoa++SM7ud/B4nc7W/K9PqDCVvAAAHP27xeFrcUUtsjdnFb4M3ZdY/j2IjdqhMK0CZ8GNJOdAnaTSTnQG0mknOgNpNJOdAbSaSc6A2k0k50BtJpJzoDaTSTnQG0mknOgNpZRUXi1gFTNFReJQOndyq9/HmCqCZ79OeBODzfWZq9KZL5QwlLwAGHIioqLkqcuYHKWOrKtgxdc7ercomzLLB4Ynrm3Zno+QMoaFHOYqOYuTm62rzKRMRNMxLOiqaaomFpW2rStt8FS3/MYiqnMvL6Sn5Nrp3ZpXrEu9WzTU9JrNoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABfQZRG87MZnaFZXyr4ddqmdFVWaejH9VNSFvxbXSs00qNnXpu35ns8TWSSvbHE3Ske5GMbzuVckTabLTl1nhCzMsGG7da4/wD+eFEcvO5dbl8qqqhi3AAD5VNRHS08tRM5GxRMV73KvEiJmq7AORb1cpLzeK25y56VVM6XXyIq6k2ZBlDz0sD6mpip4/lSORqeUwuV8KJl62rfUuRT3WeyjpmMaxII9FqIiZtTiKjXk3KqpnkvFvFtRTETS/XBafqI/MQx69z5M/prXxg4LT9RH5iDr3PkfTWvjBwWn6iPzEHXufI+mtfGDgtP1EfmIOvc+R9Na+MHBafqI/MQde58j6a18YOC0/UR+Yg69z5H01r4wcFp+oj8xB17nyPprXxhjgtP1EXmIOvc+R9Na+MNDjK3sda0nhiRroH5roIidyupf6HT0zJq6vGqfNyNYxaejyojyQgsCrLY+D9eVp7pcbLK/uahiVETf9bdTvRo7AiV6BAAApn4QVm7i23yJq6nLSzKicWaK5ir5UVPKEwppAlMsC1enTTUbl1xO02+JeP0nC1e1tMVws2iX96ZtdkoOGsAQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACRrcRVnAbRPKi925N7YnOq/8U3cCz1b0R2c/Ub/SsTPdWyakLYpO6Z7kVl+OccUaSNVYKJq1UurVq1NTyuVF8ihjLphAhkABAt2i8JbME1MDXIk1eqUzUz1qi/K/2ou0Jhzh4tQZJDgqk365vqHJ3MDNX1l/scvVL3G1x7uxo9jqXZqn2TrPUhWpW2AhIAAAAAAIAl8qqBtVTS08nyJWK1fBnynvYuTbuRU8MijnbqpVXJG+KR8T0ycxytd40LjRVypiqFCuUcK5pbTCl3Ww4lt10zyZBOiy+GNdTvQqr5DJg60jc17Ue1dJrkzRU5UDF+gAGixvZW3/AAtcbaqd3LEqxrlnk9utq7UA5Q7pFVr0yc1cnIvIqcYZNlh2s4FeKeRVyjcu9v8AEur15Grm2urYmlvafe6ORT2lZJUZjxXiPEMUgAAAAAAAAAAAAAAAAAAAAAAAAAACYRLSXDEtHQVb6aWOZXsyzVqJl6zpWtMuXaIrifNyr+rWbNc0VR5PP2Y2/qajYntPX7Rd7w8fvljtJ2Y2/qanzU9o+0Xe598sdpaTE18iuzYI6ZsjI41VztNONeJPRmdLAw5x5mZcrUtQjJiKafJojoOUvvcFsyUmG57tI3KSvlVGL/42Krf4tJQxWiEAGFAoDd5vC1uJ6e1xvzhoIEVyJ1r81XY1G7VDKFZglJMOXyhtNC6KSOZ0r3q5zmonk9Bys3DuZFUTTPg7en59jFt8ZjxbRcY2/qajYntNL7Rd7uh97sdpOzG39TUeantH2i73PvljtLe0lQyqpYaiNHIyRiORHceSnNu25t1zTPs61m7F2iK48pfY8XsAABKJay73ymtUkbKhkrlkRVTQROQ3sbBryKd6Zc/L1C3jVRFUNf2Y2/qanzU9ps/aLveGr98sdpOzG39TUbE9o+03e6Pvdjsit5qYKy4zVNK1zWSZKrXJkufKdrGort24pqlX8y5RdvTXRDwqiKiovEbDVdO7lV6+O8E0E0j9KenbweXX+szV6sgwS8ABheIDl7dPsvxHja4QRtyp6l3CoebJ+tU8jtL0BlCK8WvlI894TE7TumdLjCkbTRNqIp99RiI9WomSrlr5ThXdKrqrmaZWazrNum3EVQ+vZjb+pqNie08/tF3vD1++WO0nZjb+pqPNT2j7Rd7n3yx2ltrTc4bpTunp2va1r1YqPTXnki/1NHJxasedqpb+Jl0ZNPKl7TWbgQAAAAAAAAAAAAAAAAAAAAAAAlCusU/P9V+76i24H9elSdU/tVNTyG40DVqABD7UdLLXVcFHTIqzTyNjZlr1quX9QS63sduitFnordTtyipoGRN8iZBi94AD41U7KanlnlXRjiYr3LzIiZqByNe7m+8XituUq66qZ0ieBFXUmzJAyh4gASJkAAsyxfM1D9g31FQzPXr/AGvWB/Wo/UPearcCAAITHmifJC8efpdH9m71oWLR/SlV9c9WlGDruEaucI8wJNQFr/B+u+8Xa5WeSTuKmNtRE1eJHt1Oy8aKnmhjK9U4ggAAVL8IGy8IstFeY2rp0k28yqif5b+JfORu0JhRuaBkagjYy1BIJnwkTjAvzTP+0O/haV3WPVj9LTofoz+0jOO7oAAAAAAAAAAAAAAAAAAAAAAAEwhXWKfn+q/d9RbcD0KVJ1T+1W08jlYxXJxomZuNCV20m4fbpqWGVb5XIsjGuVEjZxqniDHd9u0Xbvp6v+6j9gN2zwzuR22wXyluqXOqqn0yq5kUrGI3SyyRdScmYQsdEAyAA1mJLT8e2Sstbql9OyqjWN8kaIrkavGiZ86agK37Rdt+na/7uP2AO0Xbvp6v+6j9gTuwu4Xbvp6v+6j9gN1a7oWF4cI35LbT1UtSxYWy6crURdarq1eIJhGQLMsfzNQ/YN9RUMz16v2vWB/Wo/T3mq3QgABMeaJQvHn6XR/Zu9aFi0f0pVfXPUpRnPI67hLRwPuVUWJ8NUt2mu1XTvnV+ccbGKiZOVOVPAGMt/2i7d9PV/3UfsBudou3fTtf91H7Abtlhzcjo8P3ulutNeq2SWncqoxzGI1yKmSouXIELIQDIADX4gtMF8s1Xa6rNIamNWOVE1pzKnhRclArRdwu2/Ttf93H7AbnaLt307X/AHUfsCd0L3S9z6kwZR0NTTXCoqlqZljVsrGtRuTVXPUEwgRE+SU3wL80z/tDv4Wlf1j1Y/S06H6M/tJDjO6AAAAAAAAAAAAAAAAAAAAAAABMIV1in5/qv3fUW3A9ClSdU/tVtLP+ad9VTcaEuxrZ83Uv2LP4UDB6gAAAAAAAAGF4gOed3j/G7P2OP1uCYV3yhKy7H8zUP2DfUVDM9er9r1gf1qP095qt0IAATHmiULx5+l0f2bvWhYtH9KVX1z1KUYU67hOlNxn/AKeWzxy/zHBjKcBAAAAAAAAAAqP4Q/zRZ/2p38ChMKP5CJ8kpvgX5pn/AGh38LSv6x6sfpatD9Gf2khxndAAAAAAAAAAAAAAAAAAAAAAAAmEK6xT8/1X7vqLbgehSpOqf2q2ln/NO+qpuNCXY1s+bqT7Fn8KBg9QAAAAAAAADC8QHPO7x/jdn7HH63BMK75QlZdj+ZqH7BvqKhmevV+16wP61H6e81W6EAAJjzRKF48/S6P7N3rQsWj+lKr656lKMKddwnSu4x/07tnjl/mODGU3CAAAAAAAAABUfwh/miz/ALU7+BQmFH8hE+TJN8C/NM/7Q7+FpX9Y9WP0tOh+jP7SQ4zugAAAAAAAAAAAAAAAAAAAAAAATCFdYp+f6r931FtwPQpUnVP7VbSz/mn/AFVNxoS7GtnzfSp/4WfwoGD1AAAAAAAAAMKBzzu8f43Z+xx+twTCuglZlj+ZqH7BvqKhmevV+16wP61H6e81W6EAAJjzRKF48/S6P7N3rQsWj+lKr656lKMHXcJ0ruM6tzy2eOT+Y4MZTcIAAAAAAAAAFR/CH+aLP+1O/gUJhR/IRPkyTfAvzTP+0O/haV/WPVj9LTofoz+0kOM7oAAAAAAAAAAAAAAAAAAAAAAAEwhXWKfn+q/d9RbcD0KVJ1T+1W1Cojm5KmpUyNxoSkbMd4tYxrG4hrUa1ERERW6k2BGzPZ7i/virtrfYDY7PcX98Vdtb7AbHZ7i/virtrfYDY7PcX98Vdtb7AbHZ7i/virtrfYDY7PcX98Vdtb7AbHZ7i/virtrfYDY7PcX98Vdtb7AbHZ7i/virtrfYDZqLpdbheKrhV2rJaufRRqSS5Z6KcmoDxgWZYvmah+wb6ioZnr1ftesD+tR+nvNVuhAACY80ShePP0uj+zd60LFo/pSq+uepSjJ13Cbm24txHaqNlHbbzVU1NHnoRRqmi3Nc1y1c6hGz09nuL++Ku2t9gNjs9xf3xV21vsBsdnuL++Ku2t9gNjs9xf3xV21vsBsdnuL++Ku2t9gNjs9xf3xV21vsBsdnuL++Ku2t9gNjs9xf3xV21vsBsdnuL++Ku2t9gNngu+Ir1e4447xc6isZE5XMbLlk1eLPUgGrInySm+Bfmmf9od/C0r+serH6WnQ/Rn9pIcZ3QAAAAAAAAAAAAAAAAAAAAAAAJhCusVNct+qVa1youWvLwFswaoixT4qXqdFU5Ne0NVov6D/NNvnT3aHCvtJov6D9g509zhX2k0X9B+wc6e5wr7SaL+g/YOdPc4V9pNF/QfsHOnucK+0mi/oP2DnT3OFfaTRf0H7Bzp7nCvtJov6D9g509zhX2k0X9B+wc6e5wr7SaL+g/YOdPc4V9pNF/QfsHOnucK+0mi/oP2DnT3OFfaTRf0H+aOdPc4V9pWXYkX4moc0yVIG57CpZk/69X7XjBiYx6N+z3mq3AgAHiJjzRPkhmPEVauk0WuXKN3EnhQsOkTEW53lWNbpqm5TtG6MaL+g/zTrc6e7h8K+0mi/oP2DnT3OFfaTRf0H7Bzp7nCvtJov6D9g509zhX2k0X9B+wc6e5wr7SaL+g/YOdPc4V9pNF/QfsHOnucK+0mi/oP2DnT3OFfaTRf0H7Bzp7nCvtJov6D9g509zhX2k0X9B+wc6e5wr7SaL+g/zRzp7nCvtJov6D/NE1U9zhV2lN8CoqWmfNFT/APIdxp/paV/V5ibsfpaNDiYszvHukZx3cAAAAAAAAAAAAAAAAAAAAAAAAkY0WrrVEXyGcXKo92E26Z9jRb0W7CepV3R0qOxot6Ldg6lXc6VHY0W9FuwdSrudKjsaLei3YOpV3OlR2NFvRbsHUq7nSo7Gi3ot2DqVdzpUdjRb0W7B1Ku50qOxot6Ldg6lXc6VHY0W9FuwdSrudKjsaLei3YOpV3OlR2NFvRbsHUq7nSo7Gi3ot2DqVdzpUdjRb0W7B1Ku50qOzJhMzM7yyiIjyDFkAABIwqIvGiL40Mqapp8pYTRTPnBot6Ldhl1Ku6OlR2NFvRbsHUq7nSo7Gi3ot2DqVdzpUdjRb0W7B1Ku50qOxot6Ldg6lXc6VHY0W9FuwdSrudKjsaLei3YOpV3OlR2NFvRbsHUq7nSo7Gi3ot2DqVdzpUdjRb0W7B1Ku50qOxot6Ldg6lXc6VHY0W9FuwdSrudKjsaLei3YOpV3OlR2ERE4kRPEYTVM+bKKYp8mTFkAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQAAAAQBIQAAASBAEgQAAATsgCQIAkAAAAAAAIAASAAAAIAAAAAAAAAAAAAAAAAAAAAAkBsiZbaLDV6ljbJHb3uY5M2rvjNabTcp0/IqjeKXOq1XEpnaa/8Aif8Ap86qwXajgfPU0T44mJm56vYuWxTGvBv0Ryqp8GVvUsW5VFFNXjP7eWhoqm4T7xRwrLLoq7RRUTUnjPK1Yru1caI3lsX8i3Yp5XJ2hsOxa+/R0n3jPeNj7dk/FqfdsP5/8T/0+LbFcVuDKB9PvdS9umjHOTi580MYwr3U6cx4s6tRx+nN2J3h7+wy9dTF96h7/a77W+94veTsMvXUw/eoPteR+D71i/lhcG3pOOKLL7VBOl5H4R96xvy8Fustbcp5oaRjHPhXJ+k7LI8LWHcuVTTT7Nq/qFmxTTVX/wCTYdhl66mL71DY+132r97xvyx2G3nqovvUI+13/wAH3vG/LWXG03C2662lfG3kfxt2oa13Eu2v5Q3cfOsX/wCFTxGs3Ie61Wisu8krKJrXLEiK7Sdlx5+w2cfGryN4p9mnl5tvG2mv3bPsMvXUxfeobX2u/wBml97xfyx2G3pOOKL71CJ0u+n73i95aBzVa9zV42qqKc6qmaZ2l16aoqjeGCNjfxbC2WS43TXR0zlj6x3ct28vkNqzh3b38Y8Glk6hYx/CqfFtH4JuzWaTd4euXyUebU6TeiGlGu48zttLX0eHrnV1E1PHBoTQ5K9ki6PGeFODeqmY28mxc1THt0xVvvu+Mtoq4rs22Pa1Kl2SImlq1pnxmE4tdN3pT5vWnOtVWJvRPhDZ9hl66mL71DY+13+zV+9Y35Owy9dVF94g+15H4R97xfy8ldhq70MayS0bnMTjdGqOy/qeV3Av243mHvZ1XGuztE+P5apqaT2sRdaqiGpFMzOzfqriKZqlIEwZel/yovvEOhGmX9nK+9Y35eK62CvtVO2asYxrHO0U0X568s/6HjfwrlinlU2MbUbOTXwo834tNjrrs2R1ExjkjXJ2k7IixiXL8TNPsnKz7WNMRX7th2GXrL81F94h7/a77V+9Y35a6istbXVs9HTtYs0Crporsk1LkeFvEuXK5ojzhtXtQtWrdNyrylsewy9dTF96h7/a8j8Nb73i/k7DL11MX3qD7Xkfg+9Yv5eW44audupXVNVHG2JuWao9F4zzu6fetUzVU9bGq496uKKZ8WoNF0whIAAAAAAAAAAAAAAAAAAAAASML4yYYysjCWI47k5tA6FYnxRJouV2enlqLLg5sXv8NvJTdR0+rH/1N94mXzx1dHUlHwFadXMqmLlLnxKipqy8o1K/wt8NvNlpGL1b0V8v4odh25La7o2pbC6dysWNGIuWaqqew42Fe6Nzfb8O/qWN9RY23228Vo11a2hoJKqduqNmkrc+XmLNXcii3zlTrVqbt2LdPur2pxS998jusVK1r44lj3tz9S+U4Fefvei5EeSz0aTtj1WZq853WBT1rpbOyu0ERzoN90OTizyO/Rc5Wor/AArNVnjem3v77Ib2f1mX6BB94vsONOr1/F3o0Gmf/NKsPXR11tTKyZjInPVyaDXZpqVUOpjZHWtc58HFzMb6e/NuPHZBbRepbRd6reomSb/LoLpLll3Xg8ZxbGTNi/VtHnKxZOFGRi0Tv/GE8xBcn2q1SVkUbZHNVqI13FrU7mTe6NrnsrmHj9e9FvdFOz+r5aCBU8Ei+w5MavX70u5OgU7eFaU2qupsQ2vfVi/JvzY+N2vJTq2blGVa3mHEv2bmHe47+MeKsLpScAuNTSpmqRSKiZ83J6CrZNvp3ZpXXDvTesU1z7vdhe7VFrrXR00DJn1SsjRHOyyyVebx+g2sC/Var40x4y0tVxKb9HOqdopWVcbjFb4oXz6t9lbEnjX/AJmWS5dpt7cvdUrVqq7MxT7PHia61NooGVVPAyZNNGvR7lTRReXV4TwzL9Vq3yph74ONGRd4TOyqnu03uf0lVcuYqlc8qplebdMUUxTDd4SsyXe4fl0Xg0Ot6dJeRDf0/F61e8+UOZqub9Pb40/ylOb3eqOwU7Gq3N6p+ThZkmr+iHdv5NvGp2VrFw7uXc8P/co0mP6nfO6t8W9+CVc8thzI1erl40+DrzoH+PhX4pXY7lR3eBaylREf8iRF+U3LkU6uPft36eVLh5ONcxq+FaFYnrHUOM1q42JI6HQcjVXJF7k42Zcm1l81g0+z1sCbe+26cWWukuNqgrHsax0jFXRaupFO1ZvdS11NleybPRuzb7Ie3H9YqJnQQa06xfYcirVq4mY4u7ToVNURPNv8NYmZfJJIHwbzOxulkjtJHJ4DfxM2Mj/HbaXMz9OqxfHfeEXxtQRW28Qz0zURszd8Viak0kXWc3UbdNm9TXS7Ok3qsjHqt1eyY4Yu8t5oH1M0TIlbIrcmLmnpOvhZE37fKXBzsanGu8N0QxpepauomtjoWNjp582va5c3aubynI1LKmqqbW3k72kYPTppv7+cPPhG9y2yoSkjgbI2pmajnOVUVvIeen5U2quER5vTVsLrU9XfyhO8RXOS0WqSsijZI9rmN0XOyTW5E/qd3KvzZt84hWsPHjIvRb3RbAc7qm/V87mo1ZWK9UTiTN2Zy9Nr6l+uru7Or2otY1ujfybTEuKqizXFtLFSxSosSP0nPVF1qvsNnMzpx6+MQ08DTYy7c18tn2wzfbhepHvko4oqVmpZEcuau5k1GeHlXMjxmnweefh28X/GKt5eTHt1hjoFtyLpTy5OVE/URF418eR56nkU02+n7vfSMWuu9Fz2hX5W1vCEgAAAAAAAAAAAAAAAAAAAAAAkeu0Vy22509Vnk1ju6+ry+g2MW507kVtLOsResVULDxpRJX2J8kaIr4cpWLzpy+gsWda61mVT029NjJjf38ENwZQ8OvkSu1sgTfXeHLi9JxtNtdS94+yw6xf6WPtHukG6LXaFJBQsXXK7Tf8AVTi9PqOjq13aiKO7laHY5XZudkCVdSleWufJbtnjSXD9JEupH0zW6vEW/HjlYpj8KDkzxyapju0nYDb0T9LqtrfYaM6Ta8fGW/GuZG220ILULJTVM0EcsiMje5qd2vOcS5NVuqaaZ8FmtU0XaIrrjxmH5ptdXDmv+Y31mFuf9SP2zyI2sVRHZauI7dLdbU+kgcxr3Oaub88tSlrybM3rU0QpGHkRYvRcmPJEW4Dr8+6qqdE5VyVTkxpFzf8Ak7v3638ZSy2UVPh20Kx8yrGzN8kjtWanVsWaMW1tu4WRerzL2+3jKsbpV8OuNRVZZJJIqonMnIVfJudS7NfddcO10bFNE+zd4CoeFXlZ3J3FMzPxuXUn9Tf0q1zu8p9nL1y/wtRR3bLHrK+sqqenpaWeSOJqvVzGKqaS+w29T6ldVMUx5NHR6rFumqq5VtM+DftikvGHEiqY3xyzQZOa9Mla9P7ob3Cb2PxqhzeUY+VyonwiVVPa5j3Mcio5qqipzKhU6qeMzC9W6oqpiqPdYu57E1tkdJ+tJM7NfEWPSo2s7qjrVUzkzHaIQ/FdQ+oxDWukVfyb97anMiHI1Cuar9W7vaVbpoxqdvfxalTRdPZ67fdK226fAp1i08tLJEXM2LORcs/wamTh2cjabkPlWVc9dUuqKp++SuREVypzGFy7Vcq5Veb0sWLdinjRHgs7CCZ4YpETlYvrUs+HG+NTH4UzUZ/3dX7RVuArg1EThVPqTlz9hzKtKuTMzu7FGu24iImiUiwxhpLLJJPNPvs7m6KaKZNah0MPBjGmapneXLz9RnLiKYjaIRXHNyiuF1ZHA5Hx07Vark4lcvGcrU79NdyKafZ29GxqrVqaqvDdJNzv5kk+3X+h0dK9Bytb/tf+oQzE/wDiG4/bL6kONn/2K/2sWmf1Lf6eezfO9H9uz1mGL61L0zo/29f6WFj7/DU32kf8aFg1L+vKp6T/AG6VcUlZVUT1kpJ3xPcmSq1eNCt2r1dqd6Z2W+9jWr0bXI3bG10VdiW5sbPM+RGoiSzO/Vbzew2rFq5l3N6mjk3rOBZmKI2mfZObtcKTDNpZDTsasiN0YYk5V51O5fvUYlralW8axczr29U/uVZ1E8tVO+eocr5Xrm5ylYu3Jrq5Sulm1TaoiinyfM85ewQAAAAAAAAAAAAAAAAAAAAAAAkAiVn4OrW3Gwsjkyc6FN5ei83J6C1YF2LtiIlR9TszYyZ29/FjClkWztrVkRNN8qo1U6CfJJw8aLEVIzsycnj+IQTEtd8YXupmaubGu3tniTV7TgZ16bt6Z7LRpljo49PeWrXiU04dCryWzQKrcMQK1clbSJkvh0S3WpmMaJjsod6InLmJ7q1S93bJP/2NT55XJzL0eHJbadPxZiJ4NtZsKy3qgbX8OaxZHOza6JXLmiqmeeZtY+BVkUdSamjk6rGLd6VNHhDRRx7zcWRquehMjc+fJxpRTxvRT2l1K6+pjTV3iVoYor57dZpKmlc1JWuaiK5M01qWXLvVWrPOlTMKxTevxRV5I7hjFdXV3RlLcnxqyVMo1a3LJ3MaGHqFVdfGt1dQ0qiza52n23RKKeSCCsje9YY+5kjz1JnxOyM9Vt1TRFUT4PLRL1um7NFUeM+UoHmmWfEhwJjxWzyhZeCqNtBYknk7lZ/yrlXkTk9BZdOtxascp91L1W918naPbweJcfUaKuVFOqZ6lRzdZ51atbiduMtiNCvVRE8obTD+Jaa9VEsEUEkL426SI9UXSTPkyNjGzaMiZpiGnm6dcxYiqqYndCsZ0HAb7K9EyjqPyjfGvH6TjalZ4XpmPdYtHv8AUx+PZv8Ac5rWLTT0Llye1++NReVF4zf0m7E0TQ5eu2Zi7Fz2lrsc2WanrpLhCzSp5slk0Uz0Hew1tTxaor6lPk2tHzqZoizX4TCKK5E15pqORssG8bJJh/Cst1ppJ53vpmKmUS5fKXny5jp4unzdjerwcTO1eLNcUW43ai7W6W1VjqWocxzmt0s2cqf0NTIx6rFfGZdHEyqcqjnTCx8Hr/6Zo1RUXuF9aljw6tsamfwqGof2q/2h1Jja677E+d0b4UVN8ajMlVOU5UandivaryduvRbPS3pnx2TS/U77pY5OAzOarmb5Gsa5aacx18qibtmeMuDiV02b8dSPJVCLqy4lTVlzFTqiYnxXumYmN4WHudytdaZ4v1mzLn5U1Fi0mqOjMKlrlP8AuIn2lF8ZUj6XEFS97VRs7tNjlTUurWcvUbU03pnu7OkX6a8emj3h8MN0stXe6VkLVXQekj1y1NROc88G3VXejZ66nfpt49W/um+6BI1uHnMXjklYiJ4lz/odvU5iLGyuaPTvlQr230U9xrI6WmTN7+XkanOpXrNmq9Xxha8nIosW5rqWVEyhwpZFV3E1M1X9aV5ZqKbeFZ2U2uq7n5H7VvdblPc619VULrX5LU4mt5iu3r1WRc3qW7Gx6MWzxp/+lK7thW3UdhmrYt+WVkSPTN+rM6l7AtUWJrjz2cPH1TIuZMUT5TKFHBlaYCEgAAAAAAAAAAAAAAAAAAAAAAAEJNgKvSluslPI5EjqG5a1yRHJxHW0u907nGZ8JcLW8fnaiuI8YTDE1zjobNUSxyMWRW6DEReVdR2Mu/TRZqmJcHCxqrt+mmY8FUlTmd53XqI28G2wqykfeokr973jRdmkmWjnlq4zdwIom9/n5OZq03Ix/wDDzWQ24WpsCQtq6RIkboo1JG5ZcxZYuWojbdUOld332nd4uD4Z6Nt2sPHhjb7+D36mX5by9dPW2ilhSKnqqSONM8mtkaiIesXbVNO0S8qrd6ureqJlD8Kpbn3S4vuC06t084llVOPSXWmZyMLpTdrmp29R60WLcUb+SYVFbaKqFYqiqpJGLkqtdI1UOvVctVRtMuHTbvUTyiJ3VjeFijvNTwJWtjbLnGrOJObIrGTMRemaVzw6aq8WmLnusK1Xu33O0s4dNTte9ujLHI9EzXxKWCxkW71qOSqZOLdsXpimGkdFZuy1rG8E4FwZVVM26Gkak02vqo8ttm7FWR9FM+O+6UrcLUsG8rV0m96Ojo743LLmOn1LW227ldK9vvxlXOLGUjLy5tvSFIN7blvWWWfLxFcz4txe/wAPJbNJquTj/wCpPilGDJbVT2qGaWSliqu6RznORH5Z8R1NPqtUWYmfNxNVi9XkVR4zDYXyez1dDM6SajllZE7e1VzVVFy5DYyarNdEzM+LVxab9F2naJiFbUFZPQVUVVTO0ZY+LmXwL4Cs2r02a+VK538ejItzRUsW0Yst1wibHVOSmny7pki9yviUsdjPtXadqvBUcnTL9iremN4e5IbI13CNChRePT7k9trETv4NXlkTHHxay94voqOJ0dC5tTUZZN0fkN8amvk6jbtU7UeMt3E0q7fmJrjaEKtUyVeIKea5Oa9skucqy8WWSnFsXOpkRVclYcq10cSaLKy4K+008LYoaukjjamSNbI3JCyxdtUxtE+CnVWrtU7zE7oLjaO3MqaRLXwdG727S3lUXXmnMcPVIt844LPos3Zpr6jb4GvkLaJ1BWSsi3nXE57kRFavJr5v6m1puXHT4Vz5OfrGDNNzqUR5vPjhtqWhikoEpVmdPm90TkzyyXPPIx1KLPTiaPN6aPN/rTFe+zR4bvL7LXLKrdOCRNGVqceXP4znYWVOPX+JdXUcL6q34eceSwY7hZbzTojpaaVi69CVUzTyKWKLti9TvMwqlVjJxqttphnhdls8K73JSwM5Wx5Zr5E4xN2xajfwItZF+rbaZQLFN9W81bUia5lLF+bReNy86nBzszr1eHktGmYE41HKr+Utluf1FLTS1jqmaKJVRuSyORps6TVTTympo67RXXx4pbU1Vlq9FKmoopUbxI97VyOxVXZr/lLh0UX6J3piYfDe8N81t2sPPjjfh6c8qfOZfHEtwoJMP1kMNVTucseTWsenqMMq7b6FVMT7PTAtXPqaJmPdWRVJXiAhIAAAAAAAAAAAAAAAAAAAAAAAACd2M0xPhLGScyEzVMoiimJ3iGSGQNzbdjJOYbo4waKcw3OJopzDc4waKE7pmNzRTmI3RsZE7p2ZyTLiI3OMSxkmWXJzDdHGDJOZBucYMid07beRkmY3RxgyQjeTjDISxkNzYyTmQneWPCDIjdlsyNzaGNFOYndHGGcsuIjdMREeQNyY3YyTPmG5EbMjc2FTPj1jdE0xLGinMN5IpiGRunYyG5sxopzIN0cYNFOYbnEyQbybMhIQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAgAAAAAAAAAAAAAAABIEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q==';
+
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fld(v){return v?`<span style="text-decoration:underline;font-style:italic">${esc(v)}</span>`:'<span style="display:inline-block;min-width:120px;border-bottom:1px solid #555">&nbsp;</span>';}
+function ul(v){return`<div style="min-height:18px;border-bottom:1px solid #555;margin-bottom:4px;font-style:italic;font-size:12px">${esc(v)||'&nbsp;'}</div>`;}
+function li(items){return`<ul style="padding-left:20px;font-size:12px;line-height:1.9">${items.map(i=>`<li>${i}</li>`).join('')}</ul>`;}
+function sec(title){return`<p style="font-weight:800;font-size:12px;margin:12px 0 4px">${title}</p>`;}
+function sigBlock(label,dataUrl,nombre){
+  const img=dataUrl&&dataUrl.length>100?`<img src="${dataUrl}" style="max-width:100%;height:65px;display:block;margin:0 auto">`:
+    `<div style="height:65px"></div>`;
+  return`<div style="text-align:center;padding:6px">
+    ${img}
+    <div style="border-top:1px solid #555;padding-top:4px;font-size:10px">${esc(nombre)||'&nbsp;'}</div>
+    <div style="font-size:10px;font-weight:700;color:#555">${label}</div>
+  </div>`;
+}
+
+// DECLARA text (shared by most tipos)
+const DECLARA = `<p style="font-size:12px;line-height:1.7;margin-bottom:8px">Cuento con la información suficiente sobre los riesgos y beneficios que implica el acto médico que se autoriza, y al que es necesario someterme y que se me ha explicado que todo acto médico, diagnóstico o terapéutico, sea quirúrgico o no quirúrgico, lleva implícito una serie de complicaciones mayores o menores a veces potencialmente serias, y que pueden llegar a requerir tratamientos complementarios médicos o quirúrgicos.</p>
+<p style="font-size:12px;line-height:1.7;margin-bottom:8px">De igual manera, se me ha explicado en un lenguaje claro y sencillo en que consiste el acto y procedimiento médico que se me propone realizar en mi persona, las probables complicaciones, así como los probables beneficios del mismo, al igual que el propio procedimiento que se me ha sugerido, por lo que he comprendido las explicaciones que se han facilitado en un lenguaje claro y sencillo, y el médico que me ha atendido me realizó todas las observaciones y aclaró todas las dudas que le he planteado de una manera adecuada y amplia.</p>
+<p style="font-size:12px;line-height:1.7">Previa información y explicación sobre los riesgos, beneficios, molestias, efectos secundarios, alcances y probables beneficios que implica el acto médico autorizado al que es necesario someterme, y que el mismo resulta necesario para el diagnóstico y tratamiento de mi padecimiento, por lo que en tales condiciones:</p>`;
+
+const ACEPTO_BASE = `<p style="font-size:12px;line-height:1.7;margin-bottom:8px">Estoy enterado que el tratamiento de mi condición forma parte de las actividades formativas desarrolladas por alumnos y profesores de la Licenciatura en Médico Cirujano Dentista de la Universidad Anáhuac Xalapa, institución privada de educación superior con domicilio en Circuito, Arco Sur s/n, Lomas Verdes, 91098 Xalapa-Enríquez, Ver.</p>
+<p style="font-size:12px;line-height:1.7">Acepto que no he omitido o alterado datos al exponer mi historial y antecedentes clínico-quirúrgicos, especialmente los referidos a alergias y enfermedades o riesgos personales. Estoy consciente de que este tratamiento no entra en garantía por las diferentes razones que pudieran existir a que fracase como, por ejemplo: el material puede ser rechazado por el paciente o puede no integrarse al hueso, entre otras razones que el doctor/a me ha explicado.</p>`;
+
+function getBody(c){
+  const t=c.tipo;
+  const actosList = c.actos&&c.actos.length ? li(c.actos) : '<p style="font-size:12px;font-style:italic">Ninguno seleccionado</p>';
+
+  if(t==='anestesia') return `
+    ${sec('MOLESTIAS:')}
+    ${li(['Dolor agudo a la punción','Inflamación en el sitio de punción'])}
+    ${sec('RIESGOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">Se define como complicaciones todos los efectos indeseables que ocurren minutos, horas, días, semanas o meses después de aplicar un anestésico, como puede ser:</p>
+    ${li(['Lipotimia: falta de oxigenación del cerebro ocasionado que baje la presión arterial','Sensibilidad en órgano dental tratado y adyacente','Síndrome de hiperventilación','Incremento de la ventilación por arriba de lo necesario para mantener una presión arterial normal en sangre.','Rotura de aguja','Hematoma: se forma por filtración de sangre en el tejido subcutáneo.','Infección o ulcera en el sitio de punción','Enfisema: infiltración de aire al tejido celular subcutáneo','Trismus','Toxicidad al fármaco','Anafilaxia','Broncoespasmo','Parálisis facial'])}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px"><strong>Probables beneficios del plan anestésico:</strong> la anestesia es técnica utilizada con el objetivo de que el paciente tolere los procedimientos médico o quirúrgico, por ende, es una manera de permanecer con el menor dolor posible ante procedimientos que serían demasiados dolorosos, tomarían mucho tiempo, afectarían su capacidad para respirar, o le causaría demasiada ansiedad.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">De acuerdo a la Norma oficial mexicana NOM-004-SSA3-2012, del expediente clínico, así como NOM-013-SSA2-2006, para la prevención y control de las enfermedades bucales, así como el derecho a ser informados.</p>
+    ${sec('RIESGOS O MOLESTIAS AÑADIDAS POR LA CONDICIÓN DEL PACIENTE:')}${ul(c.riesgos)}
+    ${sec('DECLARA EL PACIENTE:')}${DECLARA}
+    ${sec('CONSIENTO Y ACEPTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Que se realice en mi persona el acto médico autorizado y descrito con anterioridad, de forma voluntaria y que los procedimientos del diagnóstico y tratamiento que me fueron explicados y que me doy por enterado de mi declaración de manera libre, espontánea y sin que medie presión alguna.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Así mismo, autorizo al Dr/a para la atención de contingencias y urgencias derivadas del acto médico autorizado atendiendo al principio de libertad prescriptiva.</p>
+    ${ACEPTO_BASE}`;
+
+  if(t==='blanqueamiento') return `
+    ${sec('PROCEDIMIENTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">El blanqueamiento dental profesional en consultorio es un procedimiento diseñado para aclarar o bien, blanquear el color de tus dientes utilizando una mezcla de peróxido de hidrógeno o peróxido de carbamida de acuerdo a la disposición de la clínica. Durante todo el tratamiento se colocará en tu boca un retractor de carrillos de plástico para ayudar a mantenerla abierta y tus encías se cubrirán con una barrera protectora para asegurar un aislamiento del gel de peróxido de hidrógeno o peróxido de carbamida y algodones para aislar los tejidos blandos alrededor de los dientes que se van a blanquear. Antes y después del tratamiento, el color de tus dientes será tomado y registrado para hacer más visibles los cambios.</p>
+    ${sec('PROBABLES BENEFICIOS:')}
+    <p style="font-size:12px;margin-bottom:6px">Aclarar o bien, blanquear el color de los dientes.</p>
+    ${sec('COMPLICACIONES:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">Todos los tratamientos de salud, incluyendo el blanqueamiento dental, tienen algún riesgo y limitaciones. Las complicaciones que pueden ocurrir en el blanqueamiento dental profesional son poco frecuentes y usualmente son de naturaleza menor.</p>
+    ${sec('RIESGOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px"><strong>Irritación de encías y tejidos blandos.</strong> El blanqueamiento puede causar inflamación de las encías, labios o carrillos. Este es generalmente el resultado de que el gel de blanqueamiento entra en contacto con estos tejidos. Si ocurre cualquier irritación, esta es generalmente de corta duración y muy ligera.</p>
+    ${sec('MOLESTIAS:')}
+    ${li(['<strong>Sensibilidad:</strong> durante el procedimiento de blanqueamiento algunos pacientes pueden experimentar sensibilidad dental, esto es normal.','<strong>Restauraciones existentes:</strong> el blanqueamiento no modifica el color de restauraciones estéticas de porcelana o resina, coronas o carillas.'])}
+    ${sec('RIESGOS O MOLESTIAS AÑADIDAS POR LA CONDICIÓN DEL PACIENTE:')}${ul(c.riesgos)}
+    ${sec('EFECTOS SECUNDARIOS:')}${ul(c.efectos)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px"><strong>Responsabilidades del tratamiento:</strong> si no comprende algo que se le ha informado durante la consulta, por favor realice todas y cada una de las preguntas que requiera.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px"><strong>Expectativas:</strong> en algunos casos se puede alcanzar un blanqueamiento significativo, pero no hay una forma absoluta de preceder que tan blancos quedarán los dientes. Los dientes con coloraciones, bandas, manchas debidas a agentes externos o fluorosis tampoco se blanquearán. Al término del tratamiento los dientes estarán deshidratados, por lo que se aprecian más blancos que el tono final. El tono del blanqueamiento se aprecia después del séptimo día.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px"><strong>Restricciones:</strong> El blanqueamiento dental en consultorio no se recomienda para las mujeres lactantes o embarazadas, niños menores de 14 años o cualquier persona con alergias conocidas a los peróxidos. Después del tratamiento, tendré que abstenerme de consumir cualquier sustancia cromogénica durante 68 horas para obtener mejores resultados.</p>
+    ${sec('ALTERNATIVAS AL TRATAMIENTO PROPUESTO:')}${ul(c.alternativas)}
+    ${sec('MOTIVO DE ELECCIÓN AL TRATAMIENTO PROPUESTO:')}${ul(c.motivo)}
+    ${sec('PROBABLE BENEFICIO AL TRATAMIENTO PROPUESTO:')}${ul(c.beneficio)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">DE ACUERDO a la Norma Oficial Mexicana NOM-004-SSA3-2012, del expediente clínico, así como NOM-013-SSA2-2006, para la prevención y control de las enfermedades bucales, así como al derecho de los pacientes a ser informados.</p>
+    ${sec('DECLARA EL PACIENTE:')}${DECLARA}
+    ${sec('CONSIENTO Y ACEPTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Que se realice en mi persona el acto médico autorizado y descrito con anterioridad, los procedimientos de diagnóstico y tratamiento que me fueron explicados y que me doy por enterado de mi declaración de manera libre, espontánea y sin que medie presión alguna. Así mismo, autorizó se me brinde la atención ante contingencias y urgencias derivadas del acto médico autorizado atendiendo al principio de libertad prescriptiva.</p>
+    ${ACEPTO_BASE}`;
+
+  if(t==='cirugia') return `
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">En la <strong>CLÍNICA DENTAL DE LA UNIVERSIDAD ANAHUAC XALAPA</strong> buscamos lograr el éxito de todos los tratamientos con calidad y profesionalismo. Es por esto que le compartimos esta información ya que su conocimiento acerca de la CIRUGÍA BUCAL/ORAL resulta necesario.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">La cirugía bucal/oral se realiza para resolver determinados problemas de la cavidad oral, tales como: extracción de piezas dentarias o restos incluidos de raíces, apertura mucosa o tracción de dientes retenidos, frenillos labiales, etc. La intervención se realiza con anestesia local con el riesgo inherente asociado a la misma.</p>
+    ${sec('ACTO AUTORIZADO:')}${actosList}
+    ${c.notas?`${sec('NOTAS DEL PROCEDIMIENTO:')}${ul(c.notas)}`:''}
+    ${sec('PROBABLES BENEFICIOS DEL TRATAMIENTO A REALIZAR:')}${ul(c.beneficio)}
+    ${sec('COMPLICACIONES Y RIESGOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">Todos los tratamientos de salud, incluyendo la cirugía bucal/oral, tienen algunos riesgos y limitaciones:</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">a) Entiendo el hecho de que cada persona cicatriza de distinta manera, en distinto periodo de tiempo, con un proceso de maduración en la cicatriz de, a veces más de un año.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">b) Las complicaciones incluyen, entre otras: inflamación, posibilidades de hemorragia, infección y necrosis, parálisis, trastornos de la sensibilidad y reacción alérgica.</p>
+    ${li(['Alergia al anestésico u otro medicamento utilizado','Hematoma o hinchazón de la región','Hemorragia post-operatoria','Apertura de los puntos de sutura','Daño a los dientes vecinos','Pérdida o disminución de sensibilidad del nervio dentario inferior (labio inferior)','Pérdida o disminución de sensibilidad del nervio lingual (lengua y gusto)','Pérdida o disminución de sensibilidad del nervio infraorbitario','Infección de los tejidos o del hueso','Sinusitis','Comunicación entre la boca y la nariz o los senos maxilares','Fracturas óseas','Desplazamiento de dientes a estructuras vecinas','Tragados o aspiración de dientes','Fractura de instrumentos','Fractura de la aguja de anestesia','Infección en los puntos de sutura'])}
+    ${sec('MOLESTIAS:')}${li(['Sensibilidad dental, dolor y molestia transitoria, parestesia'])}
+    ${sec('RIESGOS O MOLESTIAS AÑADIDAS POR LA CONDICIÓN DEL PACIENTE:')}${ul(c.riesgos)}
+    ${sec('EFECTOS SECUNDARIOS:')}${ul(c.efectos)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">En caso de necesitar tratamiento interdisciplinario, el paciente se compromete a seguir las recomendaciones del doctor/a. Comprendo que el resultado de la cirugía bucal/oral no puede ser garantizado debido a los factores etiológicos y humanos que juegan un papel variable en la evolución del paciente.</p>
+    ${sec('ALTERNATIVAS DEL TRATAMIENTO PROPUESTO:')}${ul(c.alternativas)}
+    ${sec('MOTIVO DE ELECCIÓN DEL TRATAMIENTO PROPUESTO:')}${ul(c.motivo)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">DE ACUERDO a la Norma Oficial Mexicana NOM-004-SSA3-2012, del expediente clínico, así como NOM-013-SSA2-2006, para la prevención y control de las enfermedades bucales, así como al derecho de los pacientes a ser informados.</p>
+    ${sec('DECLARA EL PACIENTE:')}${DECLARA}
+    ${sec('CONSIENTO Y ACEPTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Que se realice en mi persona el acto médico autorizado y descrito con anterioridad, consistente en la realización de la CIRUGÍA BUCAL/ORAL y tratamiento que me fueron explicados y que me doy por enterado de mi declaración de manera libre, espontánea y sin que medie presión alguna. Asimismo, autorizo al estomatólogo para la atención de contingencias y urgencias derivadas del acto médico autorizado atendiendo al principio de libertad prescriptiva, pues he sido informado que en el curso del acto autorizado pueden surgir condiciones no previstas que hagan necesario un cambio del tratamiento y doy aquí mi expresa autorización para el tratamiento de estas, incluyendo además procedimientos como biopsias. En caso de complicaciones durante la operación autorizo al doctor/a solicitar la necesaria ayuda de otros especialistas. Me comprometo a seguir fielmente, en la medida de mis posibilidades, las instrucciones del doctor/a para antes, durante y después de la operación y hasta el alta definitiva.</p>
+    ${ACEPTO_BASE}`;
+
+  if(t==='endodoncia') return `
+    ${sec('ACTO AUTORIZADO:')}${actosList}
+    ${sec('PROBABLES BENEFICIOS:')}
+    ${li(['Eliminación del tejido pulpar inflamado o infectado, o de un proceso granulomatoso o quístico','Por indicaciones protésicas'])}
+    ${sec('COMPLICACIONES:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">Todos los tratamientos de salud incluyendo la ENDODONCIA, tienen algunos riesgos y limitaciones.</p>
+    ${sec('RIESGOS:')}
+    ${li(['Infección a tejidos o hueso','Recidiva infecciosa','Hemorragia','Alergia al anestésico o cualquier medicamento','Hematoma o inflamación de la región','Edema','Enfísema subcutáneo','Dolor o molestia','Falta de sensibilidad del nervio dentario inferior (labio inferior)','Falta de sensibilidad del nervio lingual (lengua y gusto)','Falta de sensibilidad del nervio infraorbitario (mejilla)','Sinusitis','Comunicación entre la boca y la nariz o los senos maxilares','Perforación del diente (furca o raíz)','Tragado o aspiración de dientes o partes','Fracturas de instrumentos / fractura de la aguja de anestesia o limas','El éxito del tratamiento puede ser reservado y solo podría conocerse al momento de su realización','No encontrar conductos en el molar o diente, o que el mismo se encuentre calcificado','Posibilidad de no poder limpiar en su totalidad el tejido pulpar','Es frecuente que el diente se debilite y pueda fracturarse, por lo que es necesaria la rehabilitación protésica'])}
+    ${sec('MOLESTIAS:')}
+    <p style="font-size:12px;margin-bottom:6px">Sensibilidad y/o dolor transitorio.</p>
+    ${sec('EFECTOS SECUNDARIOS:')}
+    <p style="font-size:12px;margin-bottom:6px">Cambio de color (oscurecimiento dental).</p>
+    ${sec('RIESGOS O MOLESTIAS AÑADIDAS POR LA CONDICIÓN DEL PACIENTE:')}${ul(c.riesgos)}
+    ${sec('EXPECTATIVAS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">a. A pesar de realizarse bien la técnica, cabe la posibilidad de que la infección o lesión periapical no se elimine totalmente. A pesar de realizarse correctamente la técnica, es posible que no se obtenga el resultado deseado, por lo que también puede ser necesario proceder al retratamiento e incluso en algunos casos a la extracción.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">b. Es posible que después de la endodoncia el diente cambie de color y se oscurezca ligeramente.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">c. En caso de necesitar tratamiento interdisciplinario, el paciente se compromete a seguir las recomendaciones para ser tratado por otro Especialista. El resultado de la ENDODONCIA no puede ser garantizado.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">d. Una vez realizada la ENDODONCIA, el diente o molar se tiene que restaurar protésicamente para evitar la fractura.</p>
+    ${sec('ALTERNATIVAS AL TRATAMIENTO PROPUESTO:')}${ul(c.alternativas)}
+    ${sec('MOTIVO DE ELECCIÓN:')}${ul(c.motivo)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">DE ACUERDO a la Norma Oficial Mexicana NOM-004-SSA3-2012, del expediente clínico, así como NOM-013-SSA2-2006, para la prevención y control de las enfermedades bucales, así como al derecho de los pacientes a ser informados.</p>
+    ${sec('DECLARA EL PACIENTE:')}${DECLARA}
+    ${sec('CONSIENTO Y ACEPTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Que se realice en mi persona el acto médico autorizado y descrito con anterioridad, consistente en la realización de ENDODONCIA que me fueron explicados y que me doy por enterado de mi declaración de manera libre, espontánea y sin que medie presión alguna. Asimismo, autorizo al estomatólogo para la atención de contingencias y urgencias derivadas del acto médico autorizado atendiendo al principio de libertad prescriptiva. En caso de complicaciones durante la operación autorizo al doctor/a solicitar la necesaria ayuda de otros especialistas.</p>
+    ${ACEPTO_BASE}`;
+
+  if(t==='operatoria') return `
+    ${sec('ACTO AUTORIZADO:')}${actosList}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">El propósito de la intervención es restaurar los tejidos dentarios duros y proteger la pulpa, para conservar el diente y su función, restableciendo al mismo tiempo, siempre que sea posible, la estética adecuada.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">Debe regresar a consulta de manera inmediata ante cualquiera de los siguientes signos de movilidad o alteraciones de oclusión (masticación), pues en este caso sería preciso ajustar la oclusión para aliviar el dolor y para impedir la formación de enfermedad periodontal y/o trauma.</p>
+    ${sec('RIESGOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">La colocación de estas restauraciones puede desencadenar alteraciones que afecten a la pulpa de forma permanente que haga necesario el tratamiento de endodoncia y que, especialmente si la caries es profunda, el diente quedará frágil y podrá ser necesario llevar a cabo otro tipo de reconstrucción o colocar una corona protésica.</p>
+    ${sec('MOLESTIAS:')}
+    ${li(['Mayor sensibilidad, sobre todo al frío, que normalmente irá desapareciendo paulatinamente.','El motivo por el cual el Dr/a decida comenzar con una restauración en específico será por el grado de urgencia o el diente con mayor grado de posibilidad a que se fracture o que aumente la cantidad de caries comprometiendo el plan de tratamiento.'])}
+    ${sec('EFECTOS SECUNDARIOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">Es posible que la restauración no sea igual en color y forma porque las cualidades de las restauraciones directas nunca serán idénticas a su aspecto de diente sano.</p>
+    ${sec('RIESGOS O MOLESTIAS AÑADIDAS POR LA CONDICIÓN DEL PACIENTE:')}${ul(c.riesgos)}
+    ${sec('ALTERNATIVAS AL TRATAMIENTO PROPUESTO:')}${ul(c.alternativas)}
+    ${sec('MOTIVO DE ELECCIÓN AL TRATAMIENTO PROPUESTO:')}${ul(c.motivo)}
+    ${sec('PROBABLE BENEFICIO AL TRATAMIENTO PROPUESTO:')}${ul(c.beneficio)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">DE ACUERDO a la Norma Oficial Mexicana NOM-004-SSA3-2012, del expediente clínico, así como NOM-013-SSA2-2006, para la prevención y control de las enfermedades bucales, así como al derecho de los pacientes a ser informados.</p>
+    ${sec('DECLARA EL PACIENTE:')}${DECLARA}
+    ${sec('CONSIENTO Y ACEPTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Que se realice en mi persona el acto médico autorizado y descrito con anterioridad, los procedimientos de diagnóstico y tratamiento que me fueron explicados y que me doy por enterado de mi declaración de manera libre, espontánea y sin que medie presión alguna. Así mismo, autorizó se me brinde la atención ante contingencias y urgencias derivadas del acto médico autorizado atendiendo al principio de libertad prescriptiva.</p>
+    ${ACEPTO_BASE}`;
+
+  if(t==='pediatria') return `
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">La información proporcionada es el acto médico autorizado y necesario.</p>
+    ${sec('ACTO AUTORIZADO:')}${actosList}
+    ${sec('PROBABLES BENEFICIOS:')}${ul(c.benefPed)}
+    ${sec('COMPLICACIONES:')}${ul(c.compPed)}
+    ${sec('RIESGOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">A) Las complicaciones en procedimientos operatorios incluyen, entre otras: inflamación, hemorragia, infección, necrosis, parálisis, trastornos de la sensibilidad y reacción alérgica.</p>
+    ${li(['Alergias al anestésico u otro medicamento utilizado','Hematoma e hinchazón de la región post-operatoria','Hemorragia post-operatoria','Daño al diente vecino','Infección de tejidos o hueso','Fractura de instrumentos','Fractura de aguja de anestesia','Fracturas óseas, desplazamiento de dientes a estructuras vecinas','Falta de sensibilidad del nervio dentario inferior (labio inferior)','Falta de sensibilidad del nervio lingual (lengua y gusto)','Falta de sensibilidad del nervio infraorbitario (mejilla)','Tragado o aspiración de instrumentos, materiales o dientes'])}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">B) Durante el procedimiento operatorio puede ser necesario materiales especializados.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">C) Deberá estrictamente cuidar que el niño se muerda posterior a cualquier procedimiento que conlleve el uso de anestésicos locales.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">D) Puede haber sensibilidad y molestia transitoria posterior al procedimiento operatorio.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">E) Cambio de color en el diente.</p>
+    ${sec('RIESGOS Y BENEFICIOS AÑADIDOS POR LA CONDICIÓN DEL PACIENTE:')}${ul(c.riesgos)}
+    ${sec('EFECTOS SECUNDARIOS:')}${ul(c.efectos)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px"><strong>Técnicas de control de conducta:</strong> En caso de requerirse, se utilizarán técnicas de manejo de conducta (comunicación, desensibilización, refuerzo positivo/negativo, distracción contingente, modelado, control de voz, tiempo fuera). En caso de descontrol conductual y para mantener la integridad física del menor se podrá aplicar inmovilización protectora o mano sobre boca. En el caso de discapacidad física, psicoemocional, neurológica o condiciones especiales se hará recomendación de técnicas farmacológicas (sedación consciente o profunda).</p>
+    ${sec('ALTERNATIVAS DEL TRATAMIENTO PROPUESTO:')}${ul(c.alternativas)}
+    ${sec('MOTIVO DE ELECCIÓN DEL TRATAMIENTO PROPUESTO:')}${ul(c.motivo)}
+    ${sec('PROBABLES BENEFICIOS DEL TRATAMIENTO PROPUESTO:')}${ul(c.beneficio)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">De acuerdo a la norma oficial mexicana NOM-004-SSA3-2012, del expediente clínico, así como NOM-013-SSA2-2006, para la prevención y control de las enfermedades bucales, así como al derecho de los pacientes a ser informados.</p>
+    ${sec('DECLARA EL PACIENTE:')}${DECLARA}
+    ${sec('CONSIENTO Y ACEPTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Que se realice en mi persona el acto médico autorizado y descrito con anterioridad, consiste en la realización del acto médico autorizado, así como el tratamiento que me fueron explicados y que me doy por enterado de mi declaración de manera libre, espontánea y sin presión alguna. Así mismo, autorizo al estomatólogo para la atención de contingencias y urgencias derivadas del acto médico autorizado atendiendo al principio de libertad prescriptiva. Acepto que no he omitido o alterado datos al exponer mi historial y antecedentes clínico-quirúrgicos, alergias y enfermedades o riesgos personales.</p>
+    ${ACEPTO_BASE}`;
+
+  if(t==='periodoncia') return `
+    ${sec('PROCEDIMIENTO AUTORIZADO:')}${actosList}
+    ${sec('PROBABLES BENEFICIOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Eliminación de factores irritantes e infecciosos a nivel de los tejidos blandos, hueso alveolar, ligamento periodontal, cemento radicular para intentar mantener sanos los tejidos blandos y de soporte del diente(s) y evitar su pérdida.</p>
+    ${sec('COMPLICACIONES:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">Todos los tratamientos dentro del ámbito de la salud, incluyendo la PERIODONCIA, tienen riesgos y limitaciones.</p>
+    ${sec('RIESGOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">a) Cada persona cicatriza de manera distinta. Pueden ocurrir formación de micro abscesos, retracción de encías, movilidad dental, dolor, edema, inflamación y hemorragia.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">b) Las complicaciones incluyen entre otras:</p>
+    ${li(['Alergia al anestésico o cualquier medicamento','Hematoma o hinchazón de la región','Hemorragia pos-operatoria','Apertura de los puntos de sutura','Daño a dientes vecinos','Falta de sensibilidad del nervio dentario inferior (labio inferior)','Falta de sensibilidad del nervio lingual (lengua y gusto)','Falta de sensibilidad del nervio infraorbitario (mejilla)','Infección de los tejidos o hueso','Sinusitis','Comunicación entre la boca y la nariz o los senos maxilares','Fracturas óseas o desplazamiento de dientes a estructuras vecinas','Tragado o aspiración de dientes o algunas de sus partes','Fracturas de instrumentos. Fractura de la aguja de anestesia','Infección de los puntos de sutura'])}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">c) En la cirugía podrá ser necesario tejidos de otras partes del cuerpo, implantes de materiales especiales médicos.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">d) Puede ser necesario el retratamiento, dependiendo de la agresividad de la enfermedad; es indispensable la correcta higiene y visitas periódicas de revisión (mantenimiento periodontal).</p>
+    ${sec('MOLESTIAS:')}${li(['Sensibilidad dental, dolor y molestia transitoria, parestesia'])}
+    ${sec('RIESGOS O MOLESTIAS AÑADIDAS POR LA CONDICIÓN DEL PACIENTE:')}${ul(c.riesgos)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">En caso de necesitar tratamiento interdisciplinario, el paciente se compromete a seguir las recomendaciones del doctor/a para ser tratado por otro especialista. El resultado de la PERIODONCIA no puede ser garantizado.</p>
+    ${sec('ALTERNATIVAS DEL TRATAMIENTO PROPUESTO:')}${ul(c.alternativas)}
+    ${sec('MOTIVO DE ELECCIÓN DEL TRATAMIENTO PROPUESTO:')}${ul(c.motivo)}
+    ${sec('PROBABLES BENEFICIOS DEL TRATAMIENTO PROPUESTO:')}${ul(c.beneficio)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">DE ACUERDO a la Norma Oficial Mexicana NOM-004-SSA3-2012, del expediente clínico, así como NOM-013-SSA2-2006, para la prevención y control de las enfermedades bucales, así como al derecho de los pacientes a ser informados.</p>
+    ${sec('DECLARA EL PACIENTE:')}${DECLARA}
+    ${sec('CONSIENTO Y ACEPTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Que se realice en mi persona el acto médico autorizado y descrito con anterioridad, consistente en la realización de PERIODONCIA que me fueron explicados y que me doy por enterado de mi declaración de manera libre, espontánea y sin que medie presión alguna. Asimismo, autorizo al estomatólogo para la atención de contingencias y urgencias derivadas del acto médico autorizado atendiendo al principio de libertad prescriptiva. En caso de complicaciones durante la operación autorizo al doctor/a solicitar la necesaria ayuda de otros especialistas.</p>
+    ${ACEPTO_BASE}`;
+
+  if(t==='rehabilitacion') return `
+    ${sec('PROCEDIMIENTO AUTORIZADO:')}${actosList}
+    ${sec('PROBABLES BENEFICIOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Devolver al paciente la función, salud, estética del diente por medio de prótesis dentales fijas o removibles.</p>
+    ${sec('COMPLICACIONES:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">Todos los tratamientos dentro del ámbito de la salud, incluyendo la colocación de PRÓTESIS, tienen riesgos y limitaciones.</p>
+    ${sec('RIESGOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">a) La colocación de estas restauraciones puede desencadenar alteraciones que afecten a la pulpa de forma permanente que haga necesario el tratamiento de endodoncia.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">b) Cada persona responde de distinta manera al tratamiento, en distinto periodo de tiempo, con sus respectivos procesos de ajuste, a veces más de un año.</p>
+    <p style="font-size:12px;line-height:1.7;margin-bottom:4px">c) Las complicaciones incluyen entre otras:</p>
+    ${li(['Alergia al anestésico o cualquier medicamento','Hematoma o hinchazón de la región','Hemorragia pos-operatoria','Apertura de los puntos de sutura','Daño a dientes vecinos','Falta de sensibilidad del nervio dentario inferior (labio inferior)','Falta de sensibilidad del nervio lingual (lengua y gusto)','Falta de sensibilidad del nervio infraorbitario (mejilla)','Infección de los tejidos o hueso','Sinusitis','Comunicación entre la boca y la nariz o los senos maxilares','Fracturas óseas o desplazamiento de dientes a estructuras vecinas','Tragado o aspiración de dientes o algunas de sus partes','Fracturas de instrumentos. Fractura de la aguja de anestesia','Infección de los puntos de sutura'])}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">d) Las restauraciones protésicas pueden presentar fractura por factores externos al tratamiento dental. El éxito de la restauración dependerá de los cuidados del paciente.</p>
+    ${sec('MOLESTIAS:')}${li(['Sensibilidad dental, dolor y molestia transitoria, parestesia'])}
+    ${sec('RIESGOS O MOLESTIAS AÑADIDAS POR LA CONDICIÓN DEL PACIENTE:')}${ul(c.riesgos)}
+    ${sec('EFECTOS SECUNDARIOS:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:6px">Es posible que la restauración no sea igual en color y forma porque las cualidades de las restauraciones directas como indirectas nunca serán idénticas a su aspecto de diente sano.</p>
+    ${sec('ALTERNATIVAS DEL TRATAMIENTO PROPUESTO:')}${ul(c.alternativas)}
+    ${sec('MOTIVO DE ELECCIÓN DEL TRATAMIENTO PROPUESTO:')}${ul(c.motivo)}
+    ${sec('PROBABLES BENEFICIOS DEL TRATAMIENTO PROPUESTO:')}${ul(c.beneficio)}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">DE ACUERDO a la Norma Oficial Mexicana NOM-004-SSA3-2012, del expediente clínico, así como NOM-013-SSA2-2006, para la prevención y control de las enfermedades bucales, así como al derecho de los pacientes a ser informados.</p>
+    ${sec('DECLARA EL PACIENTE:')}${DECLARA}
+    ${sec('CONSIENTO Y ACEPTO:')}
+    <p style="font-size:12px;line-height:1.7;margin-bottom:8px">Que se realice en mi persona el acto médico autorizado y descrito con anterioridad, consistente en la realización de colocación de PRÓTESIS que me fueron explicados y que me doy por enterado de mi declaración de manera libre, espontánea y sin que medie presión alguna. Asimismo, autorizo al estomatólogo para la atención de contingencias y urgencias derivadas del acto médico autorizado atendiendo al principio de libertad prescriptiva. En caso de complicaciones durante la operación autorizo al doctor/a solicitar la necesaria ayuda de otros especialistas. Me comprometo a seguir fielmente las instrucciones del doctor/a para antes, durante y después de la operación y hasta el alta definitiva.</p>
+    ${ACEPTO_BASE}`;
+
+  if(t==='general') return `
+    <p style="font-size:13px;line-height:1.8;margin-bottom:14px">Yo, <strong>${esc(c.paciente)}</strong> como persona legalmente responsable reconozco que el Estudiante: <strong>${esc(c.alumno)||'_______________'}</strong> supervisado por el Dr(a): <strong>${esc(c.docente)||'_______________'}</strong>, me ha <strong>PROPORCIONADO</strong> información sobre los procedimientos de prevención e información amplia y precisa de mi padecimiento en caso de padecerlos y he comprendido cuál es mi enfermedad y la necesidad de que se me practiquen diversos procedimientos odontológicos, médicos y/o quirúrgicos para confirmar o tratar mi enfermedad y mantener mi salud bucodental. Se me ha informado de los riesgos y complicaciones que pueden presentarse al practicar los distintos procedimientos odontológicos, médicos y/o quirúrgicos, los cuales son realizados por <strong>Estudiantes de la Escuela de Médico Cirujano Dentista</strong> y son supervisados por profesionales capacitados y con especialidades y <strong>AUTORIZO</strong> que los mismos sean realizados.</p>
+    <p style="font-size:13px;line-height:1.8;margin-bottom:14px">Estoy consciente de que tanto el diagnóstico, procedimientos a realizar y presupuesto se incluyen en el plan de tratamiento anexo. <strong>ACEPTO Y ESTOY DE ACUERDO</strong> con la explicación y comentarios sobre mi tratamiento, en donde se me ha expresado los alcances, limitaciones y pronósticos que, de acuerdo con la exploración clínica y elementos de diagnóstico, se consideraron para mi tratamiento. Así mismo, estoy de acuerdo que se realizará por parte de profesionales de la Salud Bucal en Formación, con la asesoría de Profesores que de acuerdo con su criterio podrán intervenir o reasignar con algún otro especialista o alumno.</p>
+    <p style="font-size:13px;line-height:1.8;margin-bottom:14px">En cumplimiento a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, <strong>INVESTIGACIÓN Y ESTUDIOS SUPERIORES, S.C.</strong>, con nombre comercial <strong>UNIVERSIDAD ANÁHUAC XALAPA</strong>, pone a disposición de los Titulares el presente Aviso de Privacidad con el objeto de informarles los alcances y condiciones generales del Tratamiento de sus datos personales, a fin de que estén en posibilidad de tomar decisiones informadas sobre su uso. Para más información puede consultar el completo aviso en la página de la Universidad en https://www.anahuac.mx/veracruz/xalapa.</p>
+    <p style="font-size:13px;line-height:1.8;font-weight:700">Su información está registrada en una plataforma digital y sus datos se encuentran protegidos y serán usados responsablemente de acuerdo a la normatividad de la universidad y lo establecido en la Norma Oficial Mexicana NOM-004-SSA3-2012 del expediente clínico. Esta norma garantiza la calidad, seguridad y confidencialidad de la información clínica en México.</p>`;
+
+  if(t==='uax') return `
+    <p style="font-size:12px;line-height:1.7;margin-bottom:10px">De acuerdo a las normas oficiales mexicanas vigentes del expediente clínico médico y con fundamento en la ley general de salud, es presentado este documento escrito y firmado por el paciente, persona responsable o tutor.</p>
+    ${c.tutor||c.domicilio?`<p style="font-size:12px;margin-bottom:4px">Paciente/Tutor(a): <strong>${esc(c.paciente)}</strong></p>
+    <p style="font-size:12px;margin-bottom:4px">Con domicilio en: ${ul(c.domicilio)}</p>
+    <p style="font-size:12px;margin-bottom:10px">En calidad de familiar/tutor/representante legal. Declaro y manifiesto que el alumno: <strong>${esc(c.alumno)||'_______________'}</strong> y el médico responsable: <strong>${esc(c.docente)||'_______________'}</strong> con cédula profesional: <strong>${esc(c.cedula)||'_______________'}</strong>.</p>`:''}
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">1° Amablemente me informó de manera verbal, libre y sin coerción, en forma clara sencilla y suficiente acerca del diagnóstico (s), pronóstico (s) y las alternativas de tratamiento para mi(s) padecimiento(s).</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">2° Estoy informado (a) que la profesional de la salud cuenta con los conocimientos suficientes y el equipo necesario para mi tratamiento, que durante la práctica estomatológica y sus diversas disciplinas de especialización, en ocasiones incluyen inherentemente riesgos, complicaciones, incluso la posibilidad de que se presenten emergencias médico odontológicas; por lo tanto sinceramente no se me ha podido garantizar ni dado seguridad alguna acerca de los resultados que se podrán obtener, acepto afrontar los riesgos por ser mayor el beneficio esperado.</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">3° Pueden existir variaciones en el plan de tratamiento originalmente propuesto, y se me ha explicado que el éxito de mi tratamiento dependerá en gran medida de atender a las indicaciones e instrucciones previas del Cirujano Dentista, durante y posterior a la realización de mi tratamiento; cualquiera que este sea, se podrán llevar a cabo tratamientos alternativos con la finalidad de resolver el padecimiento y devolver/procurar/buscar la salud bucodental, pudiendo generar costos extras.</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">4° También se me ha explicado, que, de no atender mi problema o enfermedad, podrían surgir graves complicaciones a mi salud en general.</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">5° Cuando el tratamiento se prolongue o interrumpa, será necesaria una revaloración. La atención odontológica en cada paciente según la edad (generalmente en niños), puede requerirse uso de técnicas de manejo de conducta que se me han explicado y estoy de acuerdo con su empleo cuando sea necesario.</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">6° No existe conducta dolosa y siempre el profesional ha buscado y velado por el bien, la integridad, la dignidad y la salud del paciente, conforme a los estatutos éticos y morales de nuestra sociedad actual.</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">7° Se ha hecho de mi conocimiento las alternativas existentes para mi tratamiento así mismo de las ventajas y desventajas de cada una de ellas; decidiendo en común acuerdo con mi tratante.</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">8° Existe la posibilidad de revocación del plan de tratamiento siempre y cuando se notifique por escrito a la profesional de la salud.</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:6px">9° He tenido la oportunidad de aclarar todas mis dudas, y además haber podido expresar de manera libre todos mis comentarios por lo tanto manifiesto estar satisfecho (a) con la información recibida y comprender los alcances y riesgos del procedimiento a realizar.</p>
+    <p style="font-size:12px;line-height:1.8;margin-bottom:14px">10° Acepto y autorizo, en pleno uso de mis facultades, para que realicen los procedimientos de diagnóstico, quirúrgicos y de rehabilitación antes señalados, así como lo que fuese necesario médicamente para la atención bucodental, doy mi consentimiento y manifiesto mi conformidad con la información recibida, los alcances y riesgos de la atención clínica, deslindando de toda responsabilidad civil, laboral y penal a la Universidad Anáhuac campus Xalapa.</p>
+    <p style="font-size:10px;text-align:center;color:#555">UNIVERSIDAD ANÁHUAC &nbsp;|&nbsp; Circuito Arco Sur s/n Lomas Verdes. Xalapa Veracruz, México. C.P. 91098 &nbsp;|&nbsp; Tel. 228 819 1515 &nbsp;|&nbsp; www.anahuacveracruz.mx</p>`;
+
+  return '';
+}
+
+function getSigGrid(c){
+  const hasTest=HAS_TESTIGO.has(c.tipo);
+  if(c.tipo==='general'){
+    return`<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;border:1px solid #ccc;border-radius:4px;padding:10px">
+      <div style="text-align:center">
+        <p style="font-size:11px;margin-bottom:4px">Sí Acepto</p>
+        ${c.sigs?.pac&&c.sigs.pac.length>100?`<img src="${c.sigs.pac}" style="height:60px;max-width:100%;display:block;margin:0 auto">`:'<div style="height:60px"></div>'}
+        <div style="border-top:1px dashed #555;padding-top:4px;font-size:10px">${esc(c.paciente)}</div>
+        <div style="font-size:10px;font-weight:700">Nombre y Firma del paciente</div>
+      </div>
+      <div style="text-align:center">
+        <p style="font-size:11px;margin-bottom:4px">Sí Acepto</p>
+        ${c.sigs?.pac&&c.sigs.pac.length>100?`<img src="${c.sigs.pac}" style="height:60px;max-width:100%;display:block;margin:0 auto">`:'<div style="height:60px"></div>'}
+        <div style="border-top:1px dashed #555;padding-top:4px;font-size:10px">${esc(c.paciente)}</div>
+        <div style="font-size:10px;font-weight:700">Nombre y Firma del familiar legalmente responsable</div>
+      </div>
+      <div style="text-align:center">
+        ${c.sigs?.alu&&c.sigs.alu.length>100?`<img src="${c.sigs.alu}" style="height:60px;max-width:100%;display:block;margin:0 auto">`:'<div style="height:60px"></div>'}
+        <div style="border-top:1px dashed #555;padding-top:4px;font-size:10px">${esc(c.alumno)}</div>
+        <div style="font-size:10px;font-weight:700">Nombre y Firma del Estudiante</div>
+      </div>
+      <div style="text-align:center">
+        ${c.sigs?.doc&&c.sigs.doc.length>100?`<img src="${c.sigs.doc}" style="height:60px;max-width:100%;display:block;margin:0 auto">`:'<div style="height:60px"></div>'}
+        <div style="border-top:1px dashed #555;padding-top:4px;font-size:10px">${esc(c.docente)}</div>
+        <div style="font-size:10px;font-weight:700">Nombre y Firma del Titular de la Clínica</div>
+      </div>
+    </div>`;
+  }
+  if(c.tipo==='uax'){
+    return`<div style="margin-top:30px">
+      <div style="text-align:center;margin-bottom:20px">
+        ${c.sigs?.pac&&c.sigs.pac.length>100?`<img src="${c.sigs.pac}" style="height:60px;display:block;margin:0 auto">`:'<div style="height:60px"></div>'}
+        <div style="border-top:1px solid #555;padding-top:4px;font-size:10px;max-width:300px;margin:0 auto">${esc(c.paciente)}</div>
+        <div style="font-size:10px;font-weight:700">Nombre y firma del paciente/padre/tutor/representante legal</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px">
+        <div style="text-align:center">
+          ${c.sigs?.alu&&c.sigs.alu.length>100?`<img src="${c.sigs.alu}" style="height:60px;max-width:100%;display:block;margin:0 auto">`:'<div style="height:60px"></div>'}
+          <div style="border-top:1px solid #555;padding-top:4px;font-size:10px">${esc(c.alumno)}</div>
+          <div style="font-size:10px;font-weight:700">Nombre y firma del alumno que brinda atención</div>
+        </div>
+        <div style="text-align:center">
+          ${c.sigs?.doc&&c.sigs.doc.length>100?`<img src="${c.sigs.doc}" style="height:60px;max-width:100%;display:block;margin:0 auto">`:'<div style="height:60px"></div>'}
+          <div style="border-top:1px solid #555;padding-top:4px;font-size:10px">${esc(c.docente)}</div>
+          <div style="font-size:10px;font-weight:700">Nombre y firma del médico responsable</div>
+        </div>
+      </div>
+    </div>`;
+  }
+  // standard 2x2 grid with or without testigo
+  const rows=hasTest?[
+    [sigBlock('NOMBRE Y FIRMA DE PACIENTE O TUTOR LEGAL',c.sigs?.pac,c.tutor||c.paciente), sigBlock('NOMBRE Y FIRMA DR QUE SUPERVISA',c.sigs?.doc,c.docente)],
+    [sigBlock('NOMBRE Y FIRMA DEL TESTIGO',c.sigs?.testigo,c.testigo), sigBlock('NOMBRE Y FIRMA DEL ESTUDIANTE TRATANTE',c.sigs?.alu,c.alumno)]
+  ]:[
+    [sigBlock('NOMBRE Y FIRMA DE PACIENTE O TUTOR LEGAL',c.sigs?.pac,c.paciente), sigBlock('NOMBRE Y FIRMA DR QUE SUPERVISA',c.sigs?.doc,c.docente)],
+    [sigBlock('NOMBRE Y FIRMA DEL ESTUDIANTE TRATANTE',c.sigs?.alu,c.alumno),'']
+  ];
+  return`<table style="width:100%;border-collapse:collapse;margin-top:20px;border:1px solid #ccc">
+    <tr><td style="width:50%;border:1px solid #ccc;padding:6px">${rows[0][0]}</td><td style="border:1px solid #ccc;padding:6px">${rows[0][1]}</td></tr>
+    <tr><td style="border:1px solid #ccc;padding:6px">${rows[1][0]}</td><td style="border:1px solid #ccc;padding:6px">${rows[1][1]}</td></tr>
+  </table>`;
+}
+
+function imprimir(folio){
+  const c=load().find(x=>x.folio===folio);
+  if(!c){alert('No encontrado');return;}
+  const tl=TLBL[c.tipo]||c.tipo;
+  const norm='CON FUNDAMENTO EN LA LEY GENERAL DE SALUD. TÍTULO QUINTO Y CAPÍTULO ÚNICO, INVESTIGACIÓN PARA SALUD ARTÍCULO 100 FRACCIÓN IV. ARTÍCULOS 102 Y 103. NOM-168-SSA1-1998, DEL EXPEDIENTE CLÍNICO EN SU NUMERAL 4.2';
+
+  const headerExtra = c.tipo==='anestesia'?'CON FUNDAMENTO EN LA LEY GENERAL DE SALUD TÍTULO QUINTO CAPÍTULO ÚNICO, INVESTIGACIÓN PARA SALUD ARTÍCULO 100 FRACCIÓN IV. ARTÍCULOS 102 Y 103. NOM-168-SSA1-1998, DEL EXPEDIENTE CLÍNICO EN SU NUMERAL 4.2':
+    c.tipo==='general'?'NORMA OFICIAL MEXICANA NOM-004-SSA3-2012, DEL EXPEDIENTE CLÍNICO — CONFORME NOM-168-SSA1-1998 DEL EXPEDIENTE CLÍNICO EN SUS NUMERALES 5.14, 6.1 AL 7.2 — NOM-013-SSA2-1994 PARA LA PREVENCIÓN Y CONTROL DE ENFERMEDADES BUCALES':
+    c.tipo==='uax'?'De acuerdo a las normas oficiales mexicanas vigentes del expediente clínico médico y con fundamento en la ley general de salud.':norm;
+
+  const pacTable = c.tipo==='uax'?'':
+    c.tipo==='general'?'':
+    `<table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px">
+      <tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">NOMBRE DEL PACIENTE:</td><td style="border:1px solid #555;padding:5px 8px">${esc(c.paciente)}</td></tr>
+      <tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">NOMBRE DEL TUTOR O REPRESENTANTE LEGAL:</td><td style="border:1px solid #555;padding:5px 8px">${esc(c.tutor)||esc(c.paciente)}</td></tr>
+      ${c.diagnostico?`<tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">DIAGNÓSTICO:</td><td style="border:1px solid #555;padding:5px 8px">${esc(c.diagnostico)}</td></tr>`:''}
+      <tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">NOMBRE DEL DR. QUE SUPERVISA:</td><td style="border:1px solid #555;padding:5px 8px">${esc(c.docente)}</td></tr>
+      <tr><td style="border:1px solid #555;padding:5px 8px;font-weight:700">NOMBRE DEL ESTUDIANTE:</td><td style="border:1px solid #555;padding:5px 8px">${esc(c.alumno)}</td></tr>
+    </table>`;
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${tl} – ${c.folio}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Times New Roman',Times,serif;color:#111;font-size:12px;padding:28px 32px}
+    @media print{body{padding:0}@page{margin:1.8cm 1.5cm}}
+  </style></head><body>
+  <div style="text-align:center;margin-bottom:18px">
+    <img src="${LOGO}" width="72" height="72" style="border-radius:6px;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto">
+    <div style="font-size:18px;font-weight:900;color:#F05A22;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">
+      ${c.tipo==='general'?'CONSENTIMIENTO INFORMADO DE ATENCIÓN ODONTOLÓGICA Y AVISO DE PRIVACIDAD DE DATOS':
+        c.tipo==='uax'?'CARTA DE AUTORIZACIÓN Y CONSENTIMIENTO VALIDAMENTE INFORMADO':
+        'CONSENTIMIENTO INFORMADO '+tl.toUpperCase()}
+    </div>
+    <div style="font-size:9px;color:#555;max-width:500px;margin:0 auto 10px">${headerExtra}</div>
+    <div style="font-weight:700;font-size:12px">Xalapa de Enríquez, Veracruz de Ignacio de la Llave a ${c.fecha}</div>
+  </div>
+  ${pacTable}
+  ${getBody(c)}
+  ${getSigGrid(c)}
+  <div style="margin-top:20px;text-align:center;font-size:9px;color:#888;border-top:1px solid #ddd;padding-top:8px">
+    Clínica Dental Universitaria Anáhuac Xalapa &nbsp;|&nbsp; Folio: ${c.folio} &nbsp;|&nbsp; ${c.fecha}
+  </div>
+  <script>window.onload=()=>window.print();<\/script>
+  </body></html>`;
+
+  const w=window.open('','_blank','width=850,height=750');
+  w.document.open();w.document.write(html);w.document.close();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.getElementById('f-fecha').value=new Date().toISOString().slice(0,10);
+['sp','sd','st','sa'].forEach(setupSig);
+</script>
+</body>
+</html>

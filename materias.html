@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Materias</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --green-50:#EAF3DE;--green-800:#27500A;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;--amber-800:#5C3308;
+  --blue-50:#E6F1FB;--blue-800:#0C447C;
+  --purple-50:#EEEDFE;--purple-800:#3C3489;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:900px;margin:0 auto;padding:20px 20px 80px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.stat-label{font-size:11px;color:var(--text-secondary);}
+.stat-value{font-size:22px;font-weight:600;margin-top:2px;color:var(--teal-900);}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:220px;}
+.search-input:focus{outline:none;border-color:var(--teal-600);}
+.filtro-select{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.filtro-select:focus{outline:none;border-color:var(--teal-600);}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.lista-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.group-header{padding:8px 16px;background:var(--surface-1);border-top:1px solid var(--border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--teal-800);}
+.group-header:first-child{border-top:none;}
+.list-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.list-row:hover{background:var(--teal-50);}
+.row-num{font-size:11px;color:var(--text-muted);width:24px;flex-shrink:0;text-align:right;}
+.row-name{flex:1;font-size:13px;font-weight:500;}
+.badge-tipo{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap;}
+.toggle-btn{background:transparent;border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.toggle-btn.activa{background:var(--green-50);color:var(--green-800);border-color:var(--green-800);}
+.toggle-btn.inactiva{background:var(--surface-1);color:var(--text-muted);}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:13px;flex-shrink:0;}
+.btn-icon:hover{background:var(--red-50);color:var(--red-600);}
+.empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
+/* Panel */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.35);z-index:40;}
+.panel-overlay.open{display:block;}
+.panel{position:fixed;top:0;right:-100%;width:min(440px,100vw);height:100vh;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);transition:right .25s ease;}
+.panel.open{right:0;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.panel-actions{display:flex;gap:8px;}
+.panel-body{flex:1;overflow-y:auto;padding:20px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.field input,.field select{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;height:36px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.field input:focus,.field select:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+/* Modal confirmar */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;z-index:60;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:360px;width:100%;padding:24px;}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.modal-head h3{font-size:16px;font-weight:600;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;border-top:1px solid var(--border);padding-top:14px;}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
+
+/* Colores por tipo */
+.tipo-ci{background:var(--teal-50);color:var(--teal-800);}
+.tipo-ec{background:#EEEDFE;color:#3C3489;}
+.tipo-dx{background:#E6F1FB;color:#0C447C;}
+.tipo-cb{background:#EAF3DE;color:#27500A;}
+.tipo-fu{background:#FAEEDA;color:#854F0B;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Catálogo de Materias y Clínicas</h1>
+      </div>
+    </header>
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-input" id="buscar" placeholder="Buscar materia...">
+      <select class="filtro-select" id="filtro-tipo">
+        <option value="">Todos los grupos</option>
+        <option value="Clínica Integral">Clínica Integral</option>
+        <option value="Especialidad Clínica">Especialidad Clínica</option>
+        <option value="Diagnóstico">Diagnóstico</option>
+        <option value="Ciencias Básicas">Ciencias Básicas</option>
+        <option value="Formación Universitaria">Formación Universitaria</option>
+      </select>
+    </div>
+    <button class="btn-primary" id="btn-nuevo">+ Nueva materia</button>
+  </div>
+
+  <div class="lista-wrap">
+    <div id="lista"></div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <p>Sin materias registradas.</p>
+    </div>
+  </div>
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<!-- Panel -->
+<div class="panel-overlay" id="panel-overlay"></div>
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <h3 id="panel-title">Nueva materia</h3>
+    <div class="panel-actions">
+      <button class="btn-secondary" id="btn-cancel" style="height:32px;font-size:13px;padding:0 12px;">Cancelar</button>
+      <button class="btn-primary" id="btn-save" style="height:32px;">Guardar</button>
+    </div>
+  </div>
+  <div class="panel-body">
+    <div class="field">
+      <label>Nombre de la materia / clínica *</label>
+      <input type="text" id="f-nombre" placeholder="Ej. Endodoncia I">
+    </div>
+    <div class="field">
+      <label>Grupo / tipo *</label>
+      <select id="f-tipo">
+        <option value="">— Seleccionar —</option>
+        <option value="Clínica Integral">Clínica Integral</option>
+        <option value="Especialidad Clínica">Especialidad Clínica</option>
+        <option value="Diagnóstico">Diagnóstico</option>
+        <option value="Ciencias Básicas">Ciencias Básicas</option>
+        <option value="Formación Universitaria">Formación Universitaria</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmar eliminar -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-head"><h3>Eliminar materia</h3><button class="btn-icon" id="cerrar-confirm">✕</button></div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">Esta acción eliminará la materia del catálogo. Escribe <strong>ELIMINAR</strong> para confirmar.</p>
+    <input type="text" id="inp-confirm" placeholder="Escribe ELIMINAR"
+      style="width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelar-confirm">Cancelar</button>
+      <button id="btn-confirm-del" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='clinica_materias_v1';
+
+const DEFAULTS=[
+  {nombre:'Clínica Integral I',tipo:'Clínica Integral'},
+  {nombre:'Clínica Integral II',tipo:'Clínica Integral'},
+  {nombre:'Clínica Integral III',tipo:'Clínica Integral'},
+  {nombre:'Clínica Integral IV',tipo:'Clínica Integral'},
+  {nombre:'Clínica Integral V',tipo:'Clínica Integral'},
+  {nombre:'Servicio Social',tipo:'Clínica Integral'},
+  {nombre:'Endodoncia I',tipo:'Especialidad Clínica'},
+  {nombre:'Endodoncia II',tipo:'Especialidad Clínica'},
+  {nombre:'Rehabilitación Bucal Fija',tipo:'Especialidad Clínica'},
+  {nombre:'Prótesis Removible',tipo:'Especialidad Clínica'},
+  {nombre:'Prostodoncia Total',tipo:'Especialidad Clínica'},
+  {nombre:'Bases Quirúrgicas',tipo:'Especialidad Clínica'},
+  {nombre:'Cirugía Bucal',tipo:'Especialidad Clínica'},
+  {nombre:'Periodoncia',tipo:'Especialidad Clínica'},
+  {nombre:'Periodoncia Avanzada',tipo:'Especialidad Clínica'},
+  {nombre:'Odontopediatría',tipo:'Especialidad Clínica'},
+  {nombre:'Odontopediatría Avanzada',tipo:'Especialidad Clínica'},
+  {nombre:'Integración Clínica',tipo:'Especialidad Clínica'},
+  {nombre:'Bases Protésicas en Implantología',tipo:'Especialidad Clínica'},
+  {nombre:'Anestesiología',tipo:'Especialidad Clínica'},
+  {nombre:'Terapia de Odontología de Mínima Invasión',tipo:'Especialidad Clínica'},
+  {nombre:'Terapia Odontológica de Mínima Invasión',tipo:'Especialidad Clínica'},
+  {nombre:'Atención de Paciente Comprometido Sistemicamente',tipo:'Especialidad Clínica'},
+  {nombre:'Odontología Legal y Forense',tipo:'Especialidad Clínica'},
+  {nombre:'Urgencias Médicas',tipo:'Especialidad Clínica'},
+  {nombre:'Medicina Estomatológica',tipo:'Especialidad Clínica'},
+  {nombre:'Diagnóstico en Ortodoncia',tipo:'Especialidad Clínica'},
+  {nombre:'Diagnóstico Imagen',tipo:'Diagnóstico'},
+  {nombre:'Imagenología',tipo:'Diagnóstico'},
+  {nombre:'Diagnóstico Integral en Odontología',tipo:'Diagnóstico'},
+  {nombre:'Patología Bucal',tipo:'Diagnóstico'},
+  {nombre:'Anatomía de Cabeza y Cuello',tipo:'Ciencias Básicas'},
+  {nombre:'Histología Bucal',tipo:'Ciencias Básicas'},
+  {nombre:'Biomateriales Dentales II',tipo:'Ciencias Básicas'},
+  {nombre:'Fisiología',tipo:'Ciencias Básicas'},
+  {nombre:'Biología Celular',tipo:'Ciencias Básicas'},
+  {nombre:'Inmunología',tipo:'Ciencias Básicas'},
+  {nombre:'Bioquímica',tipo:'Ciencias Básicas'},
+  {nombre:'Microbiología Oral',tipo:'Ciencias Básicas'},
+  {nombre:'Odontología Preventiva',tipo:'Ciencias Básicas'},
+  {nombre:'Genómica y Proteómica',tipo:'Ciencias Básicas'},
+  {nombre:'Habilidades Universitarias para la Comunicación',tipo:'Formación Universitaria'},
+  {nombre:'Antropología Fundamental',tipo:'Formación Universitaria'},
+  {nombre:'Formación Universitaria B',tipo:'Formación Universitaria'},
+  {nombre:'Odontología Basada en Evidencia',tipo:'Formación Universitaria'},
+  {nombre:'Electiva Interdisciplinaria EGEL',tipo:'Formación Universitaria'},
+  {nombre:'Metodología de la Investigación',tipo:'Formación Universitaria'},
+  {nombre:'Emprendimiento e Innovación',tipo:'Formación Universitaria'},
+  {nombre:'Competencias Digitales',tipo:'Formación Universitaria'},
+  {nombre:'Ética',tipo:'Formación Universitaria'},
+  {nombre:'Probabilidad y Estadística',tipo:'Formación Universitaria'},
+  {nombre:'Habilidades del Emprendimiento',tipo:'Formación Universitaria'},
+];
+
+const TIPO_CSS={
+  'Clínica Integral':'tipo-ci',
+  'Especialidad Clínica':'tipo-ec',
+  'Diagnóstico':'tipo-dx',
+  'Ciencias Básicas':'tipo-cb',
+  'Formación Universitaria':'tipo-fu',
+};
+const GRUPO_ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
+
+function loadData(){
+  try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}
+  return null;
+}
+function saveData(d){localStorage.setItem(KEY,JSON.stringify(d));}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+let S={data:null,editId:null,delId:null};
+function init(){
+  let d=loadData();
+  if(!d){
+    d={materias:DEFAULTS.map((m,i)=>({id:String(i+1),nombre:m.nombre,tipo:m.tipo,activa:true})),seq:DEFAULTS.length+1};
+    saveData(d);
+  }
+  S.data=d;
+}
+init();
+
+function renderStats(){
+  const total=S.data.materias.length;
+  const activas=S.data.materias.filter(m=>m.activa!==false).length;
+  const grupos={};
+  S.data.materias.forEach(m=>{grupos[m.tipo]=(grupos[m.tipo]||0)+1;});
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Total materias</p><p class="stat-value">${total}</p></div>
+    <div class="stat"><p class="stat-label" style="color:var(--green-800)">Activas</p><p class="stat-value" style="color:var(--green-800)">${activas}</p></div>
+    <div class="stat"><p class="stat-label">Grupos</p><p class="stat-value">${Object.keys(grupos).length}</p></div>`;
+}
+
+function renderLista(){
+  const term=(document.getElementById('buscar').value||'').toLowerCase();
+  const tipoF=document.getElementById('filtro-tipo').value;
+  let rows=S.data.materias.filter(m=>{
+    const mt=(m.nombre||'').toLowerCase().includes(term);
+    const tt=!tipoF||m.tipo===tipoF;
+    return mt&&tt;
+  });
+  const lista=document.getElementById('lista');
+  const empty=document.getElementById('empty-state');
+  if(!rows.length){lista.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+
+  // Group
+  const grouped={};
+  GRUPO_ORDEN.forEach(g=>{grouped[g]=[];});
+  rows.forEach(m=>{if(!grouped[m.tipo])grouped[m.tipo]=[];grouped[m.tipo].push(m);});
+
+  let html='';
+  let globalN=0;
+  GRUPO_ORDEN.forEach(grupo=>{
+    const items=grouped[grupo]||[];
+    if(!items.length)return;
+    html+=`<div class="group-header">${esc(grupo)} <span style="font-weight:400;color:var(--text-muted)">(${items.length})</span></div>`;
+    items.forEach(m=>{
+      globalN++;
+      const css=TIPO_CSS[m.tipo]||'';
+      html+=`<div class="list-row">
+        <span class="row-num">${globalN}</span>
+        <span class="row-name">${esc(m.nombre)}</span>
+        <button class="toggle-btn ${m.activa!==false?'activa':'inactiva'}" onclick="toggleActiva('${m.id}',event)">${m.activa!==false?'Activa':'Inactiva'}</button>
+        <button class="btn-icon" title="Editar" onclick="openPanel('${m.id}',event)">✏</button>
+        <button class="btn-icon" onclick="abrirEliminar('${m.id}',event)">✕</button>
+      </div>`;
+    });
+  });
+  lista.innerHTML=html;
+}
+
+function renderAll(){renderStats();renderLista();}
+
+function toggleActiva(id,e){
+  e.stopPropagation();
+  const m=S.data.materias.find(x=>x.id===id);
+  if(m){m.activa=m.activa===false?true:false;saveData(S.data);renderAll();}
+}
+
+/* Panel */
+function openPanel(id,e){
+  if(e)e.stopPropagation();
+  S.editId=id||null;
+  if(id){
+    const m=S.data.materias.find(x=>x.id===id);
+    document.getElementById('panel-title').textContent='Editar materia';
+    document.getElementById('f-nombre').value=m.nombre||'';
+    document.getElementById('f-tipo').value=m.tipo||'';
+  } else {
+    document.getElementById('panel-title').textContent='Nueva materia';
+    document.getElementById('f-nombre').value='';
+    document.getElementById('f-tipo').value='';
+  }
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+  setTimeout(()=>document.getElementById('f-nombre').focus(),260);
+}
+function closePanel(){
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+}
+document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
+document.getElementById('btn-cancel').addEventListener('click',closePanel);
+document.getElementById('panel-overlay').addEventListener('click',closePanel);
+
+document.getElementById('btn-save').addEventListener('click',()=>{
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const tipo=document.getElementById('f-tipo').value;
+  if(!nombre){document.getElementById('f-nombre').focus();return;}
+  if(!tipo){document.getElementById('f-tipo').focus();return;}
+  if(S.editId){
+    const m=S.data.materias.find(x=>x.id===S.editId);
+    if(m){m.nombre=nombre;m.tipo=tipo;}
+  } else {
+    S.data.materias.push({id:String(S.data.seq||1),nombre,tipo,activa:true});
+    S.data.seq=(S.data.seq||1)+1;
+  }
+  saveData(S.data);renderAll();closePanel();
+});
+
+/* Eliminar */
+function abrirEliminar(id,e){
+  if(e)e.stopPropagation();
+  S.delId=id;
+  document.getElementById('inp-confirm').value='';
+  document.getElementById('inp-confirm').style.borderColor='';
+  document.getElementById('modal-confirm').classList.add('open');
+}
+document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+  if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;}
+  S.data.materias=S.data.materias.filter(x=>x.id!==S.delId);
+  saveData(S.data);renderAll();document.getElementById('modal-confirm').classList.remove('open');
+});
+
+/* Restablecer */
+document.getElementById('btn-reset').addEventListener('click',()=>{
+  if(!confirm('¿Restablecer la lista a los valores predeterminados? Se perderán los cambios.'))return;
+  const d={materias:DEFAULTS.map((m,i)=>({id:String(i+1),nombre:m.nombre,tipo:m.tipo,activa:true})),seq:DEFAULTS.length+1};
+  saveData(d);S.data=d;renderAll();
+});
+
+document.getElementById('buscar').addEventListener('input',renderLista);
+document.getElementById('filtro-tipo').addEventListener('change',renderLista);
+renderAll();
+</script>
+</body>
+</html>

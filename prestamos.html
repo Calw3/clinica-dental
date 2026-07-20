@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Préstamos de Equipos</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-100:#F9D5B8;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --green-50:#EAF3DE;--green-800:#27500A;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;--amber-800:#5C3308;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:980px;margin:0 auto;padding:20px 20px 80px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.stat-label{font-size:11px;color:var(--text-secondary);}
+.stat-value{font-size:22px;font-weight:600;margin-top:3px;color:var(--teal-900);}
+.stat.warn .stat-value{color:var(--red-600);}
+.stat.ok .stat-value{color:var(--green-800);}
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.tab-btn{background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-secondary);padding:8px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;}
+.tab-btn.active{color:var(--teal-600);border-bottom-color:var(--teal-600);}
+.tab-btn:hover:not(.active){color:var(--text-primary);}
+/* Toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:220px;}
+.search-input:focus{outline:none;border-color:var(--teal-600);}
+.filtro-select{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.filtro-select:focus{outline:none;border-color:var(--teal-600);}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+/* Lista */
+.lista-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.list-row:first-child{border-top:none;}
+.list-row:hover{background:var(--teal-50);}
+.equipo-icon{width:40px;height:40px;border-radius:10px;background:var(--amber-50);color:var(--amber-600);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.equipo-icon img{width:100%;height:100%;object-fit:cover;}
+.equipo-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.row-info{flex:1;min-width:0;}
+.row-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap;flex-shrink:0;}
+.badge-prestado{background:var(--amber-50);color:var(--amber-800);}
+.badge-devuelto{background:var(--green-50);color:var(--green-800);}
+.badge-disponible{background:var(--green-50);color:var(--green-800);}
+.badge-agotado{background:var(--red-50);color:var(--red-600);}
+.btn-devolver{background:var(--green-50);color:var(--green-800);border:1px solid var(--green-800);border-radius:var(--radius);padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.btn-devolver:hover{background:var(--green-800);color:#fff;}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:14px;flex-shrink:0;}
+.btn-icon:hover{background:var(--red-50);color:var(--red-600);}
+.empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
+.empty-state p:first-child{font-weight:600;color:var(--text-primary);font-size:15px;}
+.empty-state p:last-child{font-size:13px;margin-top:4px;}
+.cant-badge{font-size:12px;font-weight:700;color:var(--text-muted);flex-shrink:0;min-width:28px;text-align:right;}
+/* Panel */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.35);z-index:40;}
+.panel-overlay.open{display:block;}
+.panel{position:fixed;top:0;right:-100%;width:min(520px,100vw);height:100vh;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);transition:right .25s ease;}
+.panel.open{right:0;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.panel-actions{display:flex;gap:8px;}
+.panel-body{flex:1;overflow-y:auto;padding:20px;}
+/* Form */
+.section-title{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.section-title:first-child{margin-top:0;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.field input,.field select{height:36px;}
+.field textarea{padding:8px 10px;resize:vertical;min-height:64px;line-height:1.5;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+.field input[readonly]{background:var(--surface-1);color:var(--text-muted);}
+/* Foto upload */
+.foto-label{display:flex;align-items:center;justify-content:center;height:130px;border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;background:#fff;transition:border-color .15s;position:relative;}
+.foto-label:hover{border-color:var(--teal-600);}
+.foto-label img{width:100%;height:100%;object-fit:cover;}
+.foto-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-muted);font-size:12px;}
+.foto-clear{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.9);border:1px solid var(--border);border-radius:5px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--text-secondary);z-index:2;}
+.foto-clear:hover{background:var(--red-50);color:var(--red-600);}
+/* Foto par (dos fotos en grid) */
+.foto-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.foto-pair-item{text-align:center;}
+.foto-pair-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary);margin-bottom:6px;}
+.foto-thumb{width:100%;height:100px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);}
+.foto-no-img{width:100%;height:100px;border:1px dashed var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted);}
+/* Autocomplete */
+.ac-wrap{position:relative;}
+.ac-list{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:220px;overflow-y:auto;}
+.ac-list.open{display:block;}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;}
+.ac-item:hover,.ac-item.focused{background:var(--teal-50);}
+/* Tipo responsable toggle */
+.tipo-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;}
+.tipo-btn{flex:1;background:#fff;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;padding:7px 10px;color:var(--text-secondary);transition:background .12s,color .12s;}
+.tipo-btn.active{background:var(--teal-600);color:#fff;}
+.tipo-btn:not(:first-child){border-left:1px solid var(--border);}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;z-index:60;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:480px;width:100%;padding:24px;}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.modal-head h3{font-size:17px;font-weight:600;line-height:1.3;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;}
+.detail-row{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-top:1px solid var(--border);font-size:13px;}
+.detail-row:first-child{border-top:none;}
+.detail-row span:first-child{color:var(--text-secondary);}
+.detail-row span:last-child{font-weight:500;text-align:right;}
+.comment-box{background:var(--surface-1);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text-primary);line-height:1.5;margin-top:8px;border:1px solid var(--border);}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Préstamos de Equipos</h1>
+      </div>
+      <span style="font-size:11px;color:var(--text-muted);">Los datos se guardan en este navegador</span>
+    </header>
+  <div class="stats" id="stats"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="prestamos">Préstamos</button>
+    <button class="tab-btn" data-tab="equipos">Catálogo de equipos</button>
+  </div>
+
+  <!-- TAB PRÉSTAMOS -->
+  <div id="tab-prestamos">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" class="search-input" id="buscar-p" placeholder="Buscar equipo, responsable...">
+        <select class="filtro-select" id="filtro-estado">
+          <option value="">Todos</option>
+          <option value="Prestado">Prestados</option>
+          <option value="Devuelto">Devueltos</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="btn-nuevo-prestamo">+ Nuevo préstamo</button>
+    </div>
+    <div class="lista-wrap">
+      <div id="lista-prestamos"></div>
+      <div id="empty-p" class="empty-state" style="display:none;">
+        <p>Sin préstamos registrados.</p>
+        <p>Registra un equipo en el catálogo y luego crea un préstamo.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB EQUIPOS -->
+  <div id="tab-equipos" style="display:none;">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" class="search-input" id="buscar-e" placeholder="Buscar equipo, serie...">
+      </div>
+      <button class="btn-primary" id="btn-nuevo-equipo">+ Nuevo equipo</button>
+    </div>
+    <div class="lista-wrap">
+      <div id="lista-equipos"></div>
+      <div id="empty-e" class="empty-state" style="display:none;">
+        <p>Sin equipos en el catálogo.</p>
+        <p>Agrega el primer equipo con el botón "+ Nuevo equipo".</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<!-- ═══ Panel préstamo ═══ -->
+<div class="panel-overlay" id="po-prestamo"></div>
+<div class="panel" id="panel-prestamo">
+  <div class="panel-head">
+    <h3 id="pp-title">Nuevo préstamo</h3>
+    <div class="panel-actions">
+      <button class="btn-secondary" id="pp-cancel" style="height:32px;font-size:13px;padding:0 12px;">Cancelar</button>
+      <button class="btn-primary" id="pp-save" style="height:32px;">Guardar</button>
+    </div>
+  </div>
+  <div class="panel-body">
+
+    <p class="section-title">Equipo</p>
+    <div class="field">
+      <label>Equipo *</label>
+      <div class="ac-wrap">
+        <input type="text" id="pp-equipo" placeholder="Escribe para buscar..." autocomplete="off">
+        <div class="ac-list" id="ac-pp-equipo"></div>
+      </div>
+      <input type="hidden" id="pp-equipoId">
+    </div>
+
+    <p class="section-title">Responsable</p>
+    <div class="tipo-toggle">
+      <button type="button" class="tipo-btn active" data-tipo="alumno">Alumno</button>
+      <button type="button" class="tipo-btn" data-tipo="maestro">Maestro</button>
+    </div>
+    <div class="field">
+      <label id="lbl-responsable">Nombre del alumno *</label>
+      <div class="ac-wrap">
+        <input type="text" id="pp-responsable" placeholder="Escribe para buscar..." autocomplete="off">
+        <div class="ac-list" id="ac-pp-responsable"></div>
+      </div>
+    </div>
+
+    <p class="section-title">Salida</p>
+    <div class="field">
+      <label>Fecha y hora de salida *</label>
+      <input type="datetime-local" id="pp-fechaSalida">
+    </div>
+    <div class="field">
+      <label>Condición al salir / comentarios</label>
+      <textarea id="pp-comentarioSalida" placeholder="Estado del equipo al momento de la entrega, observaciones, accesorios incluidos..."></textarea>
+    </div>
+    <div class="field">
+      <label>Fotografía al salir</label>
+      <label class="foto-label" for="inp-foto-salida" id="lbl-foto-salida">
+        <img id="prev-foto-salida" style="display:none;">
+        <div class="foto-placeholder" id="ph-foto-salida">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M9 5l1.5-2h3L15 5"/></svg>
+          Tomar o subir foto de salida
+        </div>
+        <span class="foto-clear" id="clear-foto-salida" style="display:none;" onclick="clearFoto('salida',event)">✕</span>
+      </label>
+      <input type="file" accept="image/*" id="inp-foto-salida" style="display:none;">
+    </div>
+
+    <div id="seccion-devolucion-panel" style="display:none;">
+      <p class="section-title">Devolución</p>
+      <div class="field">
+        <label>Fecha y hora de devolución</label>
+        <input type="datetime-local" id="pp-fechaDevolucion">
+      </div>
+      <div class="field">
+        <label>Condición al devolver / comentarios</label>
+        <textarea id="pp-comentarioDevolucion" placeholder="Estado al regreso, daños detectados, accidentes ocurridos..."></textarea>
+      </div>
+      <div class="field">
+        <label>Fotografía al devolver</label>
+        <label class="foto-label" for="inp-foto-devolucion" id="lbl-foto-devolucion">
+          <img id="prev-foto-devolucion" style="display:none;">
+          <div class="foto-placeholder" id="ph-foto-devolucion">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M9 5l1.5-2h3L15 5"/></svg>
+            Tomar o subir foto de devolución
+          </div>
+          <span class="foto-clear" id="clear-foto-devolucion" style="display:none;" onclick="clearFoto('devolucion',event)">✕</span>
+        </label>
+        <input type="file" accept="image/*" id="inp-foto-devolucion" style="display:none;">
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ Panel equipo ═══ -->
+<div class="panel-overlay" id="po-equipo"></div>
+<div class="panel" id="panel-equipo">
+  <div class="panel-head">
+    <h3 id="pe-title">Nuevo equipo</h3>
+    <div class="panel-actions">
+      <button class="btn-secondary" id="pe-cancel" style="height:32px;font-size:13px;padding:0 12px;">Cancelar</button>
+      <button class="btn-primary" id="pe-save" style="height:32px;">Guardar</button>
+    </div>
+  </div>
+  <div class="panel-body">
+    <p class="section-title">Datos del equipo</p>
+    <div class="field"><label>ID (auto)</label><input type="text" id="pe-id" readonly></div>
+    <div class="field"><label>Nombre del equipo *</label><input type="text" id="pe-nombre" placeholder="Ej. Pieza de mano de alta velocidad"></div>
+    <div class="field"><label>Número de serie / clave</label><input type="text" id="pe-serie" placeholder="Ej. SN-20421"></div>
+    <div class="field"><label>Descripción</label><textarea id="pe-desc" placeholder="Características, condición inicial, notas..."></textarea></div>
+    <div class="field"><label>Cantidad disponible</label><input type="number" id="pe-cantidad" min="1" value="1"></div>
+  </div>
+</div>
+
+<!-- ═══ Modal devolver (foto + comentario) ═══ -->
+<div class="modal-bg" id="modal-devolver">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-head">
+      <div>
+        <h3 id="md-titulo">Registrar devolución</h3>
+        <p id="md-sub" style="font-size:12px;color:var(--text-secondary);margin-top:4px;"></p>
+      </div>
+      <button class="btn-icon" id="md-cerrar">✕</button>
+    </div>
+    <div class="field">
+      <label>Condición al devolver / comentarios</label>
+      <textarea id="md-comentario" placeholder="Estado al regreso, daños detectados, accidentes ocurridos..." style="min-height:80px;"></textarea>
+    </div>
+    <div class="field" style="margin-top:8px;">
+      <label>Fotografía al devolver</label>
+      <label class="foto-label" for="inp-md-foto" id="lbl-md-foto" style="height:120px;">
+        <img id="prev-md-foto" style="display:none;">
+        <div class="foto-placeholder" id="ph-md-foto">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M9 5l1.5-2h3L15 5"/></svg>
+          Tomar o subir foto
+        </div>
+        <span class="foto-clear" id="clear-md-foto" style="display:none;" onclick="clearFotoMD(event)">✕</span>
+      </label>
+      <input type="file" accept="image/*" id="inp-md-foto" style="display:none;">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="md-cancel">Cancelar</button>
+      <button class="btn-primary" id="md-confirmar" style="background:var(--green-800);">Confirmar devolución</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Modal ver préstamo ═══ -->
+<div class="modal-bg" id="modal-ver-p">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-head">
+      <div>
+        <h3 id="vp-titulo"></h3>
+        <span class="status-badge" id="vp-badge" style="margin-top:6px;display:inline-block;"></span>
+      </div>
+      <button class="btn-icon" onclick="document.getElementById('modal-ver-p').classList.remove('open')">✕</button>
+    </div>
+    <div id="vp-body"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="vp-editar">Editar</button>
+      <button class="btn-secondary" id="vp-eliminar" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-primary" id="vp-devolver" style="display:none;background:var(--green-800);">Registrar devolución</button>
+      <button class="btn-primary" onclick="document.getElementById('modal-ver-p').classList.remove('open')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Modal ver equipo ═══ -->
+<div class="modal-bg" id="modal-ver-e">
+  <div class="modal">
+    <div class="modal-head"><h3 id="ve-titulo"></h3>
+      <button class="btn-icon" onclick="document.getElementById('modal-ver-e').classList.remove('open')">✕</button>
+    </div>
+    <div id="ve-body"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="ve-editar">Editar</button>
+      <button class="btn-secondary" id="ve-eliminar" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-primary" onclick="document.getElementById('modal-ver-e').classList.remove('open')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Modal confirmar eliminación ═══ -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-head"><h3 id="mc-titulo">Eliminar</h3><button class="btn-icon" id="mc-cerrar">✕</button></div>
+    <p id="mc-msg" style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;"></p>
+    <input type="text" id="mc-inp" placeholder="Escribe ELIMINAR para confirmar"
+      style="width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="mc-cancel">Cancelar</button>
+      <button id="mc-ok" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='clinica_prestamos_v1';
+function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{equipos:[],prestamos:[]};}
+function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+function uid(){return 'PR-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,4).toUpperCase();}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function fmtDT(s){if(!s)return'—';const d=new Date(s);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});}
+function nowDT(){const n=new Date();const p=v=>String(v).padStart(2,'0');return`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`;}
+
+const S={data:loadData(),tab:'prestamos',verPId:null,verEId:null,editPId:null,editEId:null,tipoResp:'alumno'};
+
+/* ─── Foto helpers ─── */
+function bindFoto(inputId,imgId,phId,clearId){
+  document.getElementById(inputId).addEventListener('change',e=>{
+    const file=e.target.files[0];if(!file)return;
+    const r=new FileReader();
+    r.onload=()=>{
+      const img=document.getElementById(imgId);
+      img.src=r.result;img.style.display='block';
+      document.getElementById(phId).style.display='none';
+      if(clearId)document.getElementById(clearId).style.display='flex';
+    };
+    r.readAsDataURL(file);
+    e.target.value='';
+  });
+}
+function clearFoto(tipo,e){
+  e.preventDefault();e.stopPropagation();
+  const imgId=`prev-foto-${tipo}`,phId=`ph-foto-${tipo}`,clearId=`clear-foto-${tipo}`;
+  const img=document.getElementById(imgId);
+  img.src='';img.style.display='none';
+  document.getElementById(phId).style.display='flex';
+  document.getElementById(clearId).style.display='none';
+}
+function clearFotoMD(e){
+  e.preventDefault();e.stopPropagation();
+  const img=document.getElementById('prev-md-foto');
+  img.src='';img.style.display='none';
+  document.getElementById('ph-md-foto').style.display='flex';
+  document.getElementById('clear-md-foto').style.display='none';
+}
+function getFotoVal(imgId){
+  const img=document.getElementById(imgId);
+  return img.style.display==='none'?'':(img.src||'');
+}
+function setFoto(imgId,phId,clearId,src){
+  const img=document.getElementById(imgId);
+  if(src){img.src=src;img.style.display='block';document.getElementById(phId).style.display='none';if(clearId)document.getElementById(clearId).style.display='flex';}
+  else{img.src='';img.style.display='none';document.getElementById(phId).style.display='flex';if(clearId)document.getElementById(clearId).style.display='none';}
+}
+bindFoto('inp-foto-salida','prev-foto-salida','ph-foto-salida','clear-foto-salida');
+bindFoto('inp-foto-devolucion','prev-foto-devolucion','ph-foto-devolucion','clear-foto-devolucion');
+bindFoto('inp-md-foto','prev-md-foto','ph-md-foto','clear-md-foto');
+
+/* ─── Autocomplete ─── */
+function setupAC(inputId,listId,getItems){
+  const inp=document.getElementById(inputId);
+  const list=document.getElementById(listId);
+  let focused=-1;
+  function render(term){
+    const items=getItems().filter(n=>n.toLowerCase().includes(term.toLowerCase())).slice(0,18);
+    if(!items.length){list.classList.remove('open');return;}
+    list.innerHTML=items.map(n=>`<div class="ac-item">${esc(n)}</div>`).join('');
+    list.classList.add('open');focused=-1;
+    list.querySelectorAll('.ac-item').forEach((el,i)=>{
+      el.addEventListener('mousedown',ev=>{ev.preventDefault();inp.value=items[i];list.classList.remove('open');});
+    });
+  }
+  inp.addEventListener('input',()=>render(inp.value));
+  inp.addEventListener('focus',()=>render(inp.value));
+  inp.addEventListener('blur',()=>setTimeout(()=>list.classList.remove('open'),150));
+  inp.addEventListener('keydown',e=>{
+    const its=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();focused=Math.min(focused+1,its.length-1);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='ArrowUp'){e.preventDefault();focused=Math.max(focused-1,0);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='Enter'&&focused>=0){e.preventDefault();inp.value=its[focused].textContent;list.classList.remove('open');}
+    else if(e.key==='Escape'){list.classList.remove('open');}
+  });
+}
+function getEquipoNombres(){return S.data.equipos.map(e=>e.nombre);}
+function getAlumnoNombres(){try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}return[];}
+function getMaestroNombres(){try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}return[];}
+function getNombresResp(){return S.tipoResp==='alumno'?getAlumnoNombres():getMaestroNombres();}
+setupAC('pp-equipo','ac-pp-equipo',getEquipoNombres);
+setupAC('pp-responsable','ac-pp-responsable',getNombresResp);
+
+/* Tipo responsable toggle */
+document.querySelectorAll('.tipo-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    S.tipoResp=btn.dataset.tipo;
+    document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    document.getElementById('lbl-responsable').textContent=S.tipoResp==='alumno'?'Nombre del alumno *':'Nombre del maestro *';
+    document.getElementById('pp-responsable').value='';
+    document.getElementById('ac-pp-responsable').classList.remove('open');
+  });
+});
+
+/* ─── Stats ─── */
+function renderStats(){
+  const totalE=S.data.equipos.length;
+  const prestados=S.data.prestamos.filter(p=>p.estado==='Prestado').length;
+  const devueltos=S.data.prestamos.filter(p=>p.estado==='Devuelto').length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Equipos en catálogo</p><p class="stat-value">${totalE}</p></div>
+    <div class="stat warn"><p class="stat-label">Actualmente prestados</p><p class="stat-value">${prestados}</p></div>
+    <div class="stat ok"><p class="stat-label">Devueltos</p><p class="stat-value">${devueltos}</p></div>
+    <div class="stat"><p class="stat-label">Total préstamos</p><p class="stat-value">${S.data.prestamos.length}</p></div>`;
+}
+
+/* ─── Lista préstamos ─── */
+function renderPrestamos(){
+  const term=(document.getElementById('buscar-p').value||'').toLowerCase();
+  const estFiltro=document.getElementById('filtro-estado').value;
+  let rows=S.data.prestamos.filter(p=>{
+    const m=(p.equipoNombre||'').toLowerCase().includes(term)||(p.responsable||'').toLowerCase().includes(term);
+    return m&&(!estFiltro||p.estado===estFiltro);
+  }).sort((a,b)=>new Date(b.fechaSalida)-new Date(a.fechaSalida));
+
+  const lista=document.getElementById('lista-prestamos');
+  const empty=document.getElementById('empty-p');
+  if(!rows.length){lista.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  lista.innerHTML=rows.map(p=>{
+    const thumb=p.fotoSalida?`<img src="${p.fotoSalida}">`:`<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M12 11v4M10 13h4"/></svg>`;
+    return`<div class="list-row" onclick="verPrestamo('${p.id}')">
+      <div class="equipo-icon">${thumb}</div>
+      <div class="row-info">
+        <p class="row-title">${esc(p.equipoNombre)}</p>
+        <p class="row-sub">${esc(p.tipoResp==='maestro'?'Maestro':'Alumno')}: ${esc(p.responsable)} · Salida: ${fmtDT(p.fechaSalida)}</p>
+      </div>
+      <span class="status-badge ${p.estado==='Prestado'?'badge-prestado':'badge-devuelto'}">${esc(p.estado)}</span>
+      ${p.estado==='Prestado'?`<button class="btn-devolver" onclick="abrirModalDevolver(event,'${p.id}')">Devolver</button>`:''}
+      <button class="btn-icon" onclick="abrirConfirm(event,'prestamo','${p.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+/* ─── Lista equipos ─── */
+function renderEquipos(){
+  const term=(document.getElementById('buscar-e').value||'').toLowerCase();
+  let rows=S.data.equipos.filter(e=>(e.nombre||'').toLowerCase().includes(term)||(e.serie||'').toLowerCase().includes(term))
+    .sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+  const lista=document.getElementById('lista-equipos');
+  const empty=document.getElementById('empty-e');
+  if(!rows.length){lista.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  lista.innerHTML=rows.map(e=>{
+    const prestadosCant=S.data.prestamos.filter(p=>p.equipoId===e.id&&p.estado==='Prestado').length;
+    const disp=Math.max(0,(e.cantidad||1)-prestadosCant);
+    return`<div class="list-row" onclick="verEquipo('${e.id}')">
+      <div class="equipo-icon"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M12 11v4M10 13h4"/></svg></div>
+      <div class="row-info">
+        <p class="row-title">${esc(e.nombre)}</p>
+        <p class="row-sub">${e.serie?'Serie: '+esc(e.serie):''}${e.desc?' · '+esc(e.desc):''}</p>
+      </div>
+      <span class="status-badge ${disp>0?'badge-disponible':'badge-agotado'}">${disp>0?disp+' disp.':'Prestado'}</span>
+      <span class="cant-badge">×${e.cantidad||1}</span>
+      <button class="btn-icon" onclick="abrirConfirm(event,'equipo','${e.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderAll(){renderStats();renderPrestamos();renderEquipos();}
+
+/* ─── Tabs ─── */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    S.tab=btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    document.getElementById('tab-prestamos').style.display=S.tab==='prestamos'?'':'none';
+    document.getElementById('tab-equipos').style.display=S.tab==='equipos'?'':'none';
+  });
+});
+
+/* ─── Panel préstamo ─── */
+function resetFotoPanel(){
+  setFoto('prev-foto-salida','ph-foto-salida','clear-foto-salida','');
+  setFoto('prev-foto-devolucion','ph-foto-devolucion','clear-foto-devolucion','');
+}
+function openPanelP(id){
+  S.editPId=id||null;
+  document.getElementById('pp-equipo').value='';
+  document.getElementById('pp-equipoId').value='';
+  document.getElementById('pp-responsable').value='';
+  document.getElementById('pp-comentarioSalida').value='';
+  document.getElementById('pp-comentarioDevolucion').value='';
+  document.getElementById('pp-fechaSalida').value='';
+  document.getElementById('pp-fechaDevolucion').value='';
+  document.getElementById('seccion-devolucion-panel').style.display='none';
+  resetFotoPanel();
+  S.tipoResp='alumno';
+  document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.toggle('active',b.dataset.tipo==='alumno'));
+  document.getElementById('lbl-responsable').textContent='Nombre del alumno *';
+
+  if(id){
+    const p=S.data.prestamos.find(x=>x.id===id);
+    document.getElementById('pp-title').textContent='Editar préstamo';
+    document.getElementById('pp-equipo').value=p.equipoNombre||'';
+    document.getElementById('pp-equipoId').value=p.equipoId||'';
+    document.getElementById('pp-responsable').value=p.responsable||'';
+    document.getElementById('pp-fechaSalida').value=p.fechaSalida||'';
+    document.getElementById('pp-comentarioSalida').value=p.comentarioSalida||'';
+    S.tipoResp=p.tipoResp||'alumno';
+    document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.toggle('active',b.dataset.tipo===S.tipoResp));
+    document.getElementById('lbl-responsable').textContent=S.tipoResp==='maestro'?'Nombre del maestro *':'Nombre del alumno *';
+    setFoto('prev-foto-salida','ph-foto-salida','clear-foto-salida',p.fotoSalida||'');
+    if(p.estado==='Devuelto'){
+      document.getElementById('seccion-devolucion-panel').style.display='';
+      document.getElementById('pp-fechaDevolucion').value=p.fechaDevolucion||'';
+      document.getElementById('pp-comentarioDevolucion').value=p.comentarioDevolucion||'';
+      setFoto('prev-foto-devolucion','ph-foto-devolucion','clear-foto-devolucion',p.fotoDevolucion||'');
+    }
+  } else {
+    document.getElementById('pp-title').textContent='Nuevo préstamo';
+    document.getElementById('pp-fechaSalida').value=nowDT();
+  }
+  document.getElementById('po-prestamo').classList.add('open');
+  document.getElementById('panel-prestamo').classList.add('open');
+}
+function closePanelP(){
+  document.getElementById('po-prestamo').classList.remove('open');
+  document.getElementById('panel-prestamo').classList.remove('open');
+}
+document.getElementById('btn-nuevo-prestamo').addEventListener('click',()=>openPanelP());
+document.getElementById('pp-cancel').addEventListener('click',closePanelP);
+document.getElementById('po-prestamo').addEventListener('click',closePanelP);
+
+document.getElementById('pp-save').addEventListener('click',()=>{
+  const equipoNombre=document.getElementById('pp-equipo').value.trim();
+  const responsable=document.getElementById('pp-responsable').value.trim();
+  const fechaSalida=document.getElementById('pp-fechaSalida').value;
+  if(!equipoNombre){document.getElementById('pp-equipo').focus();return;}
+  if(!responsable){document.getElementById('pp-responsable').focus();return;}
+  if(!fechaSalida){document.getElementById('pp-fechaSalida').focus();return;}
+  const equipo=S.data.equipos.find(e=>e.nombre===equipoNombre);
+  if(equipo && !S.editPId){
+    const prestadosCant=S.data.prestamos.filter(p=>p.equipoId===equipo.id&&p.estado==='Prestado').length;
+    const disp=(equipo.cantidad||1)-prestadosCant;
+    if(disp<=0){alert(`No hay unidades disponibles de "${equipo.nombre}". Todos los ${equipo.cantidad||1} equipo(s) están en préstamo actualmente.`);return;}
+  }
+  const fechaDevolucion=document.getElementById('pp-fechaDevolucion').value||'';
+  const rec={
+    id:S.editPId||uid(),
+    equipoId:equipo?equipo.id:'',
+    equipoNombre,responsable,tipoResp:S.tipoResp,
+    fechaSalida,
+    comentarioSalida:document.getElementById('pp-comentarioSalida').value.trim(),
+    fotoSalida:getFotoVal('prev-foto-salida'),
+    fechaDevolucion,
+    comentarioDevolucion:document.getElementById('pp-comentarioDevolucion').value.trim(),
+    fotoDevolucion:getFotoVal('prev-foto-devolucion'),
+    estado:fechaDevolucion?'Devuelto':'Prestado',
+  };
+  if(S.editPId){const i=S.data.prestamos.findIndex(x=>x.id===S.editPId);if(i>-1)S.data.prestamos[i]=rec;}
+  else S.data.prestamos.push(rec);
+  saveData();renderAll();closePanelP();
+});
+
+/* ─── Panel equipo ─── */
+function openPanelE(id){
+  S.editEId=id||null;
+  document.getElementById('pe-nombre').value='';
+  document.getElementById('pe-serie').value='';
+  document.getElementById('pe-desc').value='';
+  document.getElementById('pe-cantidad').value='1';
+  if(id){
+    const e=S.data.equipos.find(x=>x.id===id);
+    document.getElementById('pe-title').textContent='Editar equipo';
+    document.getElementById('pe-id').value=e.id;
+    document.getElementById('pe-nombre').value=e.nombre||'';
+    document.getElementById('pe-serie').value=e.serie||'';
+    document.getElementById('pe-desc').value=e.desc||'';
+    document.getElementById('pe-cantidad').value=e.cantidad||1;
+  } else {
+    document.getElementById('pe-title').textContent='Nuevo equipo';
+    document.getElementById('pe-id').value=uid();
+  }
+  document.getElementById('po-equipo').classList.add('open');
+  document.getElementById('panel-equipo').classList.add('open');
+}
+function closePanelE(){
+  document.getElementById('po-equipo').classList.remove('open');
+  document.getElementById('panel-equipo').classList.remove('open');
+}
+document.getElementById('btn-nuevo-equipo').addEventListener('click',()=>openPanelE());
+document.getElementById('pe-cancel').addEventListener('click',closePanelE);
+document.getElementById('po-equipo').addEventListener('click',closePanelE);
+document.getElementById('pe-save').addEventListener('click',()=>{
+  const nombre=document.getElementById('pe-nombre').value.trim();
+  if(!nombre){document.getElementById('pe-nombre').focus();return;}
+  const rec={
+    id:S.editEId||document.getElementById('pe-id').value,
+    nombre,
+    serie:document.getElementById('pe-serie').value.trim(),
+    desc:document.getElementById('pe-desc').value.trim(),
+    cantidad:parseInt(document.getElementById('pe-cantidad').value)||1,
+  };
+  if(S.editEId){const i=S.data.equipos.findIndex(x=>x.id===S.editEId);if(i>-1)S.data.equipos[i]=rec;}
+  else S.data.equipos.push(rec);
+  saveData();renderAll();closePanelE();
+});
+
+/* ─── Modal devolver ─── */
+function abrirModalDevolver(e,id){
+  e.stopPropagation();
+  S.verPId=id;
+  const p=S.data.prestamos.find(x=>x.id===id);
+  document.getElementById('md-titulo').textContent='Registrar devolución';
+  document.getElementById('md-sub').textContent=p.equipoNombre+' · '+p.responsable;
+  document.getElementById('md-comentario').value='';
+  setFoto('prev-md-foto','ph-md-foto','clear-md-foto','');
+  document.getElementById('modal-ver-p').classList.remove('open');
+  document.getElementById('modal-devolver').classList.add('open');
+}
+document.getElementById('md-cerrar').addEventListener('click',()=>document.getElementById('modal-devolver').classList.remove('open'));
+document.getElementById('md-cancel').addEventListener('click',()=>document.getElementById('modal-devolver').classList.remove('open'));
+document.getElementById('md-confirmar').addEventListener('click',()=>{
+  if(!getFotoVal('prev-md-foto')){
+    const lbl=document.getElementById('lbl-md-foto');
+    lbl.style.borderColor='var(--red-600)';
+    lbl.style.background='var(--red-50)';
+    setTimeout(()=>{lbl.style.borderColor='';lbl.style.background='';},2000);
+    document.getElementById('ph-md-foto').querySelector('svg').style.stroke='var(--red-600)';
+    return;
+  }
+  const i=S.data.prestamos.findIndex(x=>x.id===S.verPId);
+  if(i>-1){
+    S.data.prestamos[i].estado='Devuelto';
+    S.data.prestamos[i].fechaDevolucion=nowDT();
+    S.data.prestamos[i].comentarioDevolucion=document.getElementById('md-comentario').value.trim();
+    S.data.prestamos[i].fotoDevolucion=getFotoVal('prev-md-foto');
+  }
+  saveData();renderAll();
+  document.getElementById('modal-devolver').classList.remove('open');
+});
+
+/* ─── Ver préstamo ─── */
+function verPrestamo(id){
+  const p=S.data.prestamos.find(x=>x.id===id);if(!p)return;
+  S.verPId=id;
+  document.getElementById('vp-titulo').textContent=p.equipoNombre||'Préstamo';
+  const badge=document.getElementById('vp-badge');
+  badge.textContent=p.estado;
+  badge.className='status-badge '+(p.estado==='Prestado'?'badge-prestado':'badge-devuelto');
+
+  let html=`
+    <div class="detail-row"><span>Responsable</span><span>${esc((p.tipoResp==='maestro'?'Maestro: ':'Alumno: ')+p.responsable)}</span></div>
+    <div class="detail-row"><span>Fecha de salida</span><span>${fmtDT(p.fechaSalida)}</span></div>
+    <div class="detail-row"><span>Fecha de devolución</span><span>${p.fechaDevolucion?fmtDT(p.fechaDevolucion):'Pendiente'}</span></div>
+    <div class="detail-row"><span>ID del préstamo</span><span style="font-size:11px;">${esc(p.id)}</span></div>`;
+
+  /* Fotos y comentarios */
+  const hayFotos=p.fotoSalida||p.fotoDevolucion;
+  if(hayFotos||p.comentarioSalida||p.comentarioDevolucion){
+    html+=`<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">`;
+
+    if(p.comentarioSalida){
+      html+=`<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:4px;">Condición al salir</p>
+        <div class="comment-box">${esc(p.comentarioSalida)}</div>`;
+    }
+    if(p.comentarioDevolucion){
+      html+=`<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin:12px 0 4px;">Condición al devolver</p>
+        <div class="comment-box">${esc(p.comentarioDevolucion)}</div>`;
+    }
+    if(hayFotos){
+      html+=`<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin:12px 0 8px;">Fotografías</p>
+        <div class="foto-pair">
+          <div class="foto-pair-item">
+            <p class="foto-pair-label">Al salir</p>
+            ${p.fotoSalida?`<img class="foto-thumb" src="${p.fotoSalida}">`:`<div class="foto-no-img">Sin foto</div>`}
+          </div>
+          <div class="foto-pair-item">
+            <p class="foto-pair-label">Al devolver</p>
+            ${p.fotoDevolucion?`<img class="foto-thumb" src="${p.fotoDevolucion}">`:`<div class="foto-no-img">${p.estado==='Prestado'?'Pendiente':'Sin foto'}</div>`}
+          </div>
+        </div>`;
+    }
+    html+=`</div>`;
+  }
+
+  document.getElementById('vp-body').innerHTML=html;
+  document.getElementById('vp-devolver').style.display=p.estado==='Prestado'?'':'none';
+  document.getElementById('modal-ver-p').classList.add('open');
+}
+
+document.getElementById('vp-editar').addEventListener('click',()=>{
+  document.getElementById('modal-ver-p').classList.remove('open');
+  openPanelP(S.verPId);
+});
+document.getElementById('vp-eliminar').addEventListener('click',()=>{
+  document.getElementById('modal-ver-p').classList.remove('open');
+  abrirConfirmDirect('prestamo',S.verPId);
+});
+document.getElementById('vp-devolver').addEventListener('click',()=>{
+  abrirModalDevolver({stopPropagation:()=>{}},S.verPId);
+});
+
+/* ─── Ver equipo ─── */
+function verEquipo(id){
+  const e=S.data.equipos.find(x=>x.id===id);if(!e)return;
+  S.verEId=id;
+  document.getElementById('ve-titulo').textContent=e.nombre;
+  const prestadosCant=S.data.prestamos.filter(p=>p.equipoId===e.id&&p.estado==='Prestado').length;
+  const campos=[
+    ['Número de serie',e.serie||'—'],['Descripción',e.desc||'—'],
+    ['Cantidad total',e.cantidad||1],['Actualmente prestados',prestadosCant],
+    ['Disponibles',Math.max(0,(e.cantidad||1)-prestadosCant)],['ID del sistema',e.id],
+  ];
+  document.getElementById('ve-body').innerHTML=campos.map(([l,v])=>`
+    <div class="detail-row"><span>${l}</span><span>${esc(v)}</span></div>`).join('');
+  document.getElementById('modal-ver-e').classList.add('open');
+}
+document.getElementById('ve-editar').addEventListener('click',()=>{
+  document.getElementById('modal-ver-e').classList.remove('open');openPanelE(S.verEId);
+});
+document.getElementById('ve-eliminar').addEventListener('click',()=>{
+  document.getElementById('modal-ver-e').classList.remove('open');abrirConfirmDirect('equipo',S.verEId);
+});
+
+/* ─── Confirmación eliminación ─── */
+function abrirConfirm(e,tipo,id){e.stopPropagation();abrirConfirmDirect(tipo,id);}
+function abrirConfirmDirect(tipo,id){
+  const label=tipo==='prestamo'?'préstamo':'equipo';
+  document.getElementById('mc-titulo').textContent='Eliminar '+label;
+  document.getElementById('mc-msg').innerHTML=`¿Eliminar este <strong>${label}</strong>? Escribe <strong>ELIMINAR</strong> para confirmar.`;
+  document.getElementById('mc-inp').value='';
+  document.getElementById('mc-inp').style.borderColor='';
+  document.getElementById('modal-confirm').dataset.tipo=tipo;
+  document.getElementById('modal-confirm').dataset.id=id;
+  document.getElementById('modal-confirm').classList.add('open');
+}
+document.getElementById('mc-cerrar').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('mc-cancel').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('mc-ok').addEventListener('click',()=>{
+  if(document.getElementById('mc-inp').value.trim()!=='ELIMINAR'){
+    document.getElementById('mc-inp').style.borderColor='var(--red-600)';return;
+  }
+  const tipo=document.getElementById('modal-confirm').dataset.tipo;
+  const id=document.getElementById('modal-confirm').dataset.id;
+  if(tipo==='prestamo')S.data.prestamos=S.data.prestamos.filter(x=>x.id!==id);
+  else S.data.equipos=S.data.equipos.filter(x=>x.id!==id);
+  saveData();renderAll();document.getElementById('modal-confirm').classList.remove('open');
+});
+
+document.getElementById('buscar-p').addEventListener('input',renderPrestamos);
+document.getElementById('filtro-estado').addEventListener('change',renderPrestamos);
+document.getElementById('buscar-e').addEventListener('input',renderEquipos);
+
+renderAll();
+</script>
+</body>
+</html>

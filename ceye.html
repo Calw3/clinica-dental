@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro CeYE</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --coral-50:#FAECE7;--coral-800:#712B13;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --green-50:#EAF3DE;--green-600:#2E7D0E;--green-800:#27500A;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;--amber-800:#5C3308;
+  --blue-50:#E6F1FB;--blue-800:#0C447C;
+  --purple-50:#EEEDFE;--purple-800:#3C3489;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 20px 80px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.stat-label{font-size:11px;color:var(--text-secondary);}
+.stat-value{font-size:22px;font-weight:600;margin-top:2px;color:var(--teal-900);}
+/* Toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:220px;}
+.search-input:focus{outline:none;border-color:var(--teal-600);}
+.filtro-select{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.filtro-select:focus{outline:none;border-color:var(--teal-600);}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+/* Lista */
+.lista-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.list-row:first-child{border-top:none;}
+.list-row:hover{background:var(--teal-50);}
+.row-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}
+.row-icon.pendiente{background:var(--amber-50);}
+.row-icon.esteril{background:var(--green-50);}
+.row-info{flex:1;min-width:0;}
+.row-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-meta{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap;}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap;}
+.badge-pendiente{background:var(--amber-50);color:var(--amber-800);}
+.badge-esteril{background:var(--green-50);color:var(--green-800);}
+.badge-turno-mat{background:var(--blue-50);color:var(--blue-800);}
+.badge-turno-ves{background:var(--purple-50);color:var(--purple-800);}
+.btn-marcar{background:var(--green-50);color:var(--green-800);border:1px solid var(--green-600);border-radius:var(--radius);padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.btn-marcar:hover{background:var(--green-800);color:#fff;}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:14px;flex-shrink:0;}
+.btn-icon:hover{background:var(--red-50);color:var(--red-600);}
+.empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
+.empty-state p:first-child{font-weight:600;color:var(--text-primary);font-size:15px;}
+.empty-state p:last-child{font-size:13px;margin-top:4px;}
+/* Panel */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.35);z-index:40;}
+.panel-overlay.open{display:block;}
+.panel{position:fixed;top:0;right:-100%;width:min(520px,100vw);height:100vh;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);transition:right .25s ease;}
+.panel.open{right:0;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.panel-actions{display:flex;gap:8px;}
+.panel-body{flex:1;overflow-y:auto;padding:20px;}
+/* ID chip */
+.id-chip{display:inline-flex;align-items:center;gap:8px;background:var(--teal-50);border:1px solid var(--teal-600);border-radius:var(--radius);padding:8px 14px;font-size:13px;font-weight:700;color:var(--teal-900);margin-bottom:16px;}
+.id-chip .label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--teal-600);}
+/* Timestamp */
+.timestamp-box{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.timestamp-box svg{width:16px;height:16px;fill:none;stroke:var(--text-secondary);stroke-width:1.8;stroke-linecap:round;flex-shrink:0;}
+.timestamp-box .ts-label{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700;}
+.timestamp-box .ts-val{font-size:14px;font-weight:600;color:var(--text-primary);margin-top:1px;}
+/* Form */
+.section-title{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.section-title:first-child{margin-top:0;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.field input,.field select{height:36px;}
+.field textarea{padding:8px 10px;resize:vertical;min-height:60px;line-height:1.5;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+.field input[readonly]{background:var(--surface-1);color:var(--text-secondary);}
+/* Turno selector */
+.turno-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.turno-card{border:2px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.turno-card:hover{border-color:var(--teal-600);}
+.turno-card.sel-mat{border-color:var(--blue-800);background:var(--blue-50);}
+.turno-card.sel-mat .turno-label{color:var(--blue-800);}
+.turno-card.sel-ves{border-color:var(--purple-800);background:var(--purple-50);}
+.turno-card.sel-ves .turno-label{color:var(--purple-800);}
+.turno-icon{font-size:22px;margin-bottom:4px;}
+.turno-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary);}
+/* Autocomplete */
+.ac-wrap{position:relative;}
+.ac-list{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:220px;overflow-y:auto;}
+.ac-list.open{display:block;}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;border-top:1px solid var(--border);}
+.ac-item:first-child{border-top:none;}
+.ac-item:hover,.ac-item.focused{background:var(--teal-50);}
+/* Foto upload */
+.foto-label{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;border:2px dashed var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:border-color .15s,background .15s;position:relative;min-height:80px;}
+.foto-label:hover{border-color:var(--teal-600);background:var(--teal-50);}
+.foto-label input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;}
+.foto-label svg{width:22px;height:22px;fill:none;stroke:var(--text-muted);stroke-width:1.8;stroke-linecap:round;}
+.foto-label .foto-text{font-size:12px;color:var(--text-secondary);font-weight:600;}
+.foto-label .foto-sub{font-size:11px;color:var(--text-muted);}
+.foto-preview{display:none;width:100%;max-height:200px;object-fit:contain;border-radius:8px;border:1px solid var(--border);margin-top:6px;}
+.foto-preview.visible{display:block;}
+.foto-clear{display:none;background:var(--red-50);color:var(--red-600);border:1px solid var(--red-600);border-radius:var(--radius);font-size:11px;font-weight:700;padding:3px 8px;cursor:pointer;font-family:inherit;margin-top:6px;}
+.foto-clear.visible{display:inline-block;}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;z-index:60;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:520px;width:100%;padding:24px;}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.modal-head h3{font-size:17px;font-weight:600;line-height:1.3;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;flex-wrap:wrap;}
+/* Ver detail */
+.detail-section{margin-bottom:14px;}
+.detail-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--teal-800);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.detail-row{display:flex;justify-content:space-between;gap:16px;padding:6px 0;border-top:1px solid var(--border);font-size:13px;}
+.detail-row:first-child{border-top:none;}
+.detail-row span:first-child{color:var(--text-secondary);flex-shrink:0;}
+.detail-row span:last-child{font-weight:500;text-align:right;}
+.foto-ver{width:100%;max-height:220px;object-fit:contain;border-radius:8px;border:1px solid var(--border);margin-top:8px;}
+.esteril-stamp{display:flex;align-items:center;gap:10px;background:var(--green-50);border:1px solid var(--green-600);border-radius:var(--radius);padding:10px 14px;margin-top:8px;}
+.esteril-stamp svg{width:18px;height:18px;fill:none;stroke:var(--green-800);stroke-width:2;stroke-linecap:round;flex-shrink:0;}
+.esteril-stamp p{font-size:13px;font-weight:700;color:var(--green-800);}
+.esteril-stamp span{font-size:11px;color:var(--green-600);}
+/* Confirm delete */
+.modal-sm{max-width:360px;}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Registro de Esterilización · CeYE</h1>
+      </div>
+    </header>
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-input" id="buscar" placeholder="Buscar alumno, ID, clínica...">
+      <select class="filtro-select" id="filtro-estado">
+        <option value="">Todos</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="esteril">Estéril</option>
+      </select>
+      <select class="filtro-select" id="filtro-turno">
+        <option value="">Todos los turnos</option>
+        <option value="Matutino">Matutino</option>
+        <option value="Vespertino">Vespertino</option>
+      </select>
+    </div>
+    <button class="btn-primary" id="btn-nuevo">+ Nueva entrega</button>
+  </div>
+
+  <div class="lista-wrap">
+    <div id="lista"></div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <p>Sin registros de esterilización.</p>
+      <p>Registra la primera entrega con el botón "+ Nueva entrega".</p>
+    </div>
+  </div>
+
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<!-- ═══ Panel lateral ═══ -->
+<div class="panel-overlay" id="panel-overlay"></div>
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <h3 id="panel-title">Nueva entrega a CeYE</h3>
+    <div class="panel-actions">
+      <button class="btn-secondary" id="btn-cancel" style="height:32px;font-size:13px;padding:0 12px;">Cancelar</button>
+      <button class="btn-primary" id="btn-save" style="height:32px;">Registrar</button>
+    </div>
+  </div>
+  <div class="panel-body">
+
+    <!-- ID + Timestamp autogenerados -->
+    <div id="f-id-chip" class="id-chip" style="display:none;">
+      <span class="label">ID CeYE</span>
+      <span id="f-id-val">—</span>
+    </div>
+    <div class="timestamp-box">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <div>
+        <p class="ts-label">Fecha y hora de entrega (automática)</p>
+        <p class="ts-val" id="f-timestamp">—</p>
+      </div>
+    </div>
+
+    <p class="section-title">Datos del turno</p>
+    <div>
+      <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Turno *</p>
+      <div class="turno-grid">
+        <div class="turno-card" data-turno="Matutino" onclick="selTurno(this)">
+          <div class="turno-icon">🌅</div>
+          <div class="turno-label">Matutino</div>
+        </div>
+        <div class="turno-card" data-turno="Vespertino" onclick="selTurno(this)">
+          <div class="turno-icon">🌆</div>
+          <div class="turno-label">Vespertino</div>
+        </div>
+      </div>
+      <input type="hidden" id="f-turno">
+    </div>
+
+    <div class="field">
+      <label>Persona que recibe *</label>
+      <div class="ac-wrap">
+        <input type="text" id="f-receptor" placeholder="Buscar en personal registrado..." autocomplete="off">
+        <div class="ac-list" id="ac-receptor"></div>
+      </div>
+    </div>
+
+    <p class="section-title">Clínica</p>
+    <div class="field">
+      <label>Clínica / Materia *</label>
+      <select id="f-clinica">
+        <option value="">— Seleccionar —</option>
+        <optgroup label="Clínicas Integrales">
+          <option>Clínica Integral I</option>
+          <option>Clínica Integral II</option>
+          <option>Clínica Integral III</option>
+          <option>Clínica Integral IV</option>
+          <option>Clínica Integral V</option>
+          <option>Servicio Social</option>
+        </optgroup>
+        <optgroup label="Especialidades Clínicas">
+          <option>Endodoncia I</option>
+          <option>Endodoncia II</option>
+          <option>Cirugía Bucal</option>
+          <option>Bases Quirúrgicas</option>
+          <option>Periodoncia</option>
+          <option>Periodoncia Avanzada</option>
+          <option>Odontopediatría</option>
+          <option>Odontopediatría Avanzada</option>
+          <option>Rehabilitación Bucal Fija</option>
+          <option>Prótesis Removible</option>
+          <option>Prostodoncia Total</option>
+          <option>Bases Protésicas en Implantología</option>
+          <option>Integración Clínica</option>
+          <option>Anestesiología</option>
+          <option>Diagnóstico en Ortodoncia</option>
+          <option>Terapia de Odontología de Mínima Invasión</option>
+          <option>Terapia Odontológica de Mínima Invasión</option>
+          <option>Atención de Paciente Comprometido Sistemicamente</option>
+          <option>Medicina Estomatológica</option>
+          <option>Urgencias Médicas</option>
+          <option>Odontología Legal y Forense</option>
+        </optgroup>
+        <optgroup label="Diagnóstico">
+          <option>Imagenología</option>
+          <option>Diagnóstico Imagen</option>
+          <option>Diagnóstico Integral en Odontología</option>
+          <option>Patología Bucal</option>
+        </optgroup>
+        <optgroup label="Ciencias Básicas">
+          <option>Anatomía de Cabeza y Cuello</option>
+          <option>Histología Bucal</option>
+          <option>Biomateriales Dentales II</option>
+          <option>Fisiología</option>
+          <option>Biología Celular</option>
+          <option>Inmunología</option>
+          <option>Bioquímica</option>
+          <option>Microbiología Oral</option>
+          <option>Odontología Preventiva</option>
+          <option>Genómica y Proteómica</option>
+        </optgroup>
+        <optgroup label="Formación Universitaria">
+          <option>Habilidades Universitarias para la Comunicación</option>
+          <option>Antropología Fundamental</option>
+          <option>Formación Universitaria B</option>
+          <option>Odontología Basada en Evidencia</option>
+          <option>Electiva Interdisciplinaria EGEL</option>
+          <option>Metodología de la Investigación</option>
+          <option>Emprendimiento e Innovación</option>
+          <option>Competencias Digitales</option>
+          <option>Ética</option>
+          <option>Probabilidad y Estadística</option>
+          <option>Habilidades del Emprendimiento</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <p class="section-title">Alumno que entrega</p>
+    <div class="field">
+      <label>Nombre del alumno *</label>
+      <div class="ac-wrap">
+        <input type="text" id="f-alumno" placeholder="Buscar en base de alumnos..." autocomplete="off">
+        <div class="ac-list" id="ac-alumno"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Correo institucional</label>
+      <input type="text" id="f-correo" placeholder="Se autocompleta al seleccionar alumno" readonly>
+    </div>
+
+    <p class="section-title">Instrumental</p>
+    <div class="field">
+      <label>Número de paquetes *</label>
+      <input type="number" id="f-paquetes" min="1" placeholder="Ej. 3">
+    </div>
+    <div class="field">
+      <label>Comentarios</label>
+      <textarea id="f-comentarios" placeholder="Estado del instrumental, observaciones, etc."></textarea>
+    </div>
+    <div class="field">
+      <label>Foto del instrumental *</label>
+      <label class="foto-label" id="lbl-foto-inst">
+        <input type="file" id="inp-foto-inst" accept="image/*" capture="environment" onchange="loadFoto(this,'prev-foto-inst','lbl-foto-inst','clear-foto-inst')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M9 5l1-2h4l1 2"/></svg>
+        <span class="foto-text">Subir foto del instrumental</span>
+        <span class="foto-sub">JPG, PNG o captura de cámara</span>
+      </label>
+      <img id="prev-foto-inst" class="foto-preview">
+      <button type="button" id="clear-foto-inst" class="foto-clear" onclick="clearFoto('inp-foto-inst','prev-foto-inst','clear-foto-inst')">✕ Quitar foto</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ Modal ver detalle ═══ -->
+<div class="modal-bg" id="modal-ver">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-head">
+      <div>
+        <h3 id="ver-id" style="font-family:monospace;color:var(--teal-900);"></h3>
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;" id="ver-badges"></div>
+      </div>
+      <button class="btn-icon" id="cerrar-ver">✕</button>
+    </div>
+    <div id="ver-body" style="max-height:65vh;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-ver-eliminar" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-primary" id="btn-ver-esteril" style="display:none;background:var(--green-800);">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        Marcar como estéril
+      </button>
+      <button class="btn-secondary" id="btn-ver-cerrar">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Modal marcar estéril ═══ -->
+<div class="modal-bg" id="modal-esteril">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-head">
+      <div>
+        <h3>Marcar como material estéril</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin-top:4px;" id="me-sub"></p>
+      </div>
+      <button class="btn-icon" id="cerrar-me">✕</button>
+    </div>
+    <div style="margin-bottom:16px;">
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">Sube una fotografía que confirme que el instrumental ya fue esterilizado correctamente.</p>
+      <div class="field">
+        <label>Foto del material estéril *</label>
+        <label class="foto-label" id="lbl-me-foto">
+          <input type="file" id="inp-me-foto" accept="image/*" capture="environment" onchange="loadFoto(this,'prev-me-foto','lbl-me-foto','clear-me-foto')">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+          <span class="foto-text">Subir foto del material estéril</span>
+          <span class="foto-sub">Obligatoria para confirmar</span>
+        </label>
+        <img id="prev-me-foto" class="foto-preview">
+        <button type="button" id="clear-me-foto" class="foto-clear" onclick="clearFoto('inp-me-foto','prev-me-foto','clear-me-foto')">✕ Quitar foto</button>
+      </div>
+      <div class="field">
+        <label>Comentarios de esterilización</label>
+        <textarea id="me-comentarios" placeholder="Observaciones del proceso de esterilización..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="me-cancel">Cancelar</button>
+      <button class="btn-primary" id="me-confirmar" style="background:var(--green-800);">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M22 4L12 14.01l-3-3"/></svg>
+        Confirmar esterilización
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Modal eliminar ═══ -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal modal-sm">
+    <div class="modal-head"><h3>Eliminar registro</h3><button class="btn-icon" id="cerrar-confirm">✕</button></div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Esta acción no se puede deshacer. Escribe <strong>ELIMINAR</strong> para confirmar.</p>
+    <input type="text" id="inp-confirm" placeholder="Escribe ELIMINAR"
+      style="width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelar-confirm">Cancelar</button>
+      <button id="btn-confirm-del" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='clinica_ceye_v1';
+function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{registros:[],seq:1};}
+function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function uid(){const d=S.data;const n=String(d.seq||1).padStart(4,'0');d.seq=(d.seq||1)+1;return'CeYE-'+fmtDate(new Date()).replace(/\//g,'')+'-'+n;}
+function fmtDate(d){return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
+function fmtTime(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+function fmtTS(iso){if(!iso)return'—';const d=new Date(iso);return`${fmtDate(d)} a las ${fmtTime(d)}`;}
+
+const S={data:loadData(),verId:null,esterilId:null,newId:null,newTS:null};
+
+/* ─── Fotos ─── */
+function loadFoto(inp,imgId,lblId,clearId){
+  const file=inp.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=document.getElementById(imgId);
+    img.src=e.target.result;img.classList.add('visible');
+    document.getElementById(clearId).classList.add('visible');
+    document.getElementById(lblId).querySelector('.foto-text').textContent='Foto cargada';
+    document.getElementById(lblId).style.borderStyle='solid';
+  };
+  r.readAsDataURL(file);
+}
+function clearFoto(inpId,imgId,clearId){
+  document.getElementById(inpId).value='';
+  const img=document.getElementById(imgId);img.src='';img.classList.remove('visible');
+  document.getElementById(clearId).classList.remove('visible');
+  const lbl=document.getElementById(inpId).closest('.foto-label');
+  if(lbl){lbl.querySelector('.foto-text').textContent=inpId==='inp-foto-inst'?'Subir foto del instrumental':'Subir foto del material estéril';lbl.style.borderStyle='';}
+}
+function getFoto(imgId){const img=document.getElementById(imgId);return img.src&&img.src.startsWith('data:')?img.src:'';}
+
+/* ─── Turno selector ─── */
+function selTurno(card){
+  document.querySelectorAll('.turno-card').forEach(c=>{c.className='turno-card';});
+  const t=card.dataset.turno;
+  card.classList.add(t==='Matutino'?'sel-mat':'sel-ves');
+  document.getElementById('f-turno').value=t;
+}
+function setTurnoUI(t){
+  document.querySelectorAll('.turno-card').forEach(c=>{
+    c.className='turno-card';
+    if(c.dataset.turno===t)c.classList.add(t==='Matutino'?'sel-mat':'sel-ves');
+  });
+  document.getElementById('f-turno').value=t||'';
+}
+
+/* ─── Autocomplete ─── */
+function setupAC(inputId,listId,getItems,onSelect){
+  const inp=document.getElementById(inputId);
+  const list=document.getElementById(listId);
+  let focused=-1,items=[];
+  function render(term){
+    items=getItems().filter(n=>n.toLowerCase().includes(term.toLowerCase())).slice(0,14);
+    if(!items.length){list.classList.remove('open');return;}
+    list.innerHTML=items.map(n=>`<div class="ac-item">${esc(n)}</div>`).join('');
+    list.classList.add('open');focused=-1;
+    list.querySelectorAll('.ac-item').forEach((el,i)=>{
+      el.addEventListener('mousedown',ev=>{ev.preventDefault();inp.value=items[i];list.classList.remove('open');if(onSelect)onSelect(items[i]);});
+    });
+  }
+  inp.addEventListener('input',()=>render(inp.value));
+  inp.addEventListener('focus',()=>render(inp.value));
+  inp.addEventListener('blur',()=>setTimeout(()=>list.classList.remove('open'),150));
+  inp.addEventListener('keydown',e=>{
+    const its=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();focused=Math.min(focused+1,its.length-1);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='ArrowUp'){e.preventDefault();focused=Math.max(focused-1,0);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='Enter'&&focused>=0){e.preventDefault();const v=items[focused];inp.value=v;list.classList.remove('open');if(onSelect)onSelect(v);}
+    else if(e.key==='Escape'){list.classList.remove('open');}
+  });
+}
+
+function getMaestros(){
+  try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}
+  return[];
+}
+function getAlumnos(){
+  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}
+  return[];
+}
+function getAlumnoCorreo(nombre){
+  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);const a=(p.alumnos||[]).find(x=>x.nombre===nombre);return a?a.correoInstitucional||a.correo||'':''}}catch(e){}
+  return'';
+}
+
+setupAC('f-receptor','ac-receptor',getMaestros);
+setupAC('f-alumno','ac-alumno',getAlumnos,(nombre)=>{
+  document.getElementById('f-correo').value=getAlumnoCorreo(nombre);
+});
+
+/* ─── Panel ─── */
+function openPanel(){
+  const now=new Date();
+  S.newId=uid();
+  S.newTS=now.toISOString();
+  document.getElementById('f-id-val').textContent=S.newId;
+  document.getElementById('f-id-chip').style.display='inline-flex';
+  document.getElementById('f-timestamp').textContent=fmtTS(S.newTS);
+  document.getElementById('f-turno').value='';
+  setTurnoUI('');
+  document.getElementById('f-receptor').value='';
+  document.getElementById('f-clinica').value='';
+  document.getElementById('f-alumno').value='';
+  document.getElementById('f-correo').value='';
+  document.getElementById('f-paquetes').value='';
+  document.getElementById('f-comentarios').value='';
+  clearFoto('inp-foto-inst','prev-foto-inst','clear-foto-inst');
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+  setTimeout(()=>document.getElementById('f-receptor').focus(),260);
+}
+function closePanel(){
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+}
+document.getElementById('btn-nuevo').addEventListener('click',openPanel);
+document.getElementById('btn-cancel').addEventListener('click',closePanel);
+document.getElementById('panel-overlay').addEventListener('click',closePanel);
+
+/* ─── Guardar ─── */
+document.getElementById('btn-save').addEventListener('click',()=>{
+  const turno=document.getElementById('f-turno').value;
+  const receptor=document.getElementById('f-receptor').value.trim();
+  const clinica=document.getElementById('f-clinica').value;
+  const alumno=document.getElementById('f-alumno').value.trim();
+  const paquetes=document.getElementById('f-paquetes').value.trim();
+  const foto=getFoto('prev-foto-inst');
+
+  if(!turno){document.querySelector('.turno-grid').scrollIntoView({behavior:'smooth'});return;}
+  if(!receptor){document.getElementById('f-receptor').focus();return;}
+  if(!clinica){document.getElementById('f-clinica').focus();return;}
+  if(!alumno){document.getElementById('f-alumno').focus();return;}
+  if(!paquetes||Number(paquetes)<1){document.getElementById('f-paquetes').focus();return;}
+  if(!foto){
+    const lbl=document.getElementById('lbl-foto-inst');
+    lbl.style.borderColor='var(--red-600)';lbl.style.background='var(--red-50)';
+    lbl.scrollIntoView({behavior:'smooth'});
+    setTimeout(()=>{lbl.style.borderColor='';lbl.style.background='';},2000);
+    return;
+  }
+  const rec={
+    id:S.newId,
+    timestamp:S.newTS,
+    turno,receptor,clinica,alumno,
+    correo:document.getElementById('f-correo').value.trim(),
+    paquetes:Number(paquetes),
+    comentarios:document.getElementById('f-comentarios').value.trim(),
+    fotoInst:foto,
+    estado:'pendiente',
+    esterilTimestamp:null,
+    esterilFoto:'',
+    esterilComentarios:'',
+  };
+  S.data.registros.unshift(rec);
+  saveData();renderAll();
+populateMaterias('f-clinica');closePanel();
+});
+
+/* ─── Stats ─── */
+function renderStats(){
+  const total=S.data.registros.length;
+  const pend=S.data.registros.filter(r=>r.estado==='pendiente').length;
+  const est=S.data.registros.filter(r=>r.estado==='esteril').length;
+  const hoy=new Date().toDateString();
+  const hoyCount=S.data.registros.filter(r=>new Date(r.timestamp).toDateString()===hoy).length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Total registros</p><p class="stat-value">${total}</p></div>
+    <div class="stat"><p class="stat-label" style="color:var(--amber-600)">Pendientes</p><p class="stat-value" style="color:var(--amber-800)">${pend}</p></div>
+    <div class="stat"><p class="stat-label" style="color:var(--green-800)">Esterilizados</p><p class="stat-value" style="color:var(--green-800)">${est}</p></div>
+    <div class="stat"><p class="stat-label">Hoy</p><p class="stat-value">${hoyCount}</p></div>`;
+}
+
+/* ─── Lista ─── */
+function renderLista(){
+  const term=(document.getElementById('buscar').value||'').toLowerCase();
+  const eF=document.getElementById('filtro-estado').value;
+  const tF=document.getElementById('filtro-turno').value;
+  const rows=S.data.registros.filter(r=>{
+    const mt=(r.alumno||'').toLowerCase().includes(term)||(r.id||'').toLowerCase().includes(term)||(r.clinica||'').toLowerCase().includes(term)||(r.receptor||'').toLowerCase().includes(term);
+    const me=!eF||r.estado===eF;
+    const mt2=!tF||r.turno===tF;
+    return mt&&me&&mt2;
+  });
+  const lista=document.getElementById('lista');
+  const empty=document.getElementById('empty-state');
+  if(!rows.length){lista.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  lista.innerHTML=rows.map(r=>`
+    <div class="list-row" onclick="verRegistro('${r.id}')">
+      <div class="row-icon ${r.estado}">${r.estado==='esteril'?'✅':'🧰'}</div>
+      <div class="row-info">
+        <p class="row-title">${esc(r.alumno)} <span style="font-family:monospace;font-size:11px;color:var(--text-muted);font-weight:400;">${esc(r.id)}</span></p>
+        <p class="row-sub">${esc(r.clinica)} · ${r.paquetes} paq. · ${fmtTS(r.timestamp)}</p>
+      </div>
+      <div class="row-meta">
+        <span class="badge ${r.turno==='Matutino'?'badge-turno-mat':'badge-turno-ves'}">${esc(r.turno)}</span>
+        <span class="badge ${r.estado==='esteril'?'badge-esteril':'badge-pendiente'}">${r.estado==='esteril'?'Estéril':'Pendiente'}</span>
+        ${r.estado==='pendiente'?`<button class="btn-marcar" onclick="abrirEsteril(event,'${r.id}')">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>Marcar estéril</button>`:''}
+        <button class="btn-icon" onclick="abrirEliminar(event,'${r.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderAll(){renderStats();renderLista();}
+
+/* ─── Ver ─── */
+function verRegistro(id){
+  const r=S.data.registros.find(x=>x.id===id);if(!r)return;
+  S.verId=id;
+  document.getElementById('ver-id').textContent=r.id;
+  document.getElementById('ver-badges').innerHTML=`
+    <span class="badge ${r.turno==='Matutino'?'badge-turno-mat':'badge-turno-ves'}">${esc(r.turno)}</span>
+    <span class="badge ${r.estado==='esteril'?'badge-esteril':'badge-pendiente'}">${r.estado==='esteril'?'Estéril':'Pendiente'}</span>`;
+  const campos=[
+    ['Fecha y hora de entrega',fmtTS(r.timestamp)],
+    ['Persona que recibe',r.receptor||'—'],
+    ['Clínica / Materia',r.clinica||'—'],
+    ['Alumno',r.alumno||'—'],
+    ['Correo institucional',r.correo||'—'],
+    ['Número de paquetes',r.paquetes+' paquete(s)'],
+  ];
+  let html=`<div class="detail-section"><p class="detail-section-title">Datos de entrega</p>`;
+  html+=campos.map(([l,v])=>`<div class="detail-row"><span>${l}</span><span>${esc(v)}</span></div>`).join('');
+  if(r.comentarios)html+=`<div class="detail-row" style="flex-direction:column;gap:4px;align-items:flex-start;"><span style="color:var(--text-secondary)">Comentarios</span><span style="font-weight:500;text-align:left;">${esc(r.comentarios)}</span></div>`;
+  html+=`</div>`;
+  if(r.fotoInst)html+=`<div class="detail-section"><p class="detail-section-title">Foto del instrumental</p><img src="${r.fotoInst}" class="foto-ver"></div>`;
+  if(r.estado==='esteril'){
+    html+=`<div class="detail-section">
+      <p class="detail-section-title">Esterilización</p>
+      <div class="esteril-stamp">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        <div><p>Material esterilizado</p><span>${fmtTS(r.esterilTimestamp)}</span></div>
+      </div>
+      ${r.esterilComentarios?`<div class="detail-row" style="flex-direction:column;gap:4px;align-items:flex-start;margin-top:8px;"><span style="color:var(--text-secondary)">Comentarios</span><span style="font-weight:500;text-align:left;">${esc(r.esterilComentarios)}</span></div>`:''}
+      ${r.esterilFoto?`<img src="${r.esterilFoto}" class="foto-ver">`: ''}
+    </div>`;
+  }
+  document.getElementById('ver-body').innerHTML=html;
+  document.getElementById('btn-ver-esteril').style.display=r.estado==='pendiente'?'':'none';
+  document.getElementById('modal-ver').classList.add('open');
+}
+document.getElementById('cerrar-ver').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+document.getElementById('btn-ver-cerrar').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+document.getElementById('btn-ver-eliminar').addEventListener('click',()=>{document.getElementById('modal-ver').classList.remove('open');abrirEliminarDirect(S.verId);});
+document.getElementById('btn-ver-esteril').addEventListener('click',()=>{document.getElementById('modal-ver').classList.remove('open');abrirEsterilDirect(S.verId);});
+
+/* ─── Modal estéril ─── */
+function abrirEsteril(e,id){e.stopPropagation();abrirEsterilDirect(id);}
+function abrirEsterilDirect(id){
+  S.esterilId=id;
+  const r=S.data.registros.find(x=>x.id===id);
+  document.getElementById('me-sub').textContent=r?`${r.alumno} · ${r.id}`:'';
+  clearFoto('inp-me-foto','prev-me-foto','clear-me-foto');
+  document.getElementById('me-comentarios').value='';
+  document.getElementById('modal-esteril').classList.add('open');
+}
+document.getElementById('cerrar-me').addEventListener('click',()=>document.getElementById('modal-esteril').classList.remove('open'));
+document.getElementById('me-cancel').addEventListener('click',()=>document.getElementById('modal-esteril').classList.remove('open'));
+document.getElementById('me-confirmar').addEventListener('click',()=>{
+  const foto=getFoto('prev-me-foto');
+  if(!foto){
+    const lbl=document.getElementById('lbl-me-foto');
+    lbl.style.borderColor='var(--red-600)';lbl.style.background='var(--red-50)';
+    setTimeout(()=>{lbl.style.borderColor='';lbl.style.background='';},2000);
+    return;
+  }
+  const i=S.data.registros.findIndex(x=>x.id===S.esterilId);
+  if(i>-1){
+    S.data.registros[i].estado='esteril';
+    S.data.registros[i].esterilTimestamp=new Date().toISOString();
+    S.data.registros[i].esterilFoto=foto;
+    S.data.registros[i].esterilComentarios=document.getElementById('me-comentarios').value.trim();
+  }
+  saveData();renderAll();
+populateMaterias('f-clinica');
+  document.getElementById('modal-esteril').classList.remove('open');
+});
+
+/* ─── Eliminar ─── */
+function abrirEliminar(e,id){e.stopPropagation();abrirEliminarDirect(id);}
+function abrirEliminarDirect(id){
+  document.getElementById('inp-confirm').value='';
+  document.getElementById('inp-confirm').style.borderColor='';
+  document.getElementById('modal-confirm').dataset.id=id;
+  document.getElementById('modal-confirm').classList.add('open');
+}
+document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+  if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
+    document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
+  }
+  S.data.registros=S.data.registros.filter(x=>x.id!==document.getElementById('modal-confirm').dataset.id);
+  saveData();renderAll();
+populateMaterias('f-clinica');document.getElementById('modal-confirm').classList.remove('open');
+});
+
+document.getElementById('buscar').addEventListener('input',renderLista);
+document.getElementById('filtro-estado').addEventListener('change',renderLista);
+document.getElementById('filtro-turno').addEventListener('change',renderLista);
+renderAll();
+populateMaterias('f-clinica');
+
+/* ── Materias dinámicas desde catálogo ── */
+function populateMaterias(selectId, currentVal){
+  const sel=document.getElementById(selectId);if(!sel)return;
+  try{
+    const d=localStorage.getItem('clinica_materias_v1');
+    if(d){
+      const parsed=JSON.parse(d);
+      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
+      if(mats.length){
+        const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
+        const groups={};
+        mats.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
+        sel.innerHTML='<option value="">— Seleccionar —</option>';
+        ORDEN.forEach(g=>{
+          if(!groups[g]||!groups[g].length)return;
+          const og=document.createElement('optgroup');og.label=g;
+          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+          sel.appendChild(og);
+        });
+        // grupos extra no contemplados en ORDEN
+        Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
+          const og=document.createElement('optgroup');og.label=g;
+          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+          sel.appendChild(og);
+        });
+        return;
+      }
+    }
+  }catch(e){}
+  // fallback: mantiene opciones hardcodeadas
+  if(currentVal){Array.from(sel.options).forEach(o=>{if(o.value===currentVal)o.selected=true;});}
+}
+
+</script>
+</body>
+</html>

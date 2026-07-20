@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nota de Evolución · Clínica Dental Anáhuac</title>
+<style>
+  :root{
+    --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+    --amber-50:#FAEEDA;--amber-600:#854F0B;
+    --red-50:#FCEBEB;--red-600:#A32D2D;
+    --green-50:#EAF3DE;--green-800:#27500A;
+    --blue-50:#E6F1FB;--blue-800:#0C447C;
+    --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+    --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+    --border:#E3E1D8;--radius:8px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);}
+  .wrap{max-width:860px;margin:0 auto;padding:20px 20px 100px;}
+  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+  .eyebrow{font-size:13px;color:var(--text-muted);margin:0;}
+  h1{font-size:21px;font-weight:600;margin:4px 0 0;color:var(--teal-900);}
+  .patient-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .avatar{width:46px;height:46px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;overflow:hidden;}
+  .avatar img{width:100%;height:100%;object-fit:cover;}
+  .patient-name{font-size:16px;font-weight:600;margin:0;}
+  .patient-meta{font-size:12px;color:var(--text-secondary);margin:3px 0 0;}
+  .section-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+  .section-title{font-size:12px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;}
+  input[type=text],input[type=date],select,textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
+  input[type=text],input[type=date],select{height:36px;}
+  input[readonly]{background:var(--surface-1);color:var(--text-secondary);}
+  textarea{padding:8px 10px;resize:vertical;min-height:80px;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+  .grid-2{display:grid;gap:12px;}
+  @media(min-width:540px){.grid-2{grid-template-columns:1fr 1fr;}}
+  .grid-3{display:grid;gap:10px;}
+  @media(min-width:600px){.grid-3{grid-template-columns:1fr 1fr 1fr;}}
+  /* Tratamientos check */
+  .trat-check-list{display:flex;flex-direction:column;gap:6px;}
+  .trat-check-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;background:var(--surface-1);font-size:13px;}
+  .trat-check-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--teal-600);flex-shrink:0;cursor:pointer;}
+  .trat-check-item .trat-label{flex:1;}
+  .trat-check-item .trat-price{font-weight:600;color:var(--teal-800);font-size:12px;white-space:nowrap;}
+  /* Fotos */
+  .fotos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+  .foto-tile{position:relative;height:120px;border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;}
+  .foto-tile:hover{border-color:var(--teal-600);}
+  .foto-tile img{width:100%;height:100%;object-fit:cover;display:none;}
+  .foto-tile-empty{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);pointer-events:none;}
+  .foto-tile-empty i{font-style:normal;font-size:20px;}
+  .foto-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1;}
+  .foto-tile:hover .foto-del{display:flex;}
+  /* Medicamentos */
+  .med-card{background:var(--surface-1);border:1px solid var(--border);border-radius:9px;padding:12px 14px 10px;margin-bottom:8px;}
+  .med-card-header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+  .med-card-num{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.04em;}
+  .btn-remove-med{background:var(--red-50);border:none;color:var(--red-600);border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer;}
+  .grid-med{display:grid;gap:10px;}
+  @media(min-width:540px){.grid-med{grid-template-columns:2fr 1fr 1fr;}}
+  .add-med-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--teal-50);border:1px dashed var(--teal-600);color:var(--teal-800);border-radius:8px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:4px;}
+  .add-med-btn:hover{background:#fbe4d3;}
+  /* Toggle prescripción */
+  .opt-btn{display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:13px;cursor:pointer;color:var(--text-secondary);}
+  .opt-btn.active{background:var(--teal-600);color:#fff;border-color:var(--teal-600);font-weight:600;}
+  /* Firma */
+  .firma-wrap canvas{width:100%;height:140px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;touch-action:none;display:block;}
+  /* Botones */
+  button{cursor:pointer;font-family:inherit;font-size:14px;}
+  .btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:38px;padding:0 20px;font-weight:600;}
+  .btn-primary:hover{background:var(--teal-800);}
+  .btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:38px;padding:0 16px;color:var(--text-secondary);}
+  .btn-sm{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:28px;padding:0 10px;font-size:12px;color:var(--text-secondary);margin-top:6px;}
+  .sticky-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:flex-end;gap:10px;z-index:10;}
+  .badge-saved{background:var(--green-50);color:var(--green-800);font-size:12px;padding:3px 10px;border-radius:5px;font-weight:600;margin-left:10px;display:none;}
+  .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1F1F1D;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:20;}
+  .toast.show{opacity:1;}
+  .info-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:13px;border-top:1px solid var(--border);}
+  .info-row:first-child{border-top:none;}
+  .info-row span:first-child{color:var(--text-secondary);}
+  .info-row span:last-child{font-weight:500;}
+  .error-msg{text-align:center;padding:60px 20px;color:var(--text-secondary);}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button type="button" class="btn-secondary" id="btn-volver" style="display:flex;align-items:center;gap:6px;font-size:13px;">
+          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>
+          Volver al expediente
+        </button>
+        <div>
+          <p class="eyebrow">Nota de evolución del paciente</p>
+          <h1>Clínica Dental Universitaria Anáhuac <span class="badge-saved" id="badge-saved">✓ Guardada</span></h1>
+        </div>
+      </div>
+    </header>
+  <div id="ne-error" class="error-msg" style="display:none;">
+    <p style="font-size:18px;font-weight:600;color:var(--text-primary);">Registro no encontrado</p>
+    <p>Regresa al expediente e intenta de nuevo.</p>
+  </div>
+
+  <div id="ne-body" style="display:none;">
+
+    <!-- Ficha del paciente -->
+    <div class="patient-card" id="ficha-paciente"></div>
+
+    <!-- SECCIÓN 1: Datos de la visita (auto-llenados del pago) -->
+    <div class="section-card">
+      <p class="section-title">Datos de la visita</p>
+      <div class="grid-2">
+        <div class="field"><label>Fecha de la visita</label><input type="date" id="ne-fecha" readonly></div>
+        <div class="field"><label>Clínica / Materia</label><input type="text" id="ne-clinica" readonly></div>
+      </div>
+      <div class="field" style="margin-top:4px;"><label>Estudiante que atiende</label><input type="text" id="ne-estudiante" readonly></div>
+      <div class="field" style="margin-top:4px;">
+        <label>Tratamientos del pago (selecciona los realizados en esta nota)</label>
+        <div class="trat-check-list" id="ne-trat-list"></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: Motivo de consulta -->
+    <div class="section-card">
+      <p class="section-title">Motivo de consulta</p>
+      <div class="field"><label>Razón de la consulta</label><textarea id="ne-razon" placeholder="¿Por qué acude el paciente hoy?"></textarea></div>
+      <div class="field"><label>Síntomas referidos por el paciente</label><textarea id="ne-sintomas" placeholder="Descripción de los síntomas que el paciente reporta..."></textarea></div>
+    </div>
+
+    <!-- SECCIÓN 3: Exploración clínica -->
+    <div class="section-card">
+      <p class="section-title">Exploración clínica</p>
+      <div class="field"><label>Exploración extraoral</label><textarea id="ne-extraoral" placeholder="Hallazgos en tejidos blandos y duros extraorales..."></textarea></div>
+      <div class="field"><label>Exploración intraoral</label><textarea id="ne-intraoral" placeholder="Hallazgos en tejidos blandos y duros intraorales..."></textarea></div>
+    </div>
+
+    <!-- SECCIÓN 4: Diagnóstico -->
+    <div class="section-card">
+      <p class="section-title">Diagnóstico</p>
+      <div class="field"><label>Diagnóstico definitivo</label><textarea id="ne-diagnostico" placeholder="Diagnóstico clínico del paciente..."></textarea></div>
+    </div>
+
+    <!-- SECCIÓN 5: Prescripción de medicamento -->
+    <div class="section-card">
+      <p class="section-title">Prescripción de medicamento</p>
+      <div class="field" style="margin-bottom:14px;">
+        <label>¿Se prescribe medicamento?</label>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <button type="button" class="opt-btn" id="presc-si" onclick="setPrescribe(true)">Sí</button>
+          <button type="button" class="opt-btn" id="presc-no" onclick="setPrescribe(false)">No</button>
+        </div>
+      </div>
+      <div id="presc-meds" style="display:none;">
+        <div id="ne-meds-list"></div>
+        <button type="button" class="add-med-btn" id="btn-add-ne-med">＋ Agregar medicamento</button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 6: Nota de evolución -->
+    <div class="section-card">
+      <p class="section-title">Nota de evolución</p>
+      <div class="field"><label>Indicaciones postoperatorias</label><textarea id="ne-indicaciones" placeholder="Cuidados e indicaciones que se le dan al paciente..."></textarea></div>
+      <div class="field"><label>Plan de seguimiento</label><textarea id="ne-seguimiento" placeholder="Descripción del plan de tratamiento y seguimiento..."></textarea></div>
+      <div class="field"><label>Próxima cita</label><input type="date" id="ne-proxima-cita"></div>
+    </div>
+
+    <!-- SECCIÓN 6: Fotografías del tratamiento -->
+    <div class="section-card">
+      <p class="section-title">Fotografías de prueba del tratamiento</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:-6px 0 12px;">Agrega fotografías como evidencia del tratamiento realizado.</p>
+      <div class="fotos-grid" id="fotos-grid"></div>
+      <button type="button" class="btn-sm" id="btn-add-foto" style="margin-top:10px;">+ Agregar fotografía</button>
+      <input type="file" accept="image/*" capture="environment" id="inp-foto-hidden" style="display:none;" multiple>
+    </div>
+
+    <!-- SECCIÓN 7: Firma del paciente -->
+    <div class="section-card">
+      <p class="section-title">Firma del paciente</p>
+      <div class="firma-wrap">
+        <canvas id="ne-firma-canvas" width="800" height="140"></canvas>
+        <button type="button" class="btn-sm" id="ne-limpiar-firma">Limpiar firma</button>
+      </div>
+    </div>
+
+  </div><!-- /ne-body -->
+</div>
+
+<div class="sticky-bar">
+  <button type="button" class="btn-secondary" id="btn-volver-bottom">Volver sin guardar</button>
+  <button type="button" class="btn-primary" id="btn-guardar-ne">Guardar nota de evolución</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const EXP_KEY='clinica_dental_data_v1';
+const PAGOS_KEY='clinica_pagos_v1';
+
+function loadExpData(){try{const r=localStorage.getItem(EXP_KEY);if(r)return JSON.parse(r);}catch(e){}return{expedientes:[]};}
+function saveExpData(d){localStorage.setItem(EXP_KEY,JSON.stringify(d));}
+
+const params=new URLSearchParams(location.search);
+const expId=params.get('expId');
+const pagoId=params.get('pagoId');
+const noteId=params.get('noteId'); // si ya existe
+
+const expData=loadExpData();
+const expIdx=expData.expedientes.findIndex(x=>x.id===expId);
+const exp=expIdx>-1?expData.expedientes[expIdx]:null;
+
+let pagos=[];
+try{pagos=JSON.parse(localStorage.getItem(PAGOS_KEY)||'[]');}catch(e){}
+const pago=pagos.find(x=>x.id===pagoId)||null;
+
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function volver(){history.length>1?history.back():(location.href='control-clinica-dental.html');}
+document.getElementById('btn-volver').addEventListener('click',volver);
+document.getElementById('btn-volver-bottom').addEventListener('click',volver);
+
+/* ── Canvas firma ── */
+const firmaCanvas=document.getElementById('ne-firma-canvas');
+const firmaCtx=firmaCanvas.getContext('2d');
+let firmaDrawing=false,firmaHasContent=false;
+function firmaPos(e){const r=firmaCanvas.getBoundingClientRect();const sx=firmaCanvas.width/r.width,sy=firmaCanvas.height/r.height;const p=e.touches?e.touches[0]:e;return{x:(p.clientX-r.left)*sx,y:(p.clientY-r.top)*sy};}
+firmaCanvas.addEventListener('mousedown',e=>{e.preventDefault();firmaDrawing=true;const p=firmaPos(e);firmaCtx.beginPath();firmaCtx.moveTo(p.x,p.y);});
+firmaCanvas.addEventListener('mousemove',e=>{if(!firmaDrawing)return;e.preventDefault();const p=firmaPos(e);firmaCtx.lineWidth=2;firmaCtx.lineCap='round';firmaCtx.strokeStyle='#1F1F1D';firmaCtx.lineTo(p.x,p.y);firmaCtx.stroke();firmaHasContent=true;});
+window.addEventListener('mouseup',()=>firmaDrawing=false);
+firmaCanvas.addEventListener('touchstart',e=>{e.preventDefault();firmaDrawing=true;const p=firmaPos(e);firmaCtx.beginPath();firmaCtx.moveTo(p.x,p.y);},{passive:false});
+firmaCanvas.addEventListener('touchmove',e=>{if(!firmaDrawing)return;e.preventDefault();const p=firmaPos(e);firmaCtx.lineWidth=2;firmaCtx.lineCap='round';firmaCtx.strokeStyle='#1F1F1D';firmaCtx.lineTo(p.x,p.y);firmaCtx.stroke();firmaHasContent=true;},{passive:false});
+firmaCanvas.addEventListener('touchend',()=>firmaDrawing=false);
+document.getElementById('ne-limpiar-firma').addEventListener('click',()=>{firmaCtx.clearRect(0,0,firmaCanvas.width,firmaCanvas.height);firmaHasContent=false;});
+function loadFirma(dataUrl){const img=new Image();img.onload=()=>{firmaCtx.clearRect(0,0,firmaCanvas.width,firmaCanvas.height);firmaCtx.drawImage(img,0,0,firmaCanvas.width,firmaCanvas.height);firmaHasContent=true;};img.src=dataUrl;}
+
+/* ── Fotos ── */
+let fotos=[]; // array de base64
+function renderFotosGrid(){
+  const grid=document.getElementById('fotos-grid');
+  grid.innerHTML=fotos.map((src,i)=>`
+    <div class="foto-tile">
+      <img src="${src}" style="display:block;width:100%;height:100%;object-fit:cover;">
+      <button type="button" class="foto-del" onclick="removeFoto(${i})">✕</button>
+    </div>`).join('');
+}
+function removeFoto(i){fotos.splice(i,1);renderFotosGrid();}
+document.getElementById('btn-add-foto').addEventListener('click',()=>document.getElementById('inp-foto-hidden').click());
+document.getElementById('inp-foto-hidden').addEventListener('change',e=>{
+  const files=[...e.target.files];
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=()=>{fotos.push(reader.result);renderFotosGrid();};
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+});
+
+/* ── Construir lista tratamientos del pago ── */
+function buildTratList(savedTrats){
+  const lista=document.getElementById('ne-trat-list');
+  const trats=pago?.tratamientos||[
+    pago?.tratA?{nombre:pago.tratA,cantidad:pago.cantA,total:pago.totalA}:null,
+    pago?.tratB?{nombre:pago.tratB,cantidad:pago.cantB,total:pago.totalB}:null,
+    pago?.tratC?{nombre:pago.tratC,cantidad:pago.cantC,total:pago.totalC}:null,
+  ].filter(Boolean);
+  if(!trats.length){lista.innerHTML='<p style="font-size:13px;color:var(--text-muted);">Sin tratamientos en este registro de pago.</p>';return;}
+  lista.innerHTML=trats.map((t,i)=>`
+    <label class="trat-check-item">
+      <input type="checkbox" name="ne-trat" value="${esc(t.nombre)}" ${(savedTrats||[]).includes(t.nombre)?'checked':'checked'}>
+      <span class="trat-label">${esc(t.nombre)} <span style="color:var(--text-muted);">×${t.cantidad||1}</span></span>
+      <span class="trat-price">$${Number(t.total||0).toFixed(2)}</span>
+    </label>`).join('');
+}
+
+function val(id){return(document.getElementById(id)||{}).value||'';}
+function setVal(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
+
+/* ── Init ── */
+if(!exp){
+  document.getElementById('ne-error').style.display='';
+  document.getElementById('ne-body').style.display='none';
+  document.querySelector('.sticky-bar').style.display='none';
+} else {
+  document.getElementById('ne-body').style.display='';
+  document.getElementById('ne-error').style.display='none';
+
+  /* Ficha del paciente */
+  const avatar=exp.fotografiaPaciente?`<img src="${exp.fotografiaPaciente}">`:(initials(exp.nombre));
+  const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipoPaciente].filter(Boolean).join(' · ');
+  document.getElementById('ficha-paciente').innerHTML=`
+    <div class="avatar">${avatar}</div>
+    <div>
+      <p class="patient-name">${esc(exp.nombre)}</p>
+      <p class="patient-meta">${esc(meta||'')}${pago?` · Visita del ${esc(pago.fecha||'')}`:''}</p>
+    </div>`;
+
+  /* Auto-llenar del pago */
+  setVal('ne-fecha',pago?.fecha||'');
+  setVal('ne-clinica',pago?.clinica||'');
+  setVal('ne-estudiante',pago?.estudiante||'');
+
+  /* Buscar nota existente */
+  const notas=exp.notasEvolucion||[];
+  const notaExistente=noteId?notas.find(n=>n.id===noteId):(pagoId?notas.find(n=>n.pagoId===pagoId):null);
+
+  buildTratList(notaExistente?.tratamientos);
+
+  if(notaExistente){
+    setVal('ne-razon',notaExistente.razon);
+    setVal('ne-sintomas',notaExistente.sintomas);
+    setVal('ne-extraoral',notaExistente.extraoral);
+    setVal('ne-intraoral',notaExistente.intraoral);
+    setVal('ne-diagnostico',notaExistente.diagnostico);
+    setVal('ne-indicaciones',notaExistente.indicaciones);
+    setVal('ne-seguimiento',notaExistente.seguimiento);
+    setVal('ne-proxima-cita',notaExistente.proximaCita);
+    if(notaExistente.prescribe){
+      setPrescribe(true);
+      (notaExistente.medicamentos||[]).forEach(m=>addNeMed(m));
+    } else {
+      setPrescribe(false);
+    }
+    if(notaExistente.firma) loadFirma(notaExistente.firma);
+    fotos=notaExistente.fotos||[];
+    renderFotosGrid();
+    document.getElementById('badge-saved').style.display='';
+  }
+}
+
+/* ── Prescripción de medicamentos ── */
+let prescribe = false;
+let neMedCount = 0;
+
+function setPrescribe(v){
+  prescribe = v;
+  document.getElementById('presc-si').classList.toggle('active', v);
+  document.getElementById('presc-no').classList.toggle('active', !v);
+  document.getElementById('presc-meds').style.display = v ? '' : 'none';
+}
+
+function addNeMed(data){
+  neMedCount++;
+  const id = 'ne-med-' + neMedCount;
+  const div = document.createElement('div');
+  div.className = 'med-card';
+  div.id = id;
+  div.innerHTML = `
+    <div class="med-card-header">
+      <span class="med-card-num">Medicamento ${neMedCount}</span>
+      <button type="button" class="btn-remove-med" onclick="removeNeMed('${id}')">✕ Quitar</button>
+    </div>
+    <div class="grid-med">
+      <div class="field" style="margin:0"><label>Medicamento prescrito</label><input type="text" class="ne-med-nombre" placeholder="Ej. Amoxicilina 500 mg" value="${esc(data?.nombre||'')}"></div>
+      <div class="field" style="margin:0"><label>Dosis</label><input type="text" class="ne-med-dosis" placeholder="Ej. 1 cápsula c/8 h" value="${esc(data?.dosis||'')}"></div>
+      <div class="field" style="margin:0"><label>Tiempo de tratamiento</label><input type="text" class="ne-med-tiempo" placeholder="Ej. 7 días" value="${esc(data?.tiempo||'')}"></div>
+    </div>`;
+  document.getElementById('ne-meds-list').appendChild(div);
+  renumberNeMeds();
+}
+
+function removeNeMed(id){ const el=document.getElementById(id); if(el)el.remove(); renumberNeMeds(); }
+function renumberNeMeds(){ document.querySelectorAll('#ne-meds-list .med-card-num').forEach((el,i)=>el.textContent='Medicamento '+(i+1)); }
+function getNeMeds(){
+  return [...document.querySelectorAll('#ne-meds-list .med-card')].map(c=>({
+    nombre: c.querySelector('.ne-med-nombre')?.value||'',
+    dosis:  c.querySelector('.ne-med-dosis')?.value||'',
+    tiempo: c.querySelector('.ne-med-tiempo')?.value||'',
+  })).filter(m=>m.nombre.trim());
+}
+
+document.getElementById('btn-add-ne-med').addEventListener('click', ()=>addNeMed(null));
+setPrescribe(false);
+
+/* ── Guardar ── */
+document.getElementById('btn-guardar-ne').addEventListener('click',()=>{
+  if(!exp)return;
+  const tratSeleccionados=[...document.querySelectorAll('[name="ne-trat"]:checked')].map(c=>c.value);
+  const notas=expData.expedientes[expIdx].notasEvolucion||[];
+  const existIdx=pagoId?notas.findIndex(n=>n.pagoId===pagoId):-1;
+  const nota={
+    id:existIdx>-1?notas[existIdx].id:('ne-'+Date.now().toString(36)),
+    pagoId:pagoId||'',
+    fecha:val('ne-fecha'),
+    clinica:val('ne-clinica'),
+    estudiante:val('ne-estudiante'),
+    tratamientos:tratSeleccionados,
+    razon:val('ne-razon'),
+    sintomas:val('ne-sintomas'),
+    extraoral:val('ne-extraoral'),
+    intraoral:val('ne-intraoral'),
+    diagnostico:val('ne-diagnostico'),
+    prescribe,
+    medicamentos:prescribe?getNeMeds():[],
+    indicaciones:val('ne-indicaciones'),
+    seguimiento:val('ne-seguimiento'),
+    proximaCita:val('ne-proxima-cita'),
+    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):(existIdx>-1?notas[existIdx].firma:''),
+    fotos:[...fotos],
+    fechaCreacion:existIdx>-1?notas[existIdx].fechaCreacion:new Date().toISOString(),
+    fechaActualizacion:new Date().toISOString(),
+  };
+  if(existIdx>-1) notas[existIdx]=nota;
+  else notas.push(nota);
+  expData.expedientes[expIdx].notasEvolucion=notas;
+  saveExpData(expData);
+  document.getElementById('badge-saved').style.display='';
+  showToast('Nota de evolución guardada ✓');
+});
+</script>
+</body>
+</html>

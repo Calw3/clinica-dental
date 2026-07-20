@@ -1,0 +1,2088 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historia Clínica · Clínica Dental Anáhuac</title>
+<style>
+  :root{
+    --teal-50:#FDEEE2; --teal-600:#C2570D; --teal-800:#8C3F09; --teal-900:#5C2906;
+    --amber-50:#FAEEDA; --amber-600:#854F0B;
+    --red-50:#FCEBEB; --red-600:#A32D2D;
+    --green-50:#EAF3DE; --green-800:#27500A;
+    --bg:#F7F6F2; --surface:#FFFFFF; --surface-1:#F1F0EA;
+    --text-primary:#1F1F1D; --text-secondary:#5F5E5A; --text-muted:#888780;
+    --border:#E3E1D8; --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);}
+  .wrap{max-width:900px;margin:0 auto;padding:20px 20px 80px;}
+  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+  .eyebrow{font-size:13px;color:var(--text-muted);margin:0;letter-spacing:.02em;}
+  h1{font-size:22px;font-weight:600;margin:4px 0 0;color:var(--teal-900);}
+  .patient-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+  .avatar{width:52px;height:52px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;overflow:hidden;}
+  .avatar img{width:100%;height:100%;object-fit:cover;}
+  .patient-name{font-size:18px;font-weight:600;margin:0;}
+  .patient-meta{font-size:13px;color:var(--text-secondary);margin:4px 0 0;}
+  .section-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+  .section-title{font-size:13px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.04em;margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;}
+  input[type=text],input[type=number],select,textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
+  input[type=text],input[type=number],select{height:36px;}
+  textarea{padding:8px 10px;resize:vertical;min-height:72px;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+  .grid-2{display:grid;gap:12px;}
+  @media(min-width:540px){.grid-2{grid-template-columns:1fr 1fr;}}
+  .grid-3{display:grid;gap:12px;}
+  @media(min-width:620px){.grid-3{grid-template-columns:1fr 1fr 1fr;}}
+  .btn-group{display:flex;gap:8px;flex-wrap:wrap;}
+  .opt-btn{flex:1;min-width:110px;border:1px solid var(--border);background:#fff;border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text-secondary);text-align:center;cursor:pointer;font-family:inherit;}
+  .opt-btn.selected,.opt-btn.active{border-color:var(--teal-600);background:var(--teal-50);color:var(--teal-800);font-weight:600;}
+  /* Checklist padecimiento */
+  .hc-cat-label{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;padding:4px 10px;background:var(--teal-50);border-radius:5px;display:block;}
+  .hc-checks{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;margin-bottom:16px;}
+  @media(min-width:580px){.hc-checks{grid-template-columns:1fr 1fr 1fr;}}
+  .hc-check-item{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px;line-height:1.35;}
+  .hc-check-item:hover{background:var(--teal-50);}
+  .hc-check-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--teal-600);flex-shrink:0;cursor:pointer;margin-top:2px;}
+  /* Antecedentes heredofamiliares */
+  .hf-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;}
+  @media(min-width:580px){.hf-grid{grid-template-columns:1fr 1fr 1fr;}}
+  .hf-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 8px;border-radius:6px;cursor:pointer;}
+  .hf-row:hover{background:var(--surface-1);}
+  .hf-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--teal-600);flex-shrink:0;cursor:pointer;margin:0;}
+  /* Foto tiles */
+  input[type=date]{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
+  input[type=date]:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+  input[type=tel]{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
+  input[type=tel]:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+  input[type=email]{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
+  input[type=email]:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+  .photo-tile{display:flex;align-items:center;justify-content:center;height:130px;border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;background:#fff;}
+  .photo-tile:hover{border-color:var(--teal-600);}
+  .photo-tile img{width:100%;height:100%;object-fit:cover;display:none;}
+  .photo-tile-empty{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);}
+  .photo-tile-empty i{font-style:normal;font-size:22px;}
+  .signature-wrap canvas{width:100%;height:150px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;touch-action:none;display:block;}
+  .btn-sm{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:30px;padding:0 12px;font-size:13px;color:var(--text-secondary);margin-top:6px;}
+  /* Sticky footer */
+  .sticky-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:flex-end;gap:10px;z-index:10;}
+  button{cursor:pointer;font-family:inherit;font-size:14px;}
+  .btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:38px;padding:0 20px;font-weight:600;}
+  .btn-primary:hover{background:var(--teal-800);}
+  .btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:38px;padding:0 16px;color:var(--text-secondary);}
+  .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1F1F1D;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:20;}
+  .toast.show{opacity:1;}
+  .badge-llenada{background:var(--green-50);color:var(--green-800);font-size:12px;padding:3px 10px;border-radius:5px;font-weight:600;margin-left:10px;}
+  .error-msg{text-align:center;padding:60px 20px;color:var(--text-secondary);}
+  /* ── Extras ── */
+  .subsection-label{font-size:11.5px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;display:block;}
+  .grid-4{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);}
+  @media(min-width:600px){.grid-4{grid-template-columns:repeat(4,1fr);}}
+  .ap-specific{border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:8px 0;}
+  .ap-specific-header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+  .ap-specific-header>span{font-size:13px;color:var(--text-primary);flex:1;}
+  .ap-specific-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  /* ── Odontograma ── */
+  .odo-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .odo-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);}
+  .odo-leg-dot{width:14px;height:14px;border-radius:3px;border:1px solid var(--border);flex-shrink:0;}
+  .odo-header-row{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--text-secondary);margin:0 0 4px;padding:0 4px;}
+  .odo-row{display:flex;gap:3px;margin:2px 0;justify-content:center;}
+  .odo-row-temp{opacity:.8;}
+  .odo-tooth{display:flex;flex-direction:column;align-items:center;justify-content:center;width:34px;height:34px;border:1.5px solid #ccc;border-radius:4px;cursor:pointer;user-select:none;transition:transform .1s;position:relative;flex-shrink:0;}
+  .odo-tooth:hover{transform:scale(1.12);z-index:1;box-shadow:0 2px 6px rgba(0,0,0,.18);}
+  .odo-tooth-empty{width:34px;height:34px;flex-shrink:0;}
+  .odo-num{font-size:8px;font-weight:700;color:#555;line-height:1;}
+  .odo-state{font-size:9px;font-weight:800;color:#222;line-height:1;margin-top:2px;}
+  .odo-midline{height:3px;background:var(--teal-600);margin:5px auto;width:95%;border-radius:2px;}
+  /* ── Cavidad bucal lesión ── */
+  #lesion-detail{margin-top:10px;padding:12px;background:var(--teal-50);border-radius:8px;}
+  /* ── Ruta clínica ── */
+  .ruta-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .ruta-num{width:24px;height:24px;border-radius:50%;background:var(--teal-600);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  /* ── Periodontograma ── */
+  .perio-arch{display:flex;flex-direction:column;gap:1px;margin-bottom:10px;}
+  .perio-row{display:flex;align-items:center;gap:2px;}
+  .perio-lbl{font-size:9px;font-weight:700;color:var(--teal-800);width:58px;flex-shrink:0;text-align:right;padding-right:6px;}
+  .perio-cell{display:flex;gap:1px;flex-shrink:0;}
+  .perio-pi{width:18px;height:18px;border:1px solid var(--border);border-radius:2px;padding:0;font-size:9px;text-align:center;font-family:monospace;color:var(--text-primary);}
+  .perio-pi:focus{outline:none;border-color:var(--teal-600);}
+  .perio-tnum{width:56px;height:20px;background:var(--teal-50);border-radius:3px;font-size:9px;font-weight:700;color:var(--teal-800);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .perio-mov-sel{width:56px;height:20px;font-size:9px;padding:0 2px;border:1px solid var(--border);border-radius:3px;background:#fff;}
+  .perio-divider{height:3px;background:var(--teal-600);border-radius:2px;margin:8px 0;width:calc(100% - 64px);margin-left:64px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button type="button" class="btn-secondary" id="btn-volver" style="display:flex;align-items:center;gap:6px;font-size:13px;">
+          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>
+          Volver al expediente
+        </button>
+        <div>
+          <p class="eyebrow">Historia clínica del paciente</p>
+          <h1>Clínica Dental Universitaria Anáhuac <span id="hc-badge-llenada" class="badge-llenada" style="display:none;">✓ Guardada</span></h1>
+        </div>
+      </div>
+    </header>
+  <div id="hc-error" class="error-msg" style="display:none;">
+    <p style="font-size:18px;font-weight:600;color:var(--text-primary);">Paciente no encontrado</p>
+    <p>Regresa al expediente e intenta de nuevo.</p>
+  </div>
+
+  <div id="hc-body" style="display:none;">
+    <!-- Ficha del paciente -->
+    <div class="patient-card" id="ficha-paciente"></div>
+
+    <!-- SECCIÓN 1: Datos generales de la HC -->
+    <div class="section-card">
+      <p class="section-title">Datos generales</p>
+      <div class="grid-3">
+        <div class="field">
+          <label>Sexo</label>
+          <div class="btn-group" id="grupo-sexo">
+            <button type="button" class="opt-btn" data-value="Masculino">Masculino</button>
+            <button type="button" class="opt-btn" data-value="Femenino">Femenino</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Edad</label>
+          <input type="number" id="hc-edad" min="0" placeholder="Años">
+        </div>
+        <div class="field">
+          <label>Tipo de historia clínica</label>
+          <div class="btn-group" id="grupo-tipoHistoria">
+            <button type="button" class="opt-btn" data-value="Adulto">Adulto</button>
+            <button type="button" class="opt-btn" data-value="Pediátrico">Pediátrico</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1.5: Motivo de la consulta -->
+    <div class="section-card">
+      <p class="section-title">Motivo(s) de la consulta</p>
+      <div class="field">
+        <label>Describa el motivo principal por el que el paciente acude hoy</label>
+        <textarea id="hc-motivo-consulta" placeholder="Ej. Dolor en molar inferior, revisión de rutina, fractura dental..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: Padecimiento actual -->
+    <div class="section-card">
+      <p class="section-title">Padecimiento actual</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">Selecciona todos los que apliquen.</p>
+      <div id="hc-conditions-wrap"></div>
+      <div class="field" style="margin-top:12px;">
+        <label>Observaciones / especificaciones del padecimiento</label>
+        <textarea id="hc-obs-padecimiento" placeholder="Detalles adicionales sobre el padecimiento actual..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3: Antecedentes heredofamiliares -->
+    <div class="section-card">
+      <p class="section-title">Antecedentes heredofamiliares</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:0 0 12px;">Padecimientos presentes en familiares directos (padres, hermanos, abuelos).</p>
+      <div class="hf-grid" id="hf-wrap"></div>
+      <div class="field" style="margin-top:12px;">
+        <label>Especificaciones heredofamiliares</label>
+        <textarea id="hc-obs-hf" placeholder="Ej. Padre con diabetes tipo 2, madre con hipertensión..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 4: Hábitos -->
+    <div class="section-card">
+      <p class="section-title">Hábitos</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">Selecciona todos los que apliquen.</p>
+      <div id="habitos-conditions-wrap"></div>
+      <div class="field" style="margin-top:12px;">
+        <label>Observaciones / especificaciones de hábitos</label>
+        <textarea id="hc-obs-habitos" placeholder="Detalles adicionales sobre los hábitos del paciente..."></textarea>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Entorno y vivienda</span>
+      <div class="grid-3">
+        <div class="field">
+          <label>Tipo de habitación</label>
+          <select id="hc-tipo-habitacion">
+            <option value="">Selecciona...</option>
+            <option>Casa propia</option><option>Casa rentada</option>
+            <option>Departamento propio</option><option>Departamento rentado</option>
+            <option>Cuarto</option><option>Vecindad</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>No. de cuartos</label><input type="number" id="hc-num-cuartos" min="1" placeholder="0"></div>
+        <div class="field"><label>No. de habitantes en la casa</label><input type="number" id="hc-num-habitantes" min="1" placeholder="0"></div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Personas en la misma habitación</label><input type="number" id="hc-personas-habitacion" min="0" placeholder="0"></div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Higiene personal</span>
+      <div class="grid-3">
+        <div class="field"><label>Baños por semana</label><input type="number" id="hc-banos-semana" min="0" max="21" placeholder="0"></div>
+        <div class="field"><label>Cambios de ropa por semana</label><input type="number" id="hc-cambios-ropa" min="0" placeholder="0"></div>
+        <div class="field"><label>Cepillados por día</label><input type="number" id="hc-cepillados-dia" min="0" max="10" placeholder="0"></div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field">
+          <label>Uso de hilo dental</label>
+          <select id="hc-hilo">
+            <option value="">Selecciona...</option>
+            <option>Diariamente</option><option>Varias veces por semana</option>
+            <option>Ocasionalmente</option><option>Nunca</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Uso de enjuague bucal</label>
+          <select id="hc-enjuague">
+            <option value="">Selecciona...</option>
+            <option>Diariamente</option><option>Varias veces por semana</option>
+            <option>Ocasionalmente</option><option>Nunca</option>
+          </select>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Nutrición</span>
+      <div class="grid-2" style="margin-bottom:8px;">
+        <div class="field"><label>No. de comidas por día</label><input type="number" id="hc-comidas-dia" min="0" max="10" placeholder="0"></div>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);margin:0 0 8px;">Ingestas por semana (aproximado):</p>
+      <div class="grid-4">
+        <div class="field"><label>Leche</label><input type="number" id="hc-ing-leche" min="0" placeholder="0"></div>
+        <div class="field"><label>Carne</label><input type="number" id="hc-ing-carne" min="0" placeholder="0"></div>
+        <div class="field"><label>Huevo</label><input type="number" id="hc-ing-huevo" min="0" placeholder="0"></div>
+        <div class="field"><label>Frutas</label><input type="number" id="hc-ing-frutas" min="0" placeholder="0"></div>
+        <div class="field"><label>Verduras</label><input type="number" id="hc-ing-verduras" min="0" placeholder="0"></div>
+        <div class="field"><label>Leguminosas</label><input type="number" id="hc-ing-leguminosas" min="0" placeholder="0"></div>
+        <div class="field"><label>Cereales</label><input type="number" id="hc-ing-cereales" min="0" placeholder="0"></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 4.5: Antecedentes personales no patológicos -->
+    <div class="section-card">
+      <p class="section-title">Antecedentes personales no patológicos</p>
+
+      <span class="subsection-label">Cartilla de vacunación</span>
+      <p style="font-size:12px;color:var(--text-secondary);margin:-4px 0 10px;">Selecciona las vacunas aplicadas.</p>
+      <div id="vacunas-wrap" class="hc-checks"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Hábitos tóxicos</span>
+
+      <!-- Alcohol -->
+      <p style="font-size:13px;font-weight:600;color:var(--teal-900);margin:12px 0 8px;">Alcohol</p>
+      <div class="grid-3">
+        <div class="field">
+          <label>¿Consume alcohol?</label>
+          <div class="btn-group" id="grupo-alcohol">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Exbebedor?</label>
+          <div class="btn-group" id="grupo-exbebedor">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Años de uso</label><input type="number" id="hc-alc-anios" min="0" placeholder="0"></div>
+        <div class="field"><label>Último uso (fecha aprox.)</label><input type="text" id="hc-alc-ultimo" placeholder="Ej. 2022 / hace 3 años"></div>
+      </div>
+
+      <!-- Tabaco -->
+      <p style="font-size:13px;font-weight:600;color:var(--teal-900);margin:14px 0 8px;">Tabaco</p>
+      <div class="grid-3">
+        <div class="field">
+          <label>¿Fuma actualmente?</label>
+          <div class="btn-group" id="grupo-tabaco">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Exfumador?</label>
+          <div class="btn-group" id="grupo-exfumador">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Años de uso</label><input type="number" id="hc-tab-anios" min="0" placeholder="0"></div>
+        <div class="field"><label>Último uso (fecha aprox.)</label><input type="text" id="hc-tab-ultimo" placeholder="Ej. 2023 / activo"></div>
+      </div>
+
+      <!-- Estupefacientes -->
+      <p style="font-size:13px;font-weight:600;color:var(--teal-900);margin:14px 0 8px;">Estupefacientes</p>
+      <div class="grid-3">
+        <div class="field">
+          <label>¿Consume estupefacientes?</label>
+          <div class="btn-group" id="grupo-estupef">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Exconsumidor?</label>
+          <div class="btn-group" id="grupo-exconsumidor">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Años de uso</label><input type="number" id="hc-estu-anios" min="0" placeholder="0"></div>
+        <div class="field"><label>Último uso (fecha aprox.)</label><input type="text" id="hc-estu-ultimo" placeholder="Ej. hace 1 año"></div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Actividad y preferencia sexual</span>
+      <div class="grid-2" style="margin-top:8px;">
+        <div class="field">
+          <label>Vida sexual activa</label>
+          <div class="btn-group" id="grupo-vida-sexual">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Preferencia sexual</label>
+          <select id="hc-preferencia-sexual">
+            <option value="">Selecciona...</option>
+            <option>Heterosexual</option><option>Homosexual</option>
+            <option>Bisexual</option><option>Prefiere no indicar</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 5: Antecedentes personales patológicos -->
+    <div class="section-card">
+      <p class="section-title">Antecedentes personales patológicos</p>
+      <div class="grid-2">
+        <div class="field">
+          <label>Enfermedades previas / crónicas</label>
+          <textarea id="hc-enf-previas" placeholder="Enfermedades que el paciente ha padecido o padece..."></textarea>
+        </div>
+        <div class="field">
+          <label>Alergias conocidas</label>
+          <textarea id="hc-alergias" placeholder="Medicamentos, materiales, alimentos..."></textarea>
+        </div>
+        <div class="field">
+          <label>Medicamentos actuales</label>
+          <textarea id="hc-medicamentos" placeholder="Nombre del medicamento y dosis..."></textarea>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Enfermedades propias de la infancia</span>
+      <p style="font-size:12px;color:var(--text-secondary);margin:-4px 0 10px;">Selecciona las que el paciente haya padecido.</p>
+      <div id="enf-infancia-wrap" class="hc-checks"></div>
+      <div class="field" style="margin-top:6px;">
+        <label>Otra (especificar)</label>
+        <input type="text" id="hc-infancia-otra" placeholder="Otra enfermedad de la infancia...">
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Antecedentes específicos</span>
+
+      <div class="ap-specific">
+        <div class="ap-specific-header">
+          <span>¿Ha estado hospitalizado en los últimos 5 años?</span>
+          <div class="btn-group" id="grupo-hospitalizado">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="hospitalizado-detail" style="display:none;">
+          <div class="grid-2">
+            <div class="field"><label>¿Cuánto tiempo / cuándo?</label><input type="text" id="hc-hosp-tiempo" placeholder="Ej. 3 días, hace 2 años"></div>
+            <div class="field"><label>Especificar</label><input type="text" id="hc-hosp-especificar" placeholder="Motivo del internamiento"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ap-specific">
+        <div class="ap-specific-header">
+          <span>¿Ha sido intervenido quirúrgicamente?</span>
+          <div class="btn-group" id="grupo-interv-quirurgica">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="interv-quirurgica-detail" style="display:none;">
+          <div class="grid-2">
+            <div class="field"><label>¿Hace cuánto tiempo?</label><input type="text" id="hc-cir-cuando" placeholder="Ej. hace 2 años"></div>
+            <div class="field"><label>Especificar</label><input type="text" id="hc-cir-especificar" placeholder="Tipo de cirugía"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ap-specific">
+        <div class="ap-specific-header">
+          <span>¿Ha tenido experiencias dentales desagradables?</span>
+          <div class="btn-group" id="grupo-exp-dental">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="exp-dental-detail" style="display:none;">
+          <div class="grid-2">
+            <div class="field"><label>¿Hace cuánto tiempo?</label><input type="text" id="hc-exp-cuando" placeholder="Ej. hace 3 años"></div>
+            <div class="field"><label>Especificar</label><input type="text" id="hc-exp-especificar" placeholder="Describa la experiencia"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ap-specific">
+        <div class="ap-specific-header">
+          <span>¿Ha sufrido traumatismos relevantes?</span>
+          <div class="btn-group" id="grupo-traumatismos">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="traumatismos-detail" style="display:none;">
+          <div class="grid-2">
+            <div class="field"><label>¿Hace cuánto tiempo?</label><input type="text" id="hc-trau-cuando" placeholder="Ej. hace 5 años"></div>
+            <div class="field"><label>Especificar</label><input type="text" id="hc-trau-especificar" placeholder="Tipo de traumatismo"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ap-specific">
+        <div class="ap-specific-header">
+          <span>¿Ha recibido alguna transfusión sanguínea?</span>
+          <div class="btn-group" id="grupo-transfusion">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="transfusion-detail" style="display:none;">
+          <div class="field"><label>¿Cuándo? / Especificar</label><input type="text" id="hc-transf-especificar" placeholder="Fecha aproximada y motivo"></div>
+        </div>
+      </div>
+
+      <div class="ap-specific">
+        <div class="ap-specific-header">
+          <span>¿Ha recibido trasplantes o injertos?</span>
+          <div class="btn-group" id="grupo-trasplante">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="trasplante-detail" style="display:none;">
+          <div class="field"><label>¿Cuándo? / Especificar</label><input type="text" id="hc-traspl-especificar" placeholder="Fecha y tipo de trasplante o injerto"></div>
+        </div>
+      </div>
+
+      <div class="ap-specific">
+        <div class="ap-specific-header">
+          <span>¿Le han implantado algún material (placa, tornillo, prótesis, otro)?</span>
+          <div class="btn-group" id="grupo-implante-mat">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="implante-mat-detail" style="display:none;">
+          <div class="field"><label>¿Cuándo? / Especificar</label><input type="text" id="hc-impl-especificar" placeholder="Fecha y tipo de material implantado"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 6: Antecedentes gineco-obstétricos (solo femenino) -->
+    <div class="section-card" id="seccion-gineco">
+      <p class="section-title">Antecedentes gineco-obstétricos</p>
+      <div class="grid-3">
+        <div class="field">
+          <label>¿Está embarazada?</label>
+          <div class="btn-group" id="grupo-embarazo">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+            <button type="button" class="opt-btn" data-value="No sabe">No sabe</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Semanas de gestación</label>
+          <input type="number" id="hc-semanas" min="0" max="42" placeholder="0–42">
+        </div>
+        <div class="field">
+          <label>Número de partos / cesáreas</label>
+          <input type="text" id="hc-partos" placeholder="Ej. 2 partos, 1 cesárea">
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field">
+          <label>Método anticonceptivo</label>
+          <input type="text" id="hc-anticonceptivo" placeholder="Pastillas, dispositivo, etc.">
+        </div>
+        <div class="field">
+          <label>Última menstruación</label>
+          <input type="text" id="hc-menstruacion" placeholder="Fecha aproximada">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 7: Signos vitales -->
+    <div class="section-card">
+      <p class="section-title">Signos vitales al momento de la consulta</p>
+      <div class="grid-3">
+        <div class="field"><label>Presión arterial (mmHg)</label><input type="text" id="hc-pa" placeholder="120/80"></div>
+        <div class="field"><label>Frecuencia cardíaca (lpm)</label><input type="number" id="hc-fc" min="0" placeholder="0"></div>
+        <div class="field"><label>Frecuencia respiratoria (rpm)</label><input type="number" id="hc-fr" min="0" placeholder="0"></div>
+        <div class="field"><label>Temperatura (°C)</label><input type="number" id="hc-temp" step="0.1" min="30" max="45" placeholder="36.5"></div>
+        <div class="field"><label>Peso (kg)</label><input type="number" id="hc-peso" step="0.1" min="0" placeholder="0"></div>
+        <div class="field"><label>Talla (cm)</label><input type="number" id="hc-talla" min="0" placeholder="0"></div>
+      </div>
+      <div class="field" style="margin-top:4px;">
+        <label>Observaciones de signos vitales</label>
+        <input type="text" id="hc-obs-vitales" placeholder="Notas relevantes...">
+      </div>
+    </div>
+
+    <!-- SECCIÓN 8: Datos de identificación y contacto -->
+    <div class="section-card">
+      <p class="section-title">Datos de identificación y contacto</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:-8px 0 14px;padding:8px 12px;background:var(--teal-50);border-radius:6px;border-left:3px solid var(--teal-600);">Los campos marcados se sincronizan con el expediente del paciente.</p>
+
+      <div class="grid-2">
+        <div class="field"><label>Fecha de nacimiento</label><input type="date" id="id-fechaNacimiento"></div>
+        <div class="field"><label>Lugar de nacimiento</label><input type="text" id="id-lugarNacimiento" placeholder="Ciudad, estado"></div>
+      </div>
+      <div class="field" style="margin-top:4px;"><label>Dirección</label><input type="text" id="id-direccion" placeholder="Calle, número, colonia, ciudad"></div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Teléfono</label><input type="tel" id="id-telefono" placeholder="10 dígitos"></div>
+        <div class="field"><label>Correo electrónico</label><input type="email" id="id-correo" placeholder="correo@ejemplo.com"></div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Escolaridad</label>
+          <select id="id-escolaridad">
+            <option value="">Selecciona...</option>
+            <option>Preescolar</option><option>Primaria</option><option>Secundaria</option>
+            <option>Preparatoria / Bachillerato</option><option>Técnico / Vocacional</option>
+            <option>Licenciatura</option><option>Especialidad</option>
+            <option>Maestría</option><option>Doctorado</option><option>Ninguna</option>
+          </select>
+        </div>
+        <div class="field"><label>Estado civil</label>
+          <select id="id-estadoCivil">
+            <option value="">Selecciona...</option>
+            <option>Soltero(a)</option><option>Casado(a)</option><option>Divorciado(a)</option>
+            <option>Viudo(a)</option><option>Emancipado(a)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Religión</label>
+          <select id="id-religion">
+            <option value="">Selecciona...</option>
+            <option>Cristianismo</option><option>Hinduismo</option><option>Islam</option>
+            <option>Jainismo</option><option>Judaísmo</option><option>No practicante</option>
+          </select>
+        </div>
+        <div class="field"><label>Fecha de última visita al dentista</label><input type="date" id="id-ultimaVisita"></div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Profesión / oficio</label><input type="text" id="id-profesion" placeholder="Ej. Ingeniero, maestro..."></div>
+        <div class="field"><label>Ocupación actual</label><input type="text" id="id-ocupacion" placeholder="Ej. Estudiante, empleado..."></div>
+      </div>
+      <div class="field" style="margin-top:4px;"><label>Referido por</label><input type="text" id="id-referido" placeholder="Nombre de quien lo refirió"></div>
+      <div class="field" style="margin-top:4px;"><label>Datos relevantes previo al tratamiento</label><textarea id="id-datosRelevantes" placeholder="Información importante antes de iniciar el tratamiento..."></textarea></div>
+
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>En caso de emergencia llamar a</label><input type="text" id="id-emergenciaContacto" placeholder="Nombre del contacto"></div>
+        <div class="field"><label>Teléfono de emergencia</label><input type="tel" id="id-emergenciaTelefono" placeholder="10 dígitos"></div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Alergia / tratamiento médico actual</label>
+          <select id="id-alergia">
+            <option value="">Selecciona...</option>
+            <option>Ninguna</option><option>Alergia a medicamentos</option>
+            <option>Tratamiento médico en curso</option><option>Otra</option>
+          </select>
+        </div>
+        <div class="field"><label>Especifique</label><input type="text" id="id-alergiaEspecifique" placeholder="Detalle la alergia o tratamiento"></div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label>Firma de conformidad con los datos</label>
+        <div class="signature-wrap">
+          <canvas id="id-firma-canvas" width="800" height="150"></canvas>
+          <button type="button" class="btn-sm" id="id-limpiar-firma">Limpiar firma</button>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:14px;">
+        <div class="field">
+          <label>Fotografía del paciente</label>
+          <label class="photo-tile" for="id-input-foto">
+            <img id="id-prev-foto" style="display:none;">
+            <span class="photo-tile-empty"><i>📷</i>Subir foto</span>
+          </label>
+          <input type="file" accept="image/*" capture="environment" id="id-input-foto" style="display:none;">
+        </div>
+        <div class="field">
+          <label>Identificación · anverso</label>
+          <label class="photo-tile" for="id-input-anverso">
+            <img id="id-prev-anverso" style="display:none;">
+            <span class="photo-tile-empty"><i>📷</i>Subir foto</span>
+          </label>
+          <input type="file" accept="image/*" capture="environment" id="id-input-anverso" style="display:none;">
+        </div>
+        <div class="field">
+          <label>Identificación · reverso</label>
+          <label class="photo-tile" for="id-input-reverso">
+            <img id="id-prev-reverso" style="display:none;">
+            <span class="photo-tile-empty"><i>📷</i>Subir foto</span>
+          </label>
+          <input type="file" accept="image/*" capture="environment" id="id-input-reverso" style="display:none;">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 9: Interrogatorio por aparatos y sistemas -->
+    <div class="section-card">
+      <p class="section-title">Interrogatorio por aparatos y sistemas</p>
+
+      <!-- Sistema Respiratorio -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Sistema Respiratorio (AR)</p>
+      <div class="hc-checks" id="as-resp-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field">
+          <label>Refiere / Niega AR</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="ar-refiere" onclick="setRN('ar','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="ar-niega"   onclick="setRN('ar','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx AR</label><input type="text" id="as-tx-ar" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Aparato Cardiovascular -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Aparato Cardiovascular (AD)</p>
+      <div class="hc-checks" id="as-cardio-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field">
+          <label>Refiere / Niega AD</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="ad-refiere" onclick="setRN('ad','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="ad-niega"   onclick="setRN('ad','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx AD</label><input type="text" id="as-tx-ad" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Aparato Genitourinario -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Aparato Genitourinario (AGU)</p>
+      <div class="hc-checks" id="as-genito-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field">
+          <label>Refiere / Niega AGU</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="agu-refiere" onclick="setRN('agu','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="agu-niega"   onclick="setRN('agu','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx AGU</label><input type="text" id="as-tx-agu" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Aparato Auditivo -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Aparato Auditivo (AAU)</p>
+      <div class="hc-checks" id="as-audit-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Refiere / Niega AAU</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="aau-refiere" onclick="setRN('aau','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="aau-niega"   onclick="setRN('aau','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx AAU</label><input type="text" id="as-tx-aau" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Aparato Digestivo -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Aparato Digestivo (ADi)</p>
+      <div class="hc-checks" id="as-digest-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Refiere / Niega ADi</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="adi-refiere" onclick="setRN('adi','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="adi-niega"   onclick="setRN('adi','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx ADi</label><input type="text" id="as-tx-adi" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Sistema Endócrino -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Sistema Endócrino (SE)</p>
+      <div class="hc-checks" id="as-endoc-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Refiere / Niega SE</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="se-refiere" onclick="setRN('se','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="se-niega"   onclick="setRN('se','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx SE</label><input type="text" id="as-tx-se" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Sistema Hemolinfático -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Sistema Hemolinfático (SH)</p>
+      <div class="hc-checks" id="as-hemo-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Refiere / Niega SH</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="sh-refiere" onclick="setRN('sh','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="sh-niega"   onclick="setRN('sh','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx SH</label><input type="text" id="as-tx-sh" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Aparato Músculo-Esquelético -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Aparato Músculo-Esquelético (AME)</p>
+      <div class="hc-checks" id="as-musc-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Refiere / Niega AME</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="ame-refiere" onclick="setRN('ame','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="ame-niega"   onclick="setRN('ame','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx AME</label><input type="text" id="as-tx-ame" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Sistema Nervioso -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Sistema Nervioso (SN)</p>
+      <div class="hc-checks" id="as-nerv-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Refiere / Niega SN</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="sn-refiere" onclick="setRN('sn','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="sn-niega"   onclick="setRN('sn','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx SN</label><input type="text" id="as-tx-sn" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Aparato Ocular -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Aparato Ocular (AO)</p>
+      <div class="hc-checks" id="as-ocul-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Refiere / Niega AO</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="ao-refiere" onclick="setRN('ao','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="ao-niega"   onclick="setRN('ao','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx AO</label><input type="text" id="as-tx-ao" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Sistema Tegumentario -->
+      <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Sistema Tegumentario (ST)</p>
+      <div class="hc-checks" id="as-tegu-checks"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Refiere / Niega ST</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button type="button" class="opt-btn" id="st-refiere" onclick="setRN('st','Refiere')">Refiere</button>
+            <button type="button" class="opt-btn" id="st-niega"   onclick="setRN('st','Niega')">Niega</button>
+          </div>
+        </div>
+        <div class="field"><label>Especificar Tx ST</label><input type="text" id="as-tx-st" placeholder="Tratamiento / especificación..."></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+      <!-- Reproductor Femenino (solo femenino) -->
+      <div id="as-repro-fem-wrap">
+        <p style="font-size:13px;font-weight:700;color:var(--teal-900);margin:0 0 8px;">Aparato Reproductor Femenino (ARF)</p>
+        <div class="hc-checks" id="as-repro-checks"></div>
+        <div class="grid-2" style="margin-top:4px;">
+          <div class="field"><label>No. de abortos</label><input type="number" id="hc-num-abortos" min="0" placeholder="0"></div>
+          <div class="field"><label>Fecha de última regla</label><input type="text" id="hc-ultima-regla" placeholder="Ej. 01/07/2026"></div>
+          <div class="field"><label>Anticonceptivos actuales</label><input type="text" id="hc-anticonc-repro" placeholder="Tipo de anticonceptivo..."></div>
+          <div class="field"><label>Anomalías en ciclo menstrual</label><input type="text" id="hc-anomalias-ciclo" placeholder="Describa..."></div>
+        </div>
+        <div class="grid-2" style="margin-top:4px;">
+          <div class="field">
+            <label>Realización de Papanicolaou</label>
+            <div class="btn-group" id="grupo-papanicolaou">
+              <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+              <button type="button" class="opt-btn" data-value="No">No</button>
+            </div>
+          </div>
+          <div class="field"><label>Fecha última realización</label><input type="text" id="hc-papani-fecha" placeholder="Fecha aproximada"></div>
+        </div>
+        <div class="grid-2" style="margin-top:10px;">
+          <div class="field"><label>Refiere / Niega ARF</label>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button type="button" class="opt-btn" id="arf-refiere" onclick="setRN('arf','Refiere')">Refiere</button>
+              <button type="button" class="opt-btn" id="arf-niega"   onclick="setRN('arf','Niega')">Niega</button>
+            </div>
+          </div>
+          <div class="field"><label>Especificar Tx ARF</label><input type="text" id="as-tx-arf" placeholder="Tratamiento / especificación..."></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 11: Exploración clínica -->
+    <div class="section-card">
+      <p class="section-title">Exploración clínica</p>
+
+      <!-- Inspección general -->
+      <span class="subsection-label">Inspección general</span>
+      <div class="grid-2" style="margin-top:8px;">
+        <div class="field"><label>Marcha</label><input type="text" id="ec-marcha" placeholder="Normal, antálgica, espástica..."></div>
+        <div class="field"><label>Movimientos anormales</label><input type="text" id="ec-mov-anorm" placeholder="Ninguno / especificar..."></div>
+        <div class="field"><label>Facies</label><input type="text" id="ec-facies" placeholder="Normal, pálida, ictérica, dismórfica..."></div>
+        <div class="field"><label>Complexión</label>
+          <select id="ec-complexion">
+            <option value="">Selecciona...</option>
+            <option>Delgada</option><option>Normal / Mesomorfa</option>
+            <option>Robusta</option><option>Obesa</option>
+          </select>
+        </div>
+        <div class="field"><label>Posición / Actitud</label><input type="text" id="ec-posicion" placeholder="Ortostático, decúbito, etc."></div>
+        <div class="field"><label>Cuidado personal</label>
+          <select id="ec-cuidado-personal">
+            <option value="">Selecciona...</option>
+            <option>Bueno</option><option>Regular</option><option>Deficiente</option>
+          </select>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Cabeza y cuello</span>
+      <div class="grid-2" style="margin-top:8px;">
+        <div class="field"><label>Cara</label><textarea id="ec-cara" placeholder="Hallazgos en cara..."></textarea></div>
+        <div class="field"><label>Cráneo</label><textarea id="ec-craneo" placeholder="Hallazgos en cráneo..."></textarea></div>
+        <div class="field"><label>Cuello</label><textarea id="ec-cuello" placeholder="Hallazgos en cuello..."></textarea></div>
+        <div class="field"><label>Nariz</label><textarea id="ec-nariz" placeholder="Hallazgos en nariz..."></textarea></div>
+        <div class="field"><label>Oídos</label><textarea id="ec-oidos" placeholder="Hallazgos en oídos..."></textarea></div>
+        <div class="field"><label>Ojos</label><textarea id="ec-ojos" placeholder="Hallazgos en ojos..."></textarea></div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Cavidad bucal</span>
+      <div class="grid-2" style="margin-top:8px;">
+        <div class="field">
+          <label>Higiene bucal</label>
+          <select id="ec-higiene-bucal">
+            <option value="">Selecciona...</option>
+            <option>Buena</option><option>Regular</option><option>Deficiente</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tejidos blandos</label>
+          <select id="ec-tejidos-blandos">
+            <option value="">Selecciona...</option>
+            <option>Sanos</option><option>Inflamación gingival leve</option>
+            <option>Inflamación gingival moderada</option><option>Inflamación gingival severa</option>
+            <option>Mucosa alterada</option>
+          </select>
+        </div>
+      </div>
+      <div class="ap-specific" style="margin-top:8px;">
+        <div class="ap-specific-header">
+          <span>¿Presencia de lesión(es) en cavidad bucal?</span>
+          <div class="btn-group" id="grupo-lesion-bucal">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="lesion-bucal-detail" style="display:none;">
+          <div class="grid-2">
+            <div class="field"><label>Localización</label><input type="text" id="ec-les-localizacion" placeholder="Ej. encía superior derecha"></div>
+            <div class="field"><label>Forma</label><input type="text" id="ec-les-forma" placeholder="Ej. oval, irregular..."></div>
+            <div class="field"><label>Color</label><input type="text" id="ec-les-color" placeholder="Ej. blanquecino, eritematoso..."></div>
+            <div class="field"><label>Superficie</label><input type="text" id="ec-les-superficie" placeholder="Lisa, rugosa, ulcerada..."></div>
+            <div class="field"><label>Bordes</label><input type="text" id="ec-les-bordes" placeholder="Definidos, difusos, festoneados..."></div>
+            <div class="field"><label>Consistencia</label><input type="text" id="ec-les-consistencia" placeholder="Blanda, firme, fluctuante..."></div>
+            <div class="field"><label>Base</label><input type="text" id="ec-les-base" placeholder="Sésil, pediculada..."></div>
+            <div class="field"><label>Tiempo de evolución</label><input type="text" id="ec-les-tiempo" placeholder="Ej. 2 semanas, 3 meses..."></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:12px;">
+        <label>Alteraciones dentales NO cariosas</label>
+        <textarea id="ec-alt-dentales" placeholder="Fluorosis, hipoplasia, atricción, abrasión, erosión, abfracción..."></textarea>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <span class="subsection-label">Alteraciones de CATM (Articulación Temporomandibular)</span>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;" id="catm-wrap">
+        <label class="hc-check-item" style="border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+          <input type="checkbox" id="catm-dolor"> Dolor
+        </label>
+        <label class="hc-check-item" style="border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+          <input type="checkbox" id="catm-dificultad"> Dificultad o incapacidad al abrir
+        </label>
+        <label class="hc-check-item" style="border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+          <input type="checkbox" id="catm-ruidos"> Ruidos articulares
+        </label>
+        <label class="hc-check-item" style="border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+          <input type="checkbox" id="catm-desviacion"> Desviación mandibular
+        </label>
+        <label class="hc-check-item" style="border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+          <input type="checkbox" id="catm-edema"> Edema
+        </label>
+      </div>
+      <div class="field" style="margin-top:8px;">
+        <label>Observaciones CATM</label>
+        <textarea id="ec-catm-obs" placeholder="Especificaciones sobre la articulación temporomandibular..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 12: Odontograma -->
+    <div class="section-card">
+      <p class="section-title">Odontograma</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:-8px 0 14px;">Haz clic sobre un diente para marcar su condición. Clic repetido cicla entre estados.</p>
+
+      <div class="odo-legend">
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#fff;"></div>Normal</div>
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#FF8A80;"></div>C — Caries</div>
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#80D8FF;"></div>R — Restauración</div>
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#FFD740;"></div>Co — Corona</div>
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#CCFF90;"></div>Pu — Puente</div>
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#FFD180;"></div>Ei — Extracción indicada</div>
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#CFD8DC;"></div>X — Extraído/Ausente</div>
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#EA80FC;"></div>S — Sellante</div>
+        <div class="odo-leg-item"><div class="odo-leg-dot" style="background:#FF80AB;"></div>Im — Implante</div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <div style="min-width:580px;">
+          <div class="odo-header-row"><span>Sup. Der. →</span><span>← Sup. Izq.</span></div>
+          <div class="odo-row" id="odo-row-up"></div>
+          <div class="odo-row odo-row-temp" id="odo-row-up-temp"></div>
+          <div class="odo-midline"></div>
+          <div class="odo-row odo-row-temp" id="odo-row-lo-temp"></div>
+          <div class="odo-row" id="odo-row-lo"></div>
+          <div class="odo-header-row" style="margin-top:4px;"><span>Inf. Der. →</span><span>← Inf. Izq.</span></div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label>Observaciones del odontograma</label>
+        <textarea id="hc-odo-obs" placeholder="Observaciones generales sobre el estado dental..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 12.5: Periodontograma -->
+    <div class="section-card">
+      <p class="section-title">Periodontograma</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:-8px 0 12px;">Profundidad de sondeo en mm por sitio. &nbsp;
+        <span style="color:#2E7D32;font-weight:600;">&#9632; 1–3 normal</span> &nbsp;
+        <span style="color:#9E6F00;font-weight:600;">&#9632; 4–5 leve</span> &nbsp;
+        <span style="color:#E65100;font-weight:600;">&#9632; 6–7 moderado</span> &nbsp;
+        <span style="color:#B71C1C;font-weight:600;">&#9632; &#8805;8 severo</span>
+      </p>
+      <div style="overflow-x:auto;padding-bottom:4px;">
+        <div style="min-width:760px;">
+          <p style="font-size:11px;font-weight:700;color:var(--teal-800);margin:0 0 4px 64px;">SUPERIOR</p>
+          <div class="perio-arch" id="perio-upper"></div>
+          <div class="perio-divider"></div>
+          <div class="perio-arch" id="perio-lower"></div>
+          <p style="font-size:11px;font-weight:700;color:var(--teal-800);margin:4px 0 0 64px;">INFERIOR</p>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:16px;">
+        <div class="field"><label>Índice de placa (%)</label><input type="number" id="perio-ip" min="0" max="100" placeholder="0–100"></div>
+        <div class="field"><label>Índice gingival</label><input type="text" id="perio-ig" placeholder="Ej. 0.8 (Löe &amp; Silness)"></div>
+        <div class="field"><label>Diagnóstico periodontal</label><input type="text" id="perio-dx" placeholder="Ej. Periodontitis estadio II..."></div>
+      </div>
+      <div class="field">
+        <label>Observaciones del periodontograma</label>
+        <textarea id="perio-obs" placeholder="Hallazgos adicionales..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 13: Exploración radiográfica -->
+    <div class="section-card">
+      <p class="section-title">Exploración radiográfica</p>
+      <div class="grid-2">
+        <div class="field">
+          <label>Tipo de radiografía</label>
+          <select id="rx-tipo">
+            <option value="">Selecciona...</option>
+            <option>Panorámica</option><option>Periapical</option><option>Bite-wing</option>
+            <option>Tomografía computarizada (CBCT)</option><option>Cefalométrica</option>
+            <option>Oclusal</option><option>Otra</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Fecha de toma</label>
+          <input type="date" id="rx-fecha">
+        </div>
+      </div>
+
+      <div class="ap-specific" style="margin-top:8px;">
+        <div class="ap-specific-header">
+          <span>¿Presencia de lesión radiográfica?</span>
+          <div class="btn-group" id="grupo-rx-lesion">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="rx-lesion-detail" style="display:none;">
+          <div class="grid-2">
+            <div class="field"><label>Tipo de lesión</label><input type="text" id="rx-les-tipo" placeholder="Radiolúcida, radiopaca, mixta..."></div>
+            <div class="field"><label>Bordes</label>
+              <select id="rx-les-bordes">
+                <option value="">Selecciona...</option>
+                <option>Definidos</option><option>Difusos</option><option>Escleróticos</option>
+              </select>
+            </div>
+            <div class="field"><label>Distribución</label>
+              <select id="rx-les-dist">
+                <option value="">Selecciona...</option>
+                <option>Única</option><option>Múltiple</option>
+              </select>
+            </div>
+            <div class="field"><label>Localización</label><input type="text" id="rx-les-localizacion" placeholder="Ej. periapical diente 36..."></div>
+            <div class="field"><label>Relación con órganos dentales</label><input type="text" id="rx-les-rel-dental" placeholder="Relacionada / no relacionada..."></div>
+            <div class="field"><label>Relación con proceso carioso</label><input type="text" id="rx-les-rel-caries" placeholder="Comunicada / no comunicada..."></div>
+          </div>
+          <div class="ap-specific" style="margin-top:8px;">
+            <div class="ap-specific-header">
+              <span>¿Pérdida ósea?</span>
+              <div class="btn-group" id="grupo-rx-perdida-osea">
+                <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+                <button type="button" class="opt-btn" data-value="No">No</button>
+              </div>
+            </div>
+            <div class="ap-specific-detail" id="rx-perdida-osea-detail" style="display:none;">
+              <div class="field"><label>Especificar pérdida ósea</label><input type="text" id="rx-perdida-osea-esp" placeholder="Tipo, extensión, localización..."></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>Observaciones radiográficas adicionales</label>
+        <textarea id="rx-obs" placeholder="Hallazgos adicionales en la radiografía..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 14: Diagnóstico y plan -->
+    <div class="section-card">
+      <p class="section-title">Diagnóstico y plan</p>
+      <div class="field">
+        <label>Diagnóstico presuntivo sistémico</label>
+        <textarea id="hc-dx-sistemico" placeholder="Diagnóstico sistémico presuntivo basado en la historia clínica..."></textarea>
+      </div>
+      <div class="field">
+        <label>Padecimiento bucal actual</label>
+        <textarea id="hc-padecimiento-bucal" placeholder="Descripción del padecimiento bucal actual del paciente..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 15: Interconsulta -->
+    <div class="section-card">
+      <p class="section-title">Interconsulta</p>
+      <div class="ap-specific">
+        <div class="ap-specific-header">
+          <span>¿Se requiere interconsulta?</span>
+          <div class="btn-group" id="grupo-interconsulta">
+            <button type="button" class="opt-btn" data-value="Sí">Sí</button>
+            <button type="button" class="opt-btn" data-value="No">No</button>
+          </div>
+        </div>
+        <div class="ap-specific-detail" id="interconsulta-detail" style="display:none;">
+          <div class="grid-2">
+            <div class="field"><label>A quién se dirige</label><input type="text" id="ic-dirigida-a" placeholder="Especialidad o médico..."></div>
+          </div>
+          <div class="field"><label>Causa y/o petición</label>
+            <textarea id="ic-peticion" placeholder="Motivo de la interconsulta y lo que se solicita al especialista..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 16: Ruta clínica -->
+    <div class="section-card">
+      <p class="section-title">Ruta clínica</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:-8px 0 14px;">Plan de tratamiento secuenciado por fases.</p>
+      <div id="ruta-clinica-wrap">
+        <div class="ruta-row"><div class="ruta-num">1</div><div class="field" style="flex:1;margin:0;"><label>Educación para la salud bucal</label><input type="text" id="ruta-1" placeholder="Indicaciones e instrucciones..."></div></div>
+        <div class="ruta-row"><div class="ruta-num">2</div><div class="field" style="flex:1;margin:0;"><label>Control de placa y profilaxis</label><input type="text" id="ruta-2" placeholder="Plan de control..."></div></div>
+        <div class="ruta-row"><div class="ruta-num">3</div><div class="field" style="flex:1;margin:0;"><label>Periodoncia</label><input type="text" id="ruta-3" placeholder="Tratamiento periodontal indicado..."></div></div>
+        <div class="ruta-row"><div class="ruta-num">4</div><div class="field" style="flex:1;margin:0;"><label>Cirugía oral</label><input type="text" id="ruta-4" placeholder="Procedimientos quirúrgicos indicados..."></div></div>
+        <div class="ruta-row"><div class="ruta-num">5</div><div class="field" style="flex:1;margin:0;"><label>Endodoncia</label><input type="text" id="ruta-5" placeholder="Piezas y tratamiento endodóntico..."></div></div>
+        <div class="ruta-row"><div class="ruta-num">6</div><div class="field" style="flex:1;margin:0;"><label>Operatoria y/o Prostodoncia</label><input type="text" id="ruta-6" placeholder="Restauraciones, prótesis indicadas..."></div></div>
+        <div class="ruta-row"><div class="ruta-num">7</div><div class="field" style="flex:1;margin:0;"><label>Ortodoncia / Ortopedia</label><input type="text" id="ruta-7" placeholder="Tratamiento ortodóntico indicado..."></div></div>
+        <div class="ruta-row"><div class="ruta-num">8</div><div class="field" style="flex:1;margin:0;"><label>Plan de mantenimiento</label><input type="text" id="ruta-8" placeholder="Frecuencia y tipo de citas de mantenimiento..."></div></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 17: Autorizaciones -->
+    <div class="section-card">
+      <p class="section-title">Autorizaciones</p>
+
+      <!-- Profesor supervisor -->
+      <span class="subsection-label">Profesor supervisor</span>
+      <div class="grid-2" style="margin-top:8px;">
+        <div class="field"><label>Clave del profesor</label><input type="text" id="aut-prof-clave" placeholder="Clave institucional"></div>
+        <div class="field"><label>Nombre completo del profesor</label><input type="text" id="aut-prof-nombre" placeholder="Nombre completo"></div>
+      </div>
+      <div class="field" style="margin-top:4px;">
+        <label>Firma del profesor</label>
+        <div class="signature-wrap">
+          <canvas id="aut-prof-firma" width="800" height="120"></canvas>
+          <button type="button" class="btn-sm" id="limpiar-aut-prof">Limpiar firma</button>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <!-- Alumno -->
+      <span class="subsection-label">Alumno</span>
+      <div class="grid-2" style="margin-top:8px;">
+        <div class="field"><label>No. de cuenta del alumno</label><input type="text" id="aut-alu-cuenta" placeholder="No. de cuenta"></div>
+        <div class="field"><label>Nombre completo del alumno</label><input type="text" id="aut-alu-nombre" placeholder="Nombre completo"></div>
+      </div>
+      <div class="field" style="margin-top:4px;">
+        <label>Firma del alumno</label>
+        <div class="signature-wrap">
+          <canvas id="aut-alu-firma" width="800" height="120"></canvas>
+          <button type="button" class="btn-sm" id="limpiar-aut-alu">Limpiar firma</button>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 16px;">
+      <!-- Paciente / Tutor -->
+      <span class="subsection-label">Paciente o tutor</span>
+      <div class="grid-3" style="margin-top:8px;">
+        <div class="field"><label>Nombre completo</label><input type="text" id="aut-pac-nombre" placeholder="Nombre del paciente o tutor"></div>
+        <div class="field"><label>Relación con el paciente</label>
+          <select id="aut-pac-relacion">
+            <option value="">Selecciona...</option>
+            <option>Paciente (mayor de edad)</option>
+            <option>Padre</option><option>Madre</option>
+            <option>Tutor legal</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Tipo de identificación</label>
+          <select id="aut-pac-tipo-id">
+            <option value="">Selecciona...</option>
+            <option>INE / IFE</option><option>Pasaporte</option>
+            <option>Licencia de conducir</option><option>CURP</option>
+            <option>Acta de nacimiento</option><option>Otra</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div class="field"><label>Folio del documento de identificación</label><input type="text" id="aut-pac-folio" placeholder="No. de folio o serie"></div>
+        <div class="field"><label>Fecha de autorización</label><input type="date" id="aut-pac-fecha"></div>
+      </div>
+      <div class="field" style="margin-top:8px;">
+        <label>Firma o huella dactilar del paciente / tutor</label>
+        <div class="signature-wrap">
+          <canvas id="aut-pac-firma" width="800" height="120"></canvas>
+          <button type="button" class="btn-sm" id="limpiar-aut-pac">Limpiar firma</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 10: Notas del alumno -->
+    <div class="section-card">
+      <p class="section-title">Notas del alumno</p>
+      <div class="grid-2">
+        <div class="field"><label>Alumno que llenó la historia</label><input type="text" id="hc-alumno" placeholder="Nombre del alumno"></div>
+        <div class="field"><label>Fecha de llenado</label><input type="date" id="hc-fecha-llenado"></div>
+      </div>
+      <div class="field" style="margin-top:4px;">
+        <label>Observaciones generales</label>
+        <textarea id="hc-obs-generales" placeholder="Cualquier dato clínico relevante no contemplado arriba..."></textarea>
+      </div>
+    </div>
+  </div><!-- /hc-body -->
+</div><!-- /wrap -->
+
+<div class="sticky-bar">
+  <button type="button" class="btn-secondary" id="btn-volver-bottom">Volver sin guardar</button>
+  <button type="button" class="btn-primary" id="btn-guardar-hc">Guardar historia clínica</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'clinica_dental_data_v1';
+
+function loadData(){
+  try{ const r=localStorage.getItem(STORAGE_KEY); if(r) return JSON.parse(r); }catch(e){}
+  return {expedientes:[]};
+}
+function saveData(data){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+const params = new URLSearchParams(location.search);
+const patientId = params.get('id');
+const data = loadData();
+const expIdx = data.expedientes.findIndex(x=>x.id===patientId);
+const exp = expIdx>-1 ? data.expedientes[expIdx] : null;
+
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function initials(name){
+  return name.trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function volver(){
+  history.length>1 ? history.back() : (location.href='control-clinica-dental.html');
+}
+document.getElementById('btn-volver').addEventListener('click', volver);
+document.getElementById('btn-volver-bottom').addEventListener('click', volver);
+
+/* ── Setup opt-btn groups ── */
+function setupGroup(id){
+  const g=document.getElementById(id);
+  if(!g) return;
+  g.addEventListener('click',e=>{
+    const b=e.target.closest('.opt-btn'); if(!b) return;
+    g.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+  });
+}
+['grupo-sexo','grupo-tipoHistoria','grupo-embarazo',
+ 'grupo-alcohol','grupo-exbebedor','grupo-tabaco','grupo-exfumador','grupo-estupef','grupo-exconsumidor',
+ 'grupo-vida-sexual','grupo-papanicolaou',
+ 'grupo-rx-perdida-osea',
+].forEach(setupGroup);
+
+/* ── Mostrar/ocultar sección gineco ── */
+function updateGineco(){
+  const sel=document.querySelector('#grupo-sexo .opt-btn.selected');
+  const esFem = sel&&sel.dataset.value==='Femenino';
+  document.getElementById('seccion-gineco').style.display = esFem ? '' : 'none';
+  const reproWrap = document.getElementById('as-repro-fem-wrap');
+  if(reproWrap) reproWrap.style.display = esFem ? '' : 'none';
+}
+document.getElementById('grupo-sexo').addEventListener('click', updateGineco);
+
+/* ── Condiciones padecimiento actual ── */
+const HC_CONDITIONS = [
+  {cat:'General', items:['Aparentemente sano']},
+  {cat:'Infecciosas / ETS', items:['VIH','VPH','Sífilis','Gonorrea','Clamidia','Tricomoniasis','Hepatitis B y C','COVID-19']},
+  {cat:'Cardiovasculares', items:['Hipertensión arterial','Infarto / Cardiopatía isquémica','Insuficiencia cardíaca','Arritmias','Enfermedad cerebrovascular (EVC)','Aneurismas']},
+  {cat:'Neurológicas / Psiquiátricas', items:['Epilepsia','Alzheimer u otras demencias','Parkinson','Esclerosis múltiple','Esquizofrenia','Trastorno bipolar','Depresión','Ansiedad','Otro'], extraId:'hc-otro-neurologicas'},
+  {cat:'Trastornos del neurodesarrollo', items:['TDA (Trastorno por déficit de atención)','TDAH (Trastorno por déficit de atención e hiperactividad)','TOC (Trastorno obsesivo-compulsivo)','TOD (Trastorno oposicionista desafiante)','TEA (Trastorno del espectro autista)','TAG (Trastorno de ansiedad generalizada)','TPAC (Trastorno de pánico)','TDL (Trastorno del desarrollo del lenguaje)','TPS (Trastorno del procesamiento sensorial)','Otro'], extraId:'hc-otro-neurodesarrollo'},
+  {cat:'Respiratorias', items:['Asma','EPOC (Enfermedad pulmonar obstructiva crónica)','Fibrosis pulmonar','Alergias respiratorias']},
+  {cat:'Metabólicas / Endocrinas', items:['Diabetes mellitus tipo 1 o 2','Hipotiroidismo','Hipertiroidismo','Dislipidemia (colesterol/triglicéridos altos)','Obesidad']},
+  {cat:'Oncológicas', items:['Cáncer de mama','Cáncer de próstata','Cáncer de colon','Cáncer gástrico','Cáncer pulmonar','Leucemia / Linfoma']},
+  {cat:'Hematológicas', items:['Anemia hereditaria','Anemia hemolítica','Hemofilia']},
+  {cat:'Autoinmunes / Reumatológicas', items:['Lupus eritematoso sistémico','Artritis reumatoide','Espondilitis anquilosante','Gota','Otro'], extraId:'hc-otro-autoinmunes'},
+  {cat:'Gastrointestinales / Hepáticas', items:['Úlcera gástrica o duodenal','Enfermedad hepática (cirrosis, hepatitis)','Enfermedad inflamatoria intestinal (Crohn, CUCI)']},
+  {cat:'Sensoriales', items:['Glaucoma','Cataratas','Degeneración macular','Hipoacusia congénita o progresiva']},
+  {cat:'Hereditarias / Congénitas', items:['Malformaciones hereditarias','Pérdida dental temprana','Bruxismo hereditario','Alteraciones craneofaciales','Síndrome de Down','Síndrome de Marfan','Fibrosis quística','Distrofias musculares','Labio y paladar hendido']},
+];
+
+const HF_CONDITIONS = [
+  'Diabetes','Hipertensión arterial','Cardiopatías','Cáncer','Epilepsia','Tuberculosis',
+  'Enfermedades renales','Enfermedades tiroideas','Enfermedades autoinmunes','Hemofilia',
+  'Anemia hereditaria','Labio/Paladar hendido','Pérdida dental temprana','Obesidad','Otra enfermedad hereditaria'
+];
+
+function buildConditions(savedPad, savedExtras){
+  savedExtras = savedExtras || {};
+  document.getElementById('hc-conditions-wrap').innerHTML = HC_CONDITIONS.map(({cat,items,extraId})=>`
+    <span class="hc-cat-label">${escapeHtml(cat)}</span>
+    <div class="hc-checks">
+      ${items.map(item=>`
+        <label class="hc-check-item">
+          <input type="checkbox" name="hc-cond" value="${escapeHtml(item)}" ${(savedPad||[]).includes(item)?'checked':''}>
+          ${escapeHtml(item)}
+        </label>`).join('')}
+    </div>
+    ${extraId?`<div style="margin-top:6px;margin-bottom:12px;">
+      <input type="text" id="${extraId}" placeholder="Especifique..." value="${escapeHtml(savedExtras[extraId]||'')}" style="max-width:480px;">
+    </div>`:''}
+  `).join('');
+}
+
+function buildHF(savedHF){
+  document.getElementById('hf-wrap').innerHTML = HF_CONDITIONS.map(item=>`
+    <label class="hf-row">
+      <input type="checkbox" name="hf-cond" value="${escapeHtml(item)}" ${(savedHF||[]).includes(item)?'checked':''}>
+      ${escapeHtml(item)}
+    </label>`).join('');
+}
+
+const HC_HABITOS = [
+  {cat:'Higiene bucal', items:['Cepillado 3 veces al día','Cepillado 1-2 veces al día','Usa enjuague bucal','Mala higiene']},
+  {cat:'Tabaquismo', items:['Fuma actualmente','Exfumador','Nunca ha fumado']},
+  {cat:'Alcohol', items:['Consumo ocasional de alcohol','Consumo frecuente de alcohol','No consume alcohol']},
+  {cat:'Drogas', items:['No consume drogas','Consumo ocasional de drogas','Consumo habitual de drogas']},
+  {cat:'Alimentación', items:['Dieta equilibrada','Alta en azúcares','Alta en grasas','Vegetariano / vegano','Desorden alimenticio']},
+  {cat:'Sueño', items:['Duerme bien','Insomnio / sueño interrumpido','Apnea del sueño','Uso de medicamentos para dormir']},
+  {cat:'Actividad física', items:['Sedentario','Ejercicio ocasional','Ejercicio regular']},
+  {cat:'Uso de pantallas', items:['Uso bajo de pantallas (menos de 2 horas al día)','Uso moderado de pantallas (2-4 horas al día)','Uso alto de pantallas (más de 4 horas al día)']},
+  {cat:'Estrés', items:['Estrés alto','Estrés moderado','Estrés bajo']},
+  {cat:'Automedicación', items:['No se automedica','Se automedica ocasionalmente','Automedicación frecuente']},
+  {cat:'Vida sexual', items:['Vida sexual activa','Vida sexual no activa','Usa protección','Múltiples parejas']},
+  {cat:'Vacunación', items:['Esquema completo','Esquema incompleto']},
+  {cat:'Exposición a sustancias / químicos', items:['En el hogar','En el trabajo']},
+];
+
+function buildHabitos(savedHab){
+  document.getElementById('habitos-conditions-wrap').innerHTML = HC_HABITOS.map(({cat,items})=>`
+    <span class="hc-cat-label">${escapeHtml(cat)}</span>
+    <div class="hc-checks">
+      ${items.map(item=>`
+        <label class="hc-check-item">
+          <input type="checkbox" name="hab-cond" value="${escapeHtml(item)}" ${(savedHab||[]).includes(item)?'checked':''}>
+          ${escapeHtml(item)}
+        </label>`).join('')}
+    </div>`).join('');
+}
+
+/* ── Vacunas ── */
+const VACUNAS_LIST = ['BCG','Hepatitis B','Pentavalente','DPT (Difteria/Tosferina/Tétanos)','Rotavirus','Neumocócica','RS (Sarampión/Rubéola)','Influenza','SRP (Sarampión/Rubéola/Parotiditis)','Sabin (Poliomielitis)','Papiloma (VPH)','Hepatitis A','Varicela','Meningocócica','Otra'];
+
+/* ── Enfermedades de la infancia ── */
+const ENF_INFANCIA_LIST = ['Amigdalitis','Escarlatina','Fiebre reumática','Hepatitis A','Hepatitis B','Hepatitis C','Influenza','Parotiditis','Poliomielitis','Rosáola','Rubéola','Sarampión','Tuberculosis','Varicela'];
+
+/* ── Aparatos y sistemas ── */
+const AS_SISTEMAS = {
+  resp: {
+    id: 'as-resp-checks',
+    items: ['Aparentemente sano','Disfonía','Tos','Expectoración','Hemoptisis','Dolor torácico','Cianosis','Disnea','Estornudo','Sibilancia','Desviación traqueal'],
+  },
+  cardio: {
+    id: 'as-cardio-checks',
+    items: ['Aparentemente sano','Cianosis','Varices','Astenia','Adinamia','Claudicación','Disautonomía','Palpitaciones','Disnea','Dolor precordial','Dolor intercostal','Edema','Hemorragias','Equimosis','Petequias'],
+  },
+  genito: {
+    id: 'as-genito-checks',
+    items: ['Aparentemente sano','Oliguria','Poliuria','Hematuria','Disuria','Polaquiuria','Nicturia','Incontinencia','Tenesmo vesical','Retención','Disminución en calibre y fuerza del chorro','Prurito genital','Dolor genital','Dispareunia','Amenorrea','Disfunción eréctil','Dolor testicular','Várices testiculares','Nódulos inguinales','Cambios en vello genital','Secreción anormal por uretra'],
+  },
+  audit: {
+    id: 'as-audit-checks',
+    items: ['Aparentemente sano','Hipoacusia','Sordera','Tinnitus','Vértigo','Otalgia','Otorrea','Otorragia','Acúfenos','Sensación de plenitud','Mareo posicional'],
+  },
+  digest: {
+    id: 'as-digest-checks',
+    items: ['Aparentemente sano','Náuseas','Vómito','Diarrea','Estreñimiento','Pirosis','Disfagia','Odinofagia','Dolor abdominal','Flatulencias','Distensión abdominal','Hematemesis','Melena','Rectorragia','Ictericia','Anorexia','Pérdida de peso'],
+  },
+  endoc: {
+    id: 'as-endoc-checks',
+    items: ['Aparentemente sano','Polidipsia','Poliuria','Polifagia','Intolerancia al calor','Intolerancia al frío','Cambios en vello corporal','Cambios en la piel','Cambios en la voz','Bocio','Exoftalmos','Ginecomastia','Galactorrea','Labilidad emocional'],
+  },
+  hemo: {
+    id: 'as-hemo-checks',
+    items: ['Aparentemente sano','Adenopatías','Esplenomegalia','Hepatomegalia','Palidez','Petequias','Equimosis','Hematomas','Sangrado fácil','Fatiga crónica','Infecciones recurrentes','Fiebre de origen desconocido'],
+  },
+  musc: {
+    id: 'as-musc-checks',
+    items: ['Aparentemente sano','Dolor articular','Rigidez articular','Inflamación articular','Limitación de movimiento','Crepitación','Deformidades','Debilidad muscular','Calambres','Mialgia','Atrofia muscular','Parestesias en extremidades'],
+  },
+  nerv: {
+    id: 'as-nerv-checks',
+    items: ['Aparentemente sano','Cefalea','Mareo','Síncope','Convulsiones','Parestesias','Paresias','Parálisis','Temblores','Incoordinación','Alteraciones de memoria','Insomnio','Cambios de personalidad','Alteraciones del habla'],
+  },
+  ocul: {
+    id: 'as-ocul-checks',
+    items: ['Aparentemente sano','Disminución de agudeza visual','Diplopía','Fotofobia','Epífora','Prurito ocular','Sensación de cuerpo extraño','Eritema conjuntival','Secreción ocular','Dolor ocular','Amaurosis'],
+  },
+  tegu: {
+    id: 'as-tegu-checks',
+    items: ['Aparentemente sano','Prurito','Eritema','Urticaria','Dermatitis','Acné','Cicatrices queloides','Hiperpigmentación','Hipopigmentación','Alopecia','Hirsutismo','Lesiones ulcerativas','Vesículas','Ampollas','Tumores cutáneos'],
+  },
+  repro: {
+    id: 'as-repro-checks',
+    items: ['Embarazo','Lactancia','Menopausia','Amenorrea','Dismenorrea','Menorragia','Metrorragia','Flujo vaginal anormal','Dispareunia','Mastalgia'],
+  },
+};
+const AS_RN = { ar: null, ad: null, agu: null, aau: null, adi: null, se: null, sh: null, ame: null, sn: null, ao: null, st: null, arf: null };
+
+const AS_KEY_MAP = {
+  resp:'ar', cardio:'ad', genito:'agu', audit:'aau', digest:'adi',
+  endoc:'se', hemo:'sh', musc:'ame', nerv:'sn', ocul:'ao', tegu:'st', repro:'arf'
+};
+const AS_TX_MAP = {
+  resp:'as-tx-ar', cardio:'as-tx-ad', genito:'as-tx-agu', audit:'as-tx-aau',
+  digest:'as-tx-adi', endoc:'as-tx-se', hemo:'as-tx-sh', musc:'as-tx-ame',
+  nerv:'as-tx-sn', ocul:'as-tx-ao', tegu:'as-tx-st', repro:'as-tx-arf'
+};
+
+function buildAS(savedAS){
+  savedAS = savedAS || {};
+  Object.entries(AS_SISTEMAS).forEach(([key, {id, items}])=>{
+    const el = document.getElementById(id); if(!el) return;
+    const saved = savedAS[key] || [];
+    el.innerHTML = items.map(item=>`
+      <label class="hc-check-item">
+        <input type="checkbox" name="as-${key}" value="${escapeHtml(item)}" ${saved.includes(item)?'checked':''}>
+        ${escapeHtml(item)}
+      </label>`).join('');
+  });
+  Object.entries(AS_KEY_MAP).forEach(([sysKey, rnKey])=>{
+    const v = savedAS['rn_'+rnKey] || null;
+    AS_RN[rnKey] = v;
+    const rEl = document.getElementById(rnKey+'-refiere');
+    const nEl = document.getElementById(rnKey+'-niega');
+    if(rEl) rEl.classList.toggle('active', v==='Refiere');
+    if(nEl) nEl.classList.toggle('active', v==='Niega');
+    const txEl = document.getElementById(AS_TX_MAP[sysKey]);
+    if(txEl) txEl.value = savedAS['tx_'+rnKey] || '';
+  });
+}
+
+function setRN(key, value){
+  AS_RN[key] = value;
+  const rEl = document.getElementById(key+'-refiere');
+  const nEl = document.getElementById(key+'-niega');
+  if(rEl) rEl.classList.toggle('active', value==='Refiere');
+  if(nEl) nEl.classList.toggle('active', value==='Niega');
+}
+
+function getAS(){
+  const result = {};
+  Object.keys(AS_SISTEMAS).forEach(key=>{
+    result[key] = [...document.querySelectorAll(`[name="as-${key}"]:checked`)].map(c=>c.value);
+  });
+  Object.entries(AS_KEY_MAP).forEach(([sysKey, rnKey])=>{
+    result['rn_'+rnKey] = AS_RN[rnKey];
+    const txEl = document.getElementById(AS_TX_MAP[sysKey]);
+    result['tx_'+rnKey] = txEl ? txEl.value : '';
+  });
+  return result;
+}
+
+/* ── Vacunas ── */
+function buildVacunas(saved){
+  document.getElementById('vacunas-wrap').innerHTML = VACUNAS_LIST.map(v=>`
+    <label class="hc-check-item">
+      <input type="checkbox" name="vac-item" value="${escapeHtml(v)}" ${(saved||[]).includes(v)?'checked':''}>
+      ${escapeHtml(v)}
+    </label>`).join('');
+}
+
+/* ── Enfermedades infancia ── */
+function buildEnfInfancia(saved){
+  document.getElementById('enf-infancia-wrap').innerHTML = ENF_INFANCIA_LIST.map(v=>`
+    <label class="hc-check-item">
+      <input type="checkbox" name="inf-item" value="${escapeHtml(v)}" ${(saved||[]).includes(v)?'checked':''}>
+      ${escapeHtml(v)}
+    </label>`).join('');
+}
+
+/* ── Toggle ap-specific details ── */
+function setupApToggle(groupId, detailId){
+  const g = document.getElementById(groupId); if(!g) return;
+  g.addEventListener('click', e=>{
+    const b = e.target.closest('.opt-btn'); if(!b) return;
+    g.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    const detail = document.getElementById(detailId);
+    if(detail) detail.style.display = b.dataset.value==='Sí' ? '' : 'none';
+  });
+}
+
+[
+  ['grupo-hospitalizado','hospitalizado-detail'],
+  ['grupo-interv-quirurgica','interv-quirurgica-detail'],
+  ['grupo-exp-dental','exp-dental-detail'],
+  ['grupo-traumatismos','traumatismos-detail'],
+  ['grupo-transfusion','transfusion-detail'],
+  ['grupo-trasplante','trasplante-detail'],
+  ['grupo-implante-mat','implante-mat-detail'],
+  ['grupo-lesion-bucal','lesion-bucal-detail'],
+  ['grupo-rx-lesion','rx-lesion-detail'],
+  ['grupo-rx-perdida-osea','rx-perdida-osea-detail'],
+  ['grupo-interconsulta','interconsulta-detail'],
+].forEach(([gId,dId])=>setupApToggle(gId,dId));
+
+/* ── Odontograma ── */
+const ODO_STATES = ['','C','R','Co','Pu','Ei','X','S','Im'];
+const ODO_LABELS = {'':'Normal','C':'Caries','R':'Restauración','Co':'Corona','Pu':'Puente','Ei':'Extracción indicada','X':'Extraído/Ausente','S':'Sellante','Im':'Implante'};
+const ODO_COLORS = {'':'#fff','C':'#FF8A80','R':'#80D8FF','Co':'#FFD740','Pu':'#CCFF90','Ei':'#FFD180','X':'#CFD8DC','S':'#EA80FC','Im':'#FF80AB'};
+let odontogramaData = {};
+
+const ODO_UPPER      = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const ODO_LOWER      = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+const ODO_UPPER_TEMP = [null,null,null,55,54,53,52,51,61,62,63,64,65,null,null,null];
+const ODO_LOWER_TEMP = [null,null,null,85,84,83,82,81,71,72,73,74,75,null,null,null];
+
+function renderOdoRow(teeth, rowId){
+  const el = document.getElementById(rowId); if(!el) return;
+  el.innerHTML = teeth.map(n=>{
+    if(!n) return '<div class="odo-tooth-empty"></div>';
+    const st = odontogramaData[String(n)] || '';
+    return `<div class="odo-tooth" data-tooth="${n}" onclick="cycleToothState('${n}')"
+              style="background:${ODO_COLORS[st]}" title="${n}: ${ODO_LABELS[st]}">
+              <span class="odo-num">${n}</span>
+              ${st?`<span class="odo-state">${st}</span>`:''}
+            </div>`;
+  }).join('');
+}
+
+function buildOdontograma(saved){
+  odontogramaData = (saved && saved.dientes) ? {...saved.dientes} : {};
+  renderOdoRow(ODO_UPPER, 'odo-row-up');
+  renderOdoRow(ODO_LOWER, 'odo-row-lo');
+  renderOdoRow(ODO_UPPER_TEMP, 'odo-row-up-temp');
+  renderOdoRow(ODO_LOWER_TEMP, 'odo-row-lo-temp');
+  if(saved && saved.obs) setVal('hc-odo-obs', saved.obs);
+}
+
+function cycleToothState(tooth){
+  const cur = odontogramaData[tooth] || '';
+  const idx = ODO_STATES.indexOf(cur);
+  const next = ODO_STATES[(idx+1) % ODO_STATES.length];
+  odontogramaData[tooth] = next;
+  const el = document.querySelector(`.odo-tooth[data-tooth="${tooth}"]`);
+  if(el){
+    el.style.background = ODO_COLORS[next];
+    el.title = `${tooth}: ${ODO_LABELS[next]}`;
+    const st = el.querySelector('.odo-state');
+    if(next){ if(st) st.textContent=next; else{const s=document.createElement('span');s.className='odo-state';s.textContent=next;el.appendChild(s);} }
+    else{ if(st) st.remove(); }
+  }
+}
+
+function getOdontograma(){
+  return { dientes: {...odontogramaData}, obs: val('hc-odo-obs') };
+}
+
+/* ── Periodontograma ── */
+const PERIO_UPPER = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const PERIO_LOWER = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+
+function colorPerioPocket(inp){
+  const v = parseInt(inp.value);
+  if(!inp.value || isNaN(v)){ inp.style.background=''; inp.style.color=''; return; }
+  if(v<=3){ inp.style.background='#E8F5E9'; inp.style.color='#2E7D32'; }
+  else if(v<=5){ inp.style.background='#FFFDE7'; inp.style.color='#9E6F00'; }
+  else if(v<=7){ inp.style.background='#FFF3E0'; inp.style.color='#E65100'; }
+  else{ inp.style.background='#FFEBEE'; inp.style.color='#B71C1C'; }
+}
+
+function buildPeriodontograma(saved){
+  saved = saved || {};
+  function renderArch(teeth, vestLbl, lingLbl, containerId){
+    const el = document.getElementById(containerId); if(!el) return;
+    let vest='', tnum='', mov='', ling='';
+    teeth.forEach(n=>{
+      // 3 vestibular inputs
+      vest += '<div class="perio-cell">';
+      ['a','b','c'].forEach(s=>{ const id=`pi-${n}-${s}`,v=saved[id]||''; vest+=`<input type="number" class="perio-pi" id="${id}" min="0" max="15" value="${escapeHtml(v)}">`; });
+      vest += '</div>';
+      // tooth number
+      tnum += `<div class="perio-tnum">${n}</div>`;
+      // mobility
+      const mid=`pi-${n}-mov`, mv=saved[mid]||'';
+      mov += `<div class="perio-tnum" style="background:#f5f4f0;"><select class="perio-mov-sel" id="${mid}"><option value="">-</option>${['0','I','II','III'].map(o=>`<option${mv===o?' selected':''}>${o}</option>`).join('')}</select></div>`;
+      // 3 lingual inputs
+      ling += '<div class="perio-cell">';
+      ['d','e','f'].forEach(s=>{ const id=`pi-${n}-${s}`,v=saved[id]||''; ling+=`<input type="number" class="perio-pi" id="${id}" min="0" max="15" value="${escapeHtml(v)}">`; });
+      ling += '</div>';
+    });
+    el.innerHTML = `
+      <div class="perio-row"><div class="perio-lbl">${vestLbl}</div>${vest}</div>
+      <div class="perio-row"><div class="perio-lbl" style="font-size:8px;color:var(--text-muted);">Diente</div>${tnum}</div>
+      <div class="perio-row"><div class="perio-lbl" style="font-size:8px;color:var(--text-muted);">Mov.</div>${mov}</div>
+      <div class="perio-row"><div class="perio-lbl">${lingLbl}</div>${ling}</div>`;
+    el.querySelectorAll('.perio-pi').forEach(inp=>{ colorPerioPocket(inp); inp.addEventListener('input',()=>colorPerioPocket(inp)); });
+  }
+  renderArch(PERIO_UPPER,'Vestibular','Palatino','perio-upper');
+  renderArch(PERIO_LOWER,'Lingual','Vestibular','perio-lower');
+  setVal('perio-ip', saved.indicePlaca);
+  setVal('perio-ig', saved.indiceGingival);
+  setVal('perio-dx', saved.dx);
+  setVal('perio-obs', saved.obs);
+}
+
+function getPeriodontograma(){
+  const data={};
+  document.querySelectorAll('.perio-pi,.perio-mov-sel').forEach(el=>{ if(el.id) data[el.id]=el.value; });
+  data.indicePlaca=val('perio-ip'); data.indiceGingival=val('perio-ig');
+  data.dx=val('perio-dx'); data.obs=val('perio-obs');
+  return data;
+}
+
+/* ── Canvas helper (autorizaciones) ── */
+function setupAutCanvas(canvasId, clearBtnId){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return {};
+  const ctx = canvas.getContext('2d');
+  let drawing=false, hasContent=false;
+  function pos(e){ const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,p=e.touches?e.touches[0]:e; return{x:(p.clientX-r.left)*sx,y:(p.clientY-r.top)*sy}; }
+  canvas.addEventListener('mousedown',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
+  canvas.addEventListener('mousemove',e=>{if(!drawing)return;e.preventDefault();const p=pos(e);ctx.lineWidth=1.8;ctx.lineCap='round';ctx.strokeStyle='#1F1F1D';ctx.lineTo(p.x,p.y);ctx.stroke();hasContent=true;});
+  window.addEventListener('mouseup',()=>drawing=false);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{if(!drawing)return;e.preventDefault();const p=pos(e);ctx.lineWidth=1.8;ctx.lineCap='round';ctx.strokeStyle='#1F1F1D';ctx.lineTo(p.x,p.y);ctx.stroke();hasContent=true;},{passive:false});
+  canvas.addEventListener('touchend',()=>drawing=false);
+  document.getElementById(clearBtnId)?.addEventListener('click',()=>{ctx.clearRect(0,0,canvas.width,canvas.height);hasContent=false;});
+  return { canvas, ctx, isHasContent:()=>hasContent, load:(url)=>{ if(!url) return; const img=new Image(); img.onload=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);hasContent=true;}; img.src=url; } };
+}
+
+/* ── Helpers para cargar/guardar ── */
+function setGroup(groupId, value){
+  const g=document.getElementById(groupId); if(!g||!value) return;
+  const b=g.querySelector(`[data-value="${CSS.escape(value)}"]`);
+  if(b){ g.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); }
+}
+function getGroup(groupId){
+  return document.querySelector(`#${groupId} .opt-btn.selected`)?.dataset.value||'';
+}
+function val(id){ return (document.getElementById(id)||{}).value||''; }
+function setVal(id,v){ const el=document.getElementById(id); if(el) el.value=v||''; }
+
+/* ── Canvases autorizaciones (antes del init para poder usarlos en carga) ── */
+const autProf = setupAutCanvas('aut-prof-firma','limpiar-aut-prof');
+const autAlu  = setupAutCanvas('aut-alu-firma', 'limpiar-aut-alu');
+const autPac  = setupAutCanvas('aut-pac-firma', 'limpiar-aut-pac');
+
+/* ── Init ── */
+if(!exp){
+  document.getElementById('hc-error').style.display='';
+  document.getElementById('hc-body').style.display='none';
+  document.querySelector('.sticky-bar').style.display='none';
+} else {
+  document.getElementById('hc-body').style.display='';
+  document.getElementById('hc-error').style.display='none';
+
+  /* Ficha del paciente */
+  const avatar = exp.fotografiaPaciente
+    ? `<img src="${exp.fotografiaPaciente}">`
+    : initials(exp.nombre);
+  const meta = [exp.sexo, exp.edad?exp.edad+' años':'', exp.tipoPaciente, exp.tipoHistoria].filter(Boolean).join(' · ');
+  document.getElementById('ficha-paciente').innerHTML = `
+    <div class="avatar">${avatar}</div>
+    <div>
+      <p class="patient-name">${escapeHtml(exp.nombre)}</p>
+      <p class="patient-meta">${escapeHtml(meta||'Sin datos capturados')} · ID: ${escapeHtml(exp.idPaciente||exp.id)}</p>
+    </div>`;
+
+  /* Cargar datos guardados */
+  const hc = exp.historiaClinica || {};
+
+  setGroup('grupo-sexo', hc.sexo || exp.sexo);
+  setVal('hc-edad', hc.edad || exp.edad);
+  setGroup('grupo-tipoHistoria', hc.tipoHistoria || exp.tipoHistoria);
+
+  setVal('hc-motivo-consulta', hc.motivoConsulta);
+
+  buildConditions(hc.padecimiento, hc.padecimientoExtras);
+  setVal('hc-obs-padecimiento', hc.obsPadecimiento);
+
+  buildHF(hc.heredofamiliar);
+  setVal('hc-obs-hf', hc.obsHF);
+
+  buildHabitos(hc.habitos);
+  setVal('hc-obs-habitos', hc.obsHabitos);
+
+  /* Entorno y hábitos */
+  setVal('hc-tipo-habitacion', hc.tipoHabitacion);
+  setVal('hc-num-cuartos', hc.numCuartos);
+  setVal('hc-num-habitantes', hc.numHabitantes);
+  setVal('hc-personas-habitacion', hc.personasHabitacion);
+  setVal('hc-banos-semana', hc.banosSemana);
+  setVal('hc-cambios-ropa', hc.cambiosRopa);
+  setVal('hc-cepillados-dia', hc.cepilladosDia);
+  setVal('hc-hilo', hc.hiloUso);
+  setVal('hc-enjuague', hc.enjuagueUso);
+  setVal('hc-comidas-dia', hc.comidasDia);
+  setVal('hc-ing-leche', hc.ingLeche);
+  setVal('hc-ing-carne', hc.ingCarne);
+  setVal('hc-ing-huevo', hc.ingHuevo);
+  setVal('hc-ing-frutas', hc.ingFrutas);
+  setVal('hc-ing-verduras', hc.ingVerduras);
+  setVal('hc-ing-leguminosas', hc.ingLeguminosas);
+  setVal('hc-ing-cereales', hc.ingCereales);
+
+  /* Antecedentes NO patológicos */
+  buildVacunas(hc.vacunas);
+  setGroup('grupo-alcohol', hc.alcohol);
+  setGroup('grupo-exbebedor', hc.exbebedor);
+  setVal('hc-alc-anios', hc.alcAnios);
+  setVal('hc-alc-ultimo', hc.alcUltimo);
+  setGroup('grupo-tabaco', hc.tabaco);
+  setGroup('grupo-exfumador', hc.exfumador);
+  setVal('hc-tab-anios', hc.tabAnios);
+  setVal('hc-tab-ultimo', hc.tabUltimo);
+  setGroup('grupo-estupef', hc.estupef);
+  setGroup('grupo-exconsumidor', hc.exconsumidor);
+  setVal('hc-estu-anios', hc.estuAnios);
+  setVal('hc-estu-ultimo', hc.estuUltimo);
+  setGroup('grupo-vida-sexual', hc.vidaSexual);
+  setVal('hc-preferencia-sexual', hc.preferenciaSexual);
+
+  /* Antecedentes patológicos */
+  setVal('hc-enf-previas', hc.enfPrevias);
+  setVal('hc-alergias', hc.alergias);
+  setVal('hc-medicamentos', hc.medicamentos);
+
+  buildEnfInfancia(hc.enfInfancia);
+  setVal('hc-infancia-otra', hc.infanciaOtra);
+
+  function loadApSpecific(groupId, detailId, value, extraFields){
+    const g = document.getElementById(groupId); if(!g||!value) return;
+    const btn = g.querySelector(`[data-value="${CSS.escape(value)}"]`);
+    if(btn){ g.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('selected')); btn.classList.add('selected'); }
+    const detail = document.getElementById(detailId);
+    if(detail && value==='Sí') detail.style.display='';
+    if(extraFields) extraFields.forEach(([id,v])=>setVal(id,v));
+  }
+  const aps = hc.antecedentesEspecificos || {};
+  loadApSpecific('grupo-hospitalizado','hospitalizado-detail',aps.hospitalizado,[['hc-hosp-tiempo',aps.hospTiempo],['hc-hosp-especificar',aps.hospEspecificar]]);
+  loadApSpecific('grupo-interv-quirurgica','interv-quirurgica-detail',aps.intervQuirurgica,[['hc-cir-cuando',aps.cirCuando],['hc-cir-especificar',aps.cirEspecificar]]);
+  loadApSpecific('grupo-exp-dental','exp-dental-detail',aps.expDental,[['hc-exp-cuando',aps.expCuando],['hc-exp-especificar',aps.expEspecificar]]);
+  loadApSpecific('grupo-traumatismos','traumatismos-detail',aps.traumatismos,[['hc-trau-cuando',aps.trauCuando],['hc-trau-especificar',aps.trauEspecificar]]);
+  loadApSpecific('grupo-transfusion','transfusion-detail',aps.transfusion,[['hc-transf-especificar',aps.transfEspecificar]]);
+  loadApSpecific('grupo-trasplante','trasplante-detail',aps.trasplante,[['hc-traspl-especificar',aps.trasplEspecificar]]);
+  loadApSpecific('grupo-implante-mat','implante-mat-detail',aps.implanteMat,[['hc-impl-especificar',aps.implEspecificar]]);
+
+  setGroup('grupo-embarazo', hc.embarazo);
+  setVal('hc-semanas', hc.semanas);
+  setVal('hc-partos', hc.partos);
+  setVal('hc-anticonceptivo', hc.anticonceptivo);
+  setVal('hc-menstruacion', hc.menstruacion);
+
+  setVal('hc-pa', hc.pa);
+  setVal('hc-fc', hc.fc);
+  setVal('hc-fr', hc.fr);
+  setVal('hc-temp', hc.temp);
+  setVal('hc-peso', hc.peso);
+  setVal('hc-talla', hc.talla);
+  setVal('hc-obs-vitales', hc.obsVitales);
+
+  buildAS(hc.aparatosSistemas);
+
+  /* Reproductor femenino extra fields */
+  const rf = hc.reproFem || {};
+  setVal('hc-num-abortos', rf.numAbortos);
+  setVal('hc-ultima-regla', rf.ultimaRegla);
+  setVal('hc-anticonc-repro', rf.anticonceptivos);
+  setVal('hc-anomalias-ciclo', rf.anomaliasCiclo);
+  setGroup('grupo-papanicolaou', rf.papanicolaou);
+  setVal('hc-papani-fecha', rf.papaniFecha);
+
+  /* Exploración clínica */
+  const ec = hc.exploracionClinica || {};
+  setVal('ec-marcha', ec.marcha);
+  setVal('ec-mov-anorm', ec.movAnorm);
+  setVal('ec-facies', ec.facies);
+  setVal('ec-complexion', ec.complexion);
+  setVal('ec-posicion', ec.posicion);
+  setVal('ec-cuidado-personal', ec.cuidadoPersonal);
+  setVal('ec-cara', ec.cara);
+  setVal('ec-craneo', ec.craneo);
+  setVal('ec-cuello', ec.cuello);
+  setVal('ec-nariz', ec.nariz);
+  setVal('ec-oidos', ec.oidos);
+  setVal('ec-ojos', ec.ojos);
+  setVal('ec-higiene-bucal', ec.higieneBucal);
+  setVal('ec-tejidos-blandos', ec.tejidosBlandos);
+  loadApSpecific('grupo-lesion-bucal','lesion-bucal-detail',ec.lesionBucal,[
+    ['ec-les-localizacion',ec.lesLocalizacion],['ec-les-forma',ec.lesForma],
+    ['ec-les-color',ec.lesColor],['ec-les-superficie',ec.lesSuperficie],
+    ['ec-les-bordes',ec.lesBordes],['ec-les-consistencia',ec.lesConsistencia],
+    ['ec-les-base',ec.lesBase],['ec-les-tiempo',ec.lesTiempo],
+  ]);
+  setVal('ec-alt-dentales', ec.altDentales);
+  if(ec.catm){ ['dolor','dificultad','ruidos','desviacion','edema'].forEach(k=>{ const el=document.getElementById('catm-'+k); if(el) el.checked=!!(ec.catm[k]); }); }
+  setVal('ec-catm-obs', ec.catmObs);
+
+  /* Odontograma */
+  buildOdontograma(hc.odontograma);
+
+  /* Periodontograma */
+  buildPeriodontograma(hc.periodontograma);
+
+  /* Exploración radiográfica */
+  const rx = hc.exploracionRx || {};
+  setVal('rx-tipo', rx.tipo);
+  setVal('rx-fecha', rx.fecha);
+  loadApSpecific('grupo-rx-lesion','rx-lesion-detail',rx.lesion,[
+    ['rx-les-tipo',rx.lesTipo],['rx-les-bordes',rx.lesBordes],
+    ['rx-les-dist',rx.lesDist],['rx-les-localizacion',rx.lesLocalizacion],
+    ['rx-les-rel-dental',rx.lesRelDental],['rx-les-rel-caries',rx.lesRelCaries],
+  ]);
+  loadApSpecific('grupo-rx-perdida-osea','rx-perdida-osea-detail',rx.perdidaOsea,[['rx-perdida-osea-esp',rx.perdidaOseaEsp]]);
+  setVal('rx-obs', rx.obs);
+
+  /* Diagnóstico y plan */
+  setVal('hc-dx-sistemico', hc.dxSistemico);
+  setVal('hc-padecimiento-bucal', hc.padecimientoBucal);
+
+  /* Interconsulta */
+  const ic = hc.interconsulta || {};
+  loadApSpecific('grupo-interconsulta','interconsulta-detail',ic.requiere,[['ic-dirigida-a',ic.dirigidaA],['ic-peticion',ic.peticion]]);
+
+  /* Ruta clínica */
+  const rc = hc.rutaClinica || {};
+  for(let i=1;i<=8;i++) setVal('ruta-'+i, rc['r'+i]);
+
+  /* Autorizaciones */
+  const aut = hc.autorizaciones || {};
+  setVal('aut-prof-clave', aut.profClave);
+  setVal('aut-prof-nombre', aut.profNombre);
+  setVal('aut-alu-cuenta', aut.aluCuenta);
+  setVal('aut-alu-nombre', aut.aluNombre);
+  setVal('aut-pac-nombre', aut.pacNombre);
+  setVal('aut-pac-relacion', aut.pacRelacion);
+  setVal('aut-pac-tipo-id', aut.pacTipoId);
+  setVal('aut-pac-folio', aut.pacFolio);
+  setVal('aut-pac-fecha', aut.pacFecha);
+  if(aut.profFirma) autProf.load(aut.profFirma);
+  if(aut.aluFirma)  autAlu.load(aut.aluFirma);
+  if(aut.pacFirma)  autPac.load(aut.pacFirma);
+
+  setVal('hc-alumno', hc.alumnoLlenado);
+  setVal('hc-fecha-llenado', hc.fechaLlenado || new Date().toISOString().slice(0,10));
+  setVal('hc-obs-generales', hc.obsGenerales);
+
+  /* ── Datos de identificación (desde expediente, editables) ── */
+  setVal('id-fechaNacimiento', exp.fechaNacimiento);
+  setVal('id-lugarNacimiento', exp.lugarNacimiento);
+  setVal('id-direccion', exp.direccion);
+  setVal('id-telefono', exp.telefono);
+  setVal('id-correo', exp.correo);
+  setVal('id-escolaridad', exp.escolaridad);
+  setVal('id-estadoCivil', exp.estadoCivil);
+  setVal('id-religion', exp.religion);
+  setVal('id-ultimaVisita', exp.ultimaVisita);
+  setVal('id-profesion', exp.profesion);
+  setVal('id-ocupacion', exp.ocupacion);
+  setVal('id-referido', exp.referido);
+  setVal('id-datosRelevantes', exp.datosRelevantes);
+  setVal('id-emergenciaContacto', exp.emergenciaContacto);
+  setVal('id-emergenciaTelefono', exp.emergenciaTelefono);
+  setVal('id-alergia', exp.alergia);
+  setVal('id-alergiaEspecifique', exp.alergiaEspecifique);
+
+  /* Firma */
+  if(exp.firma) loadFirma(exp.firma);
+
+  /* Fotos */
+  [['id-prev-foto','fotografiaPaciente'],['id-prev-anverso','fotografiaAnverso'],['id-prev-reverso','fotografiaReverso']].forEach(([prevId, key])=>{
+    if(exp[key]){
+      const img = document.getElementById(prevId);
+      img.src = exp[key]; img.style.display='block';
+      img.setAttribute('data-value', exp[key]);
+      img.nextElementSibling.style.display='none';
+    }
+  });
+
+  updateGineco();
+
+  if(hc.fechaLlenado) document.getElementById('hc-badge-llenada').style.display='';
+}
+
+/* ── Canvas firma paciente (datos identificación) ── */
+const firmaCanvas = document.getElementById('id-firma-canvas');
+const firmaCtx = firmaCanvas.getContext('2d');
+let firmaDrawing = false, firmaHasContent = false;
+function firmaPos(e){
+  const r=firmaCanvas.getBoundingClientRect();
+  const sx=firmaCanvas.width/r.width, sy=firmaCanvas.height/r.height;
+  const p=e.touches?e.touches[0]:e;
+  return{x:(p.clientX-r.left)*sx, y:(p.clientY-r.top)*sy};
+}
+firmaCanvas.addEventListener('mousedown', e=>{e.preventDefault();firmaDrawing=true;const p=firmaPos(e);firmaCtx.beginPath();firmaCtx.moveTo(p.x,p.y);});
+firmaCanvas.addEventListener('mousemove', e=>{if(!firmaDrawing)return;e.preventDefault();const p=firmaPos(e);firmaCtx.lineWidth=2;firmaCtx.lineCap='round';firmaCtx.strokeStyle='#1F1F1D';firmaCtx.lineTo(p.x,p.y);firmaCtx.stroke();firmaHasContent=true;});
+window.addEventListener('mouseup', ()=>firmaDrawing=false);
+firmaCanvas.addEventListener('touchstart', e=>{e.preventDefault();firmaDrawing=true;const p=firmaPos(e);firmaCtx.beginPath();firmaCtx.moveTo(p.x,p.y);},{passive:false});
+firmaCanvas.addEventListener('touchmove', e=>{if(!firmaDrawing)return;e.preventDefault();const p=firmaPos(e);firmaCtx.lineWidth=2;firmaCtx.lineCap='round';firmaCtx.strokeStyle='#1F1F1D';firmaCtx.lineTo(p.x,p.y);firmaCtx.stroke();firmaHasContent=true;},{passive:false});
+firmaCanvas.addEventListener('touchend', ()=>firmaDrawing=false);
+document.getElementById('id-limpiar-firma').addEventListener('click', ()=>{firmaCtx.clearRect(0,0,firmaCanvas.width,firmaCanvas.height);firmaHasContent=false;});
+function loadFirma(dataUrl){
+  const img=new Image();
+  img.onload=()=>{firmaCtx.clearRect(0,0,firmaCanvas.width,firmaCanvas.height);firmaCtx.drawImage(img,0,0,firmaCanvas.width,firmaCanvas.height);firmaHasContent=true;};
+  img.src=dataUrl;
+}
+
+/* ── Fotos ── */
+[['id-input-foto','id-prev-foto'],['id-input-anverso','id-prev-anverso'],['id-input-reverso','id-prev-reverso']].forEach(([inputId,prevId])=>{
+  document.getElementById(inputId).addEventListener('change', e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=document.getElementById(prevId);
+      img.src=reader.result; img.style.display='block';
+      img.setAttribute('data-value',reader.result);
+      img.nextElementSibling.style.display='none';
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+/* ── Guardar ── */
+document.getElementById('btn-guardar-hc').addEventListener('click', ()=>{
+  if(!exp) return;
+  const padecimiento = [...document.querySelectorAll('[name="hc-cond"]:checked')].map(c=>c.value);
+  const heredofamiliar = [...document.querySelectorAll('[name="hf-cond"]:checked')].map(c=>c.value);
+
+  /* Sincronizar campos de identificación de vuelta al expediente */
+  const expRecord = data.expedientes[expIdx];
+  expRecord.fechaNacimiento   = val('id-fechaNacimiento');
+  expRecord.lugarNacimiento   = val('id-lugarNacimiento');
+  expRecord.direccion         = val('id-direccion');
+  expRecord.telefono          = val('id-telefono');
+  expRecord.correo            = val('id-correo');
+  expRecord.escolaridad       = val('id-escolaridad');
+  expRecord.estadoCivil       = val('id-estadoCivil');
+  expRecord.religion          = val('id-religion');
+  expRecord.ultimaVisita      = val('id-ultimaVisita');
+  expRecord.profesion         = val('id-profesion');
+  expRecord.ocupacion         = val('id-ocupacion');
+  expRecord.referido          = val('id-referido');
+  expRecord.datosRelevantes   = val('id-datosRelevantes');
+  expRecord.emergenciaContacto   = val('id-emergenciaContacto');
+  expRecord.emergenciaTelefono   = val('id-emergenciaTelefono');
+  expRecord.alergia           = val('id-alergia');
+  expRecord.alergiaEspecifique= val('id-alergiaEspecifique');
+  if(firmaHasContent) expRecord.firma = firmaCanvas.toDataURL('image/png');
+  ['foto','anverso','reverso'].forEach(k=>{
+    const map={foto:'fotografiaPaciente',anverso:'fotografiaAnverso',reverso:'fotografiaReverso'};
+    const v=document.getElementById('id-prev-'+k).getAttribute('data-value');
+    if(v) expRecord[map[k]]=v;
+  });
+
+  data.expedientes[expIdx].historiaClinica = {
+    sexo: getGroup('grupo-sexo'),
+    edad: val('hc-edad'),
+    tipoHistoria: getGroup('grupo-tipoHistoria'),
+    motivoConsulta: val('hc-motivo-consulta'),
+    padecimiento,
+    padecimientoExtras: Object.fromEntries(HC_CONDITIONS.filter(c=>c.extraId).map(c=>[c.extraId, val(c.extraId)])),
+    obsPadecimiento: val('hc-obs-padecimiento'),
+    heredofamiliar,
+    obsHF: val('hc-obs-hf'),
+    habitos: [...document.querySelectorAll('[name="hab-cond"]:checked')].map(c=>c.value),
+    obsHabitos: val('hc-obs-habitos'),
+    /* Entorno */
+    tipoHabitacion: val('hc-tipo-habitacion'),
+    numCuartos: val('hc-num-cuartos'),
+    numHabitantes: val('hc-num-habitantes'),
+    personasHabitacion: val('hc-personas-habitacion'),
+    banosSemana: val('hc-banos-semana'),
+    cambiosRopa: val('hc-cambios-ropa'),
+    cepilladosDia: val('hc-cepillados-dia'),
+    hiloUso: val('hc-hilo'),
+    enjuagueUso: val('hc-enjuague'),
+    comidasDia: val('hc-comidas-dia'),
+    ingLeche: val('hc-ing-leche'), ingCarne: val('hc-ing-carne'), ingHuevo: val('hc-ing-huevo'),
+    ingFrutas: val('hc-ing-frutas'), ingVerduras: val('hc-ing-verduras'),
+    ingLeguminosas: val('hc-ing-leguminosas'), ingCereales: val('hc-ing-cereales'),
+    /* Antecedentes NO patológicos */
+    vacunas: [...document.querySelectorAll('[name="vac-item"]:checked')].map(c=>c.value),
+    alcohol: getGroup('grupo-alcohol'), exbebedor: getGroup('grupo-exbebedor'),
+    alcAnios: val('hc-alc-anios'), alcUltimo: val('hc-alc-ultimo'),
+    tabaco: getGroup('grupo-tabaco'), exfumador: getGroup('grupo-exfumador'),
+    tabAnios: val('hc-tab-anios'), tabUltimo: val('hc-tab-ultimo'),
+    estupef: getGroup('grupo-estupef'), exconsumidor: getGroup('grupo-exconsumidor'),
+    estuAnios: val('hc-estu-anios'), estuUltimo: val('hc-estu-ultimo'),
+    vidaSexual: getGroup('grupo-vida-sexual'), preferenciaSexual: val('hc-preferencia-sexual'),
+    /* Antecedentes patológicos */
+    enfPrevias: val('hc-enf-previas'),
+    alergias: val('hc-alergias'),
+    medicamentos: val('hc-medicamentos'),
+    enfInfancia: [...document.querySelectorAll('[name="inf-item"]:checked')].map(c=>c.value),
+    infanciaOtra: val('hc-infancia-otra'),
+    antecedentesEspecificos: {
+      hospitalizado: getGroup('grupo-hospitalizado'), hospTiempo: val('hc-hosp-tiempo'), hospEspecificar: val('hc-hosp-especificar'),
+      intervQuirurgica: getGroup('grupo-interv-quirurgica'), cirCuando: val('hc-cir-cuando'), cirEspecificar: val('hc-cir-especificar'),
+      expDental: getGroup('grupo-exp-dental'), expCuando: val('hc-exp-cuando'), expEspecificar: val('hc-exp-especificar'),
+      traumatismos: getGroup('grupo-traumatismos'), trauCuando: val('hc-trau-cuando'), trauEspecificar: val('hc-trau-especificar'),
+      transfusion: getGroup('grupo-transfusion'), transfEspecificar: val('hc-transf-especificar'),
+      trasplante: getGroup('grupo-trasplante'), trasplEspecificar: val('hc-traspl-especificar'),
+      implanteMat: getGroup('grupo-implante-mat'), implEspecificar: val('hc-impl-especificar'),
+    },
+    embarazo: getGroup('grupo-embarazo'),
+    semanas: val('hc-semanas'),
+    partos: val('hc-partos'),
+    anticonceptivo: val('hc-anticonceptivo'),
+    menstruacion: val('hc-menstruacion'),
+    pa: val('hc-pa'), fc: val('hc-fc'), fr: val('hc-fr'),
+    temp: val('hc-temp'), peso: val('hc-peso'), talla: val('hc-talla'),
+    obsVitales: val('hc-obs-vitales'),
+    aparatosSistemas: getAS(),
+    reproFem: {
+      numAbortos: val('hc-num-abortos'), ultimaRegla: val('hc-ultima-regla'),
+      anticonceptivos: val('hc-anticonc-repro'), anomaliasCiclo: val('hc-anomalias-ciclo'),
+      papanicolaou: getGroup('grupo-papanicolaou'), papaniFecha: val('hc-papani-fecha'),
+    },
+    exploracionClinica: {
+      marcha: val('ec-marcha'), movAnorm: val('ec-mov-anorm'), facies: val('ec-facies'),
+      complexion: val('ec-complexion'), posicion: val('ec-posicion'), cuidadoPersonal: val('ec-cuidado-personal'),
+      cara: val('ec-cara'), craneo: val('ec-craneo'), cuello: val('ec-cuello'),
+      nariz: val('ec-nariz'), oidos: val('ec-oidos'), ojos: val('ec-ojos'),
+      higieneBucal: val('ec-higiene-bucal'), tejidosBlandos: val('ec-tejidos-blandos'),
+      lesionBucal: getGroup('grupo-lesion-bucal'),
+      lesLocalizacion: val('ec-les-localizacion'), lesForma: val('ec-les-forma'),
+      lesColor: val('ec-les-color'), lesSuperficie: val('ec-les-superficie'),
+      lesBordes: val('ec-les-bordes'), lesConsistencia: val('ec-les-consistencia'),
+      lesBase: val('ec-les-base'), lesTiempo: val('ec-les-tiempo'),
+      altDentales: val('ec-alt-dentales'),
+      catm: { dolor: document.getElementById('catm-dolor')?.checked, dificultad: document.getElementById('catm-dificultad')?.checked, ruidos: document.getElementById('catm-ruidos')?.checked, desviacion: document.getElementById('catm-desviacion')?.checked, edema: document.getElementById('catm-edema')?.checked },
+      catmObs: val('ec-catm-obs'),
+    },
+    odontograma: getOdontograma(),
+    exploracionRx: {
+      tipo: val('rx-tipo'), fecha: val('rx-fecha'),
+      lesion: getGroup('grupo-rx-lesion'),
+      lesTipo: val('rx-les-tipo'), lesBordes: val('rx-les-bordes'),
+      lesDist: val('rx-les-dist'), lesLocalizacion: val('rx-les-localizacion'),
+      lesRelDental: val('rx-les-rel-dental'), lesRelCaries: val('rx-les-rel-caries'),
+      perdidaOsea: getGroup('grupo-rx-perdida-osea'), perdidaOseaEsp: val('rx-perdida-osea-esp'),
+      obs: val('rx-obs'),
+    },
+    dxSistemico: val('hc-dx-sistemico'),
+    padecimientoBucal: val('hc-padecimiento-bucal'),
+    interconsulta: {
+      requiere: getGroup('grupo-interconsulta'),
+      dirigidaA: val('ic-dirigida-a'), peticion: val('ic-peticion'),
+    },
+    rutaClinica: Object.fromEntries([...Array(8).keys()].map(i=>['r'+(i+1), val('ruta-'+(i+1))])),
+    periodontograma: getPeriodontograma(),
+    autorizaciones: {
+      profClave: val('aut-prof-clave'), profNombre: val('aut-prof-nombre'),
+      profFirma: autProf.isHasContent() ? autProf.canvas.toDataURL('image/png') : (hc.autorizaciones?.profFirma||''),
+      aluCuenta: val('aut-alu-cuenta'), aluNombre: val('aut-alu-nombre'),
+      aluFirma: autAlu.isHasContent() ? autAlu.canvas.toDataURL('image/png') : (hc.autorizaciones?.aluFirma||''),
+      pacNombre: val('aut-pac-nombre'), pacRelacion: val('aut-pac-relacion'),
+      pacTipoId: val('aut-pac-tipo-id'), pacFolio: val('aut-pac-folio'),
+      pacFecha: val('aut-pac-fecha'),
+      pacFirma: autPac.isHasContent() ? autPac.canvas.toDataURL('image/png') : (hc.autorizaciones?.pacFirma||''),
+    },
+    alumnoLlenado: val('hc-alumno'),
+    fechaLlenado: val('hc-fecha-llenado') || new Date().toISOString().slice(0,10),
+    obsGenerales: val('hc-obs-generales'),
+  };
+  saveData(data);
+  document.getElementById('hc-badge-llenada').style.display='';
+  showToast('Historia clínica guardada ✓');
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base de Datos · Maestros</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --coral-50:#FAECE7;--coral-800:#712B13;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;
+  --green-50:#EAF3DE;--green-800:#27500A;
+  --blue-50:#E6F1FB;--blue-800:#0C447C;
+  --purple-50:#EEEDFE;--purple-800:#3C3489;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:980px;margin:0 auto;padding:20px 20px 80px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.stat-label{font-size:11px;color:var(--text-secondary);}
+.stat-value{font-size:22px;font-weight:600;margin-top:3px;color:var(--teal-900);}
+/* Toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:240px;}
+.search-input:focus{outline:none;border-color:var(--teal-600);}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.btn-danger{background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-family:inherit;font-size:13px;cursor:pointer;}
+.btn-danger:disabled{opacity:.4;cursor:default;}
+/* Sel bar */
+.sel-bar{display:none;align-items:center;justify-content:space-between;background:var(--teal-50);border:1px solid var(--teal-600);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+.sel-bar.open{display:flex;}
+.sel-bar span{font-size:13px;color:var(--teal-800);font-weight:600;}
+/* Filtros */
+.filtros{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.filtro-select{height:34px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:12px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.filtro-select:focus{outline:none;border-color:var(--teal-600);}
+/* Lista */
+.lista-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.list-row:first-child{border-top:none;}
+.list-row:hover{background:var(--teal-50);}
+.list-row.selected{background:var(--teal-50);}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--purple-50);color:var(--purple-800);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.row-info{flex:1;min-width:0;}
+.row-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.puesto-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--purple-50);color:var(--purple-800);white-space:nowrap;flex-shrink:0;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+.horario-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--teal-50);color:var(--teal-800);white-space:nowrap;flex-shrink:0;}
+.row-check{width:16px;height:16px;accent-color:var(--teal-600);cursor:pointer;flex-shrink:0;}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:14px;flex-shrink:0;}
+.btn-icon:hover{background:var(--red-50);color:var(--red-600);}
+.empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
+.empty-state p:first-child{font-weight:600;color:var(--text-primary);font-size:15px;}
+.empty-state p:last-child{font-size:13px;margin-top:4px;}
+/* Panel */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.35);z-index:40;}
+.panel-overlay.open{display:block;}
+.panel{position:fixed;top:0;right:-100%;width:min(540px,100vw);height:100vh;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);transition:right .25s ease;}
+.panel.open{right:0;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.panel-actions{display:flex;gap:8px;}
+.panel-body{flex:1;overflow-y:auto;padding:20px;}
+/* Form */
+.section-title{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.section-title:first-child{margin-top:0;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.field input,.field select{width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.field input:focus,.field select:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+.field input[readonly]{background:var(--surface-1);color:var(--text-muted);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+/* Foto */
+.foto-label{display:flex;align-items:center;justify-content:center;height:140px;border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;background:#fff;transition:border-color .15s;}
+.foto-label:hover{border-color:var(--teal-600);}
+.foto-label img{width:100%;height:100%;object-fit:cover;}
+.foto-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-muted);font-size:12px;}
+/* Horario grid */
+.horario-grid-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);}
+.horario-grid{border-collapse:collapse;width:100%;font-size:11px;min-width:340px;}
+.horario-grid th{background:var(--surface-1);padding:6px 4px;text-align:center;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary);border-bottom:1px solid var(--border);}
+.horario-grid th:first-child{text-align:left;padding-left:8px;width:90px;}
+.horario-grid td{border-top:1px solid var(--border);padding:2px 4px;text-align:center;vertical-align:middle;}
+.horario-grid td:first-child{text-align:left;padding-left:8px;font-size:10px;color:var(--text-secondary);white-space:nowrap;}
+.slot-btn{width:28px;height:28px;border-radius:5px;border:1px solid var(--border);background:#fff;cursor:pointer;transition:background .1s,border-color .1s;display:inline-block;}
+.slot-btn.active{background:var(--teal-600);border-color:var(--teal-800);}
+.slot-btn:hover:not(.active){background:var(--teal-50);border-color:var(--teal-600);}
+/* Modal ver */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;z-index:60;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:560px;width:100%;padding:24px;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-head h3{font-size:18px;font-weight:600;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;}
+.detail-row{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-top:1px solid var(--border);font-size:13px;}
+.detail-row:first-child{border-top:none;}
+.detail-row span:first-child{color:var(--text-secondary);flex-shrink:0;}
+.detail-row span:last-child{font-weight:500;text-align:right;}
+.ver-horario-grid{border-collapse:collapse;width:100%;font-size:11px;}
+.ver-horario-grid th{background:var(--surface-1);padding:5px 6px;text-align:center;font-weight:700;font-size:10px;text-transform:uppercase;color:var(--text-secondary);border:1px solid var(--border);}
+.ver-horario-grid td{border:1px solid var(--border);padding:4px 6px;text-align:center;font-size:10px;}
+.ver-horario-grid td:first-child{text-align:left;color:var(--text-secondary);}
+.slot-on{background:var(--teal-600);color:#fff;border-radius:3px;padding:1px 4px;font-weight:700;}
+/* Confirm modal */
+.confirm-modal{max-width:380px;}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Base de Datos · Maestros</h1>
+      </div>
+      <span style="font-size:11px;color:var(--text-muted);">Los datos se guardan en este navegador</span>
+    </header>
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-input" id="buscar" placeholder="Buscar maestro, ID, puesto...">
+      <select class="filtro-select" id="filtro-puesto">
+        <option value="">Todos los puestos</option>
+        <option>Director Escuela Médico Cirujano Dentista</option>
+        <option>Coordinación Académica</option>
+        <option>Asistente Operativa</option>
+        <option>Asistente Administrativa</option>
+        <option>Docente de Medio Tiempo</option>
+        <option>Docente de Tiempo Completo</option>
+        <option>Docente de Honorarios</option>
+      </select>
+      <select class="filtro-select" id="filtro-horario">
+        <option value="">Todos los horarios</option>
+        <option>Matutino</option>
+        <option>Vespertino</option>
+        <option>Mixto</option>
+      </select>
+      <button class="btn-secondary" id="btn-sel">Seleccionar</button>
+    </div>
+    <button class="btn-primary" id="btn-nuevo">+ Nuevo maestro</button>
+  </div>
+
+  <div class="sel-bar" id="sel-bar">
+    <span id="sel-count">0 seleccionados</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-secondary" id="btn-sel-todos" style="height:32px;font-size:12px;padding:0 10px;">Seleccionar todos</button>
+      <button class="btn-secondary" id="btn-cancel-sel" style="height:32px;font-size:12px;padding:0 10px;">Cancelar</button>
+      <button class="btn-danger" id="btn-del-sel" disabled>Eliminar seleccionados</button>
+    </div>
+  </div>
+
+  <div class="lista-wrap">
+    <div id="lista-maestros"></div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <p>No hay maestros registrados.</p>
+      <p>Agrega el primer maestro con el botón "+ Nuevo maestro".</p>
+    </div>
+  </div>
+
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<!-- Panel lateral -->
+<div class="panel-overlay" id="panel-overlay"></div>
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <h3 id="panel-title">Nuevo maestro</h3>
+    <div class="panel-actions">
+      <button class="btn-secondary" id="btn-cancel-panel" style="height:32px;font-size:13px;padding:0 12px;">Cancelar</button>
+      <button class="btn-primary" id="btn-save-panel" style="height:32px;">Guardar</button>
+    </div>
+  </div>
+  <div class="panel-body">
+    <form id="form-maestro" autocomplete="off">
+
+      <p class="section-title">Identificación</p>
+
+      <div class="field">
+        <label>ID del programa (auto)</label>
+        <input type="text" id="f-id" readonly>
+      </div>
+      <div class="field">
+        <label>ID institucional</label>
+        <input type="text" id="f-idInstitucional" placeholder="Ej. MA2018042">
+      </div>
+      <div class="field">
+        <label>Nombre completo *</label>
+        <input type="text" id="f-nombre" placeholder="Apellidos y nombre" required>
+      </div>
+      <div class="field">
+        <label>Puesto *</label>
+        <select id="f-puesto" required>
+          <option value=""></option>
+          <option>Director Escuela Médico Cirujano Dentista</option>
+          <option>Coordinación Académica</option>
+          <option>Asistente Operativa</option>
+          <option>Asistente Administrativa</option>
+          <option>Docente de Medio Tiempo</option>
+          <option>Docente de Tiempo Completo</option>
+          <option>Docente de Honorarios</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Clínica / Materia que imparte</label>
+        <select id="f-clinica">
+          <option value=""></option>
+          <optgroup label="Clínicas Integrales">
+            <option>Clínica Integral del Adulto I</option>
+            <option>Clínica Integral del Adulto II</option>
+            <option>Clínica Integral del Adulto III</option>
+            <option>Clínica Integral del Adulto IV</option>
+            <option>Clínica de Atención Temprana I</option>
+            <option>Clínica de Atención Temprana II</option>
+            <option>Clínica de Atención Temprana III</option>
+            <option>Clínica de Atención Temprana IV</option>
+            <option>Clínica Multidisciplinaria I</option>
+            <option>Clínica Multidisciplinaria II</option>
+            <option>Clínica Multidisciplinaria III</option>
+            <option>Clínica Multidisciplinaria IV</option>
+          </optgroup>
+          <optgroup label="Especialidades Clínicas">
+            <option>Endodoncia I</option>
+            <option>Endodoncia II</option>
+            <option>Periodoncia I</option>
+            <option>Periodoncia II</option>
+            <option>Ortodoncia I</option>
+            <option>Ortodoncia II</option>
+            <option>Cirugía Bucal I</option>
+            <option>Cirugía Bucal II</option>
+            <option>Prótesis Dental Total</option>
+            <option>Prótesis Parcial Removible</option>
+            <option>Prótesis Fija</option>
+            <option>Odontopediatría I</option>
+            <option>Odontopediatría II</option>
+            <option>Implantología</option>
+            <option>Imagenología</option>
+          </optgroup>
+          <optgroup label="Ciencias Básicas">
+            <option>Anatomía General</option>
+            <option>Anatomía de Cabeza y Cuello</option>
+            <option>Histología y Embriología</option>
+            <option>Bioquímica</option>
+            <option>Fisiología</option>
+            <option>Microbiología e Inmunología</option>
+            <option>Patología General</option>
+            <option>Patología Bucal</option>
+            <option>Farmacología</option>
+            <option>Radiología</option>
+          </optgroup>
+          <optgroup label="Diagnóstico y Clínica">
+            <option>Semiología y Diagnóstico</option>
+            <option>Oclusión I</option>
+            <option>Oclusión II</option>
+            <option>Materiales Dentales I</option>
+            <option>Materiales Dentales II</option>
+            <option>Operatoria Dental I</option>
+            <option>Operatoria Dental II</option>
+            <option>Anestesiología</option>
+            <option>Urgencias Médico-Dentales</option>
+          </optgroup>
+          <optgroup label="Formación Universitaria">
+            <option>Bioética</option>
+            <option>Administración en Odontología</option>
+            <option>Epidemiología y Salud Pública</option>
+            <option>Metodología de la Investigación</option>
+            <option>Odontología Social</option>
+            <option>Inglés I</option>
+            <option>Inglés II</option>
+            <option>Inglés III</option>
+            <option>Desarrollo Humano</option>
+            <option>Servicio Social</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>Turno</label>
+        <select id="f-turno">
+          <option value=""></option>
+          <option>Matutino</option>
+          <option>Vespertino</option>
+          <option>Mixto</option>
+        </select>
+      </div>
+
+      <p class="section-title">Horario semanal</p>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Haz clic en los bloques para marcar los horarios en que trabaja el maestro.</p>
+
+      <div class="horario-grid-wrap">
+        <table class="horario-grid" id="horario-table">
+          <thead>
+            <tr>
+              <th>Bloque</th>
+              <th>Lun</th>
+              <th>Mar</th>
+              <th>Mié</th>
+              <th>Jue</th>
+              <th>Vie</th>
+            </tr>
+          </thead>
+          <tbody id="horario-tbody"></tbody>
+        </table>
+      </div>
+
+      <p class="section-title">Contacto</p>
+
+      <div class="field">
+        <label>Teléfono</label>
+        <input type="tel" id="f-telefono" placeholder="10 dígitos">
+      </div>
+      <div class="field">
+        <label>Correo institucional</label>
+        <input type="email" id="f-correoInstitucional" placeholder="maestro@anahuac.mx">
+      </div>
+      <div class="field">
+        <label>Correo personal</label>
+        <input type="email" id="f-correo" placeholder="correo@gmail.com">
+      </div>
+
+      <p class="section-title">Fotografía</p>
+
+      <label class="foto-label" for="inp-foto" id="foto-label">
+        <img id="prev-foto" style="display:none;">
+        <div class="foto-placeholder" id="ph-foto">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Subir fotografía del maestro
+        </div>
+      </label>
+      <input type="file" accept="image/*" id="inp-foto" style="display:none;">
+
+    </form>
+  </div>
+</div>
+
+<!-- Modal ver maestro -->
+<div class="modal-bg" id="modal-ver">
+  <div class="modal">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="avatar" id="ver-avatar" style="width:56px;height:56px;font-size:17px;flex-shrink:0;"></div>
+        <div>
+          <h3 id="ver-nombre" style="font-size:16px;"></h3>
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:3px;" id="ver-sub"></p>
+        </div>
+      </div>
+      <button class="btn-icon" id="cerrar-ver">✕</button>
+    </div>
+    <div id="ver-body"></div>
+    <div style="margin:16px 0 8px;font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;">Horario semanal</div>
+    <div style="overflow-x:auto;"><table class="ver-horario-grid" id="ver-horario"></table></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-ver-editar">Editar</button>
+      <button class="btn-secondary" id="btn-ver-eliminar" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-primary" id="btn-ver-cerrar">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmar eliminación -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal confirm-modal">
+    <div class="modal-head">
+      <h3>Eliminar maestro(s)</h3>
+      <button class="btn-icon" id="cerrar-confirm">✕</button>
+    </div>
+    <p id="confirm-msg" style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;"></p>
+    <input type="text" id="inp-confirm" placeholder="Escribe ELIMINAR para confirmar"
+      style="width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelar-confirm">Cancelar</button>
+      <button id="btn-confirm-del" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Eliminar definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='clinica_maestros_v1';
+const SLOTS=['7:00–8:30','8:30–10:00','10:00–11:30','11:30–13:00','13:00–14:30','14:30–16:00','16:00–17:30','17:30–19:00','19:00–20:30','20:30–22:00'];
+const DIAS=['L','M','X','J','V'];
+const DIAS_FULL=['Lunes','Martes','Miércoles','Jueves','Viernes'];
+
+function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{maestros:[]};}
+function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+
+const S={data:loadData(),selMode:false,sel:new Set(),editId:null,verId:null,slots:{}};
+
+function uid(){return'MA-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase();}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+
+/* Horario table */
+function buildHorarioTable(){
+  const tbody=document.getElementById('horario-tbody');
+  tbody.innerHTML=SLOTS.map((s,si)=>`
+    <tr>
+      <td>${s}</td>
+      ${DIAS.map(d=>`<td><button type="button" class="slot-btn" data-slot="${d}_${si}" onclick="toggleSlot(this)"></button></td>`).join('')}
+    </tr>`).join('');
+}
+function toggleSlot(btn){
+  const k=btn.dataset.slot;
+  if(S.slots[k])delete S.slots[k];else S.slots[k]=true;
+  btn.classList.toggle('active',!!S.slots[k]);
+}
+function loadSlotsToTable(slotsObj){
+  S.slots={...(slotsObj||{})};
+  document.querySelectorAll('.slot-btn').forEach(btn=>{
+    btn.classList.toggle('active',!!S.slots[btn.dataset.slot]);
+  });
+}
+
+/* Stats */
+function renderStats(){
+  const total=S.data.maestros.length;
+  const docentes=S.data.maestros.filter(m=>m.puesto&&m.puesto.startsWith('Docente')).length;
+  const admin=total-docentes;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Total maestros</p><p class="stat-value">${total}</p></div>
+    <div class="stat"><p class="stat-label">Docentes</p><p class="stat-value">${docentes}</p></div>
+    <div class="stat"><p class="stat-label">Administrativos</p><p class="stat-value">${admin}</p></div>`;
+}
+
+/* Lista */
+function renderLista(){
+  const term=(document.getElementById('buscar').value||'').toLowerCase();
+  const pFiltro=document.getElementById('filtro-puesto').value;
+  const hFiltro=document.getElementById('filtro-horario').value;
+  let rows=S.data.maestros.filter(m=>{
+    const matchTerm=(m.nombre||'').toLowerCase().includes(term)||(m.idInstitucional||'').toLowerCase().includes(term)||(m.puesto||'').toLowerCase().includes(term);
+    const matchP=!pFiltro||m.puesto===pFiltro;
+    const matchH=!hFiltro||m.turno===hFiltro;
+    return matchTerm&&matchP&&matchH;
+  }).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+
+  const lista=document.getElementById('lista-maestros');
+  const empty=document.getElementById('empty-state');
+  if(!rows.length){lista.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  lista.innerHTML=rows.map(m=>{
+    const sel=S.sel.has(m.id);
+    const av=m.foto?`<img src="${m.foto}">`:`${initials(m.nombre)}`;
+    return`<div class="list-row${sel?' selected':''}" data-id="${m.id}" onclick="handleRowClick(event,'${m.id}')">
+      ${S.selMode?`<input type="checkbox" class="row-check" ${sel?'checked':''} onclick="toggleSel(event,'${m.id}')">`:''}
+      <div class="avatar">${av}</div>
+      <div class="row-info">
+        <p class="row-title">${esc(m.nombre)}</p>
+        <p class="row-sub">${esc(m.idInstitucional||'Sin ID')}${m.clinica?' · '+esc(m.clinica):''}${m.correoInstitucional?' · '+esc(m.correoInstitucional):''}</p>
+      </div>
+      <span class="puesto-badge" title="${esc(m.puesto)}">${esc(m.puesto||'—')}</span>
+      ${m.turno?`<span class="horario-badge">${esc(m.turno)}</span>`:''}
+      ${!S.selMode?`<button class="btn-icon" onclick="abrirEliminar(event,'${m.id}')">✕</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderAll(){renderStats();renderLista();}
+
+/* Panel */
+function openPanel(id){
+  S.editId=id||null;
+  document.getElementById('form-maestro').reset();
+  const img=document.getElementById('prev-foto');
+  img.style.display='none';img.removeAttribute('src');
+  document.getElementById('ph-foto').style.display='flex';
+  loadSlotsToTable({});
+
+  if(id){
+    const m=S.data.maestros.find(x=>x.id===id);
+    document.getElementById('panel-title').textContent='Editar maestro';
+    document.getElementById('f-id').value=m.id;
+    document.getElementById('f-idInstitucional').value=m.idInstitucional||'';
+    document.getElementById('f-nombre').value=m.nombre||'';
+    document.getElementById('f-puesto').value=m.puesto||'';
+    document.getElementById('f-clinica').value=m.clinica||'';
+    document.getElementById('f-turno').value=m.turno||'';
+    document.getElementById('f-telefono').value=m.telefono||'';
+    document.getElementById('f-correoInstitucional').value=m.correoInstitucional||'';
+    document.getElementById('f-correo').value=m.correo||'';
+    loadSlotsToTable(m.horario||{});
+    if(m.foto){img.src=m.foto;img.style.display='block';document.getElementById('ph-foto').style.display='none';}
+  } else {
+    document.getElementById('panel-title').textContent='Nuevo maestro';
+    document.getElementById('f-id').value=uid();
+  }
+  populateMaterias('f-clinica', document.getElementById('f-clinica').value);
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+}
+function closePanel(){
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+}
+
+document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
+document.getElementById('btn-cancel-panel').addEventListener('click',closePanel);
+document.getElementById('panel-overlay').addEventListener('click',closePanel);
+
+/* Foto */
+document.getElementById('inp-foto').addEventListener('change',e=>{
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=document.getElementById('prev-foto');
+    img.src=reader.result;img.style.display='block';
+    document.getElementById('ph-foto').style.display='none';
+  };
+  reader.readAsDataURL(file);
+});
+
+/* Guardar */
+document.getElementById('btn-save-panel').addEventListener('click',()=>{
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const puesto=document.getElementById('f-puesto').value;
+  if(!nombre){document.getElementById('f-nombre').focus();return;}
+  if(!puesto){document.getElementById('f-puesto').focus();return;}
+  const fotoEl=document.getElementById('prev-foto');
+  const foto=fotoEl.style.display==='none'?'':fotoEl.src||'';
+  const rec={
+    id:S.editId||document.getElementById('f-id').value,
+    idInstitucional:document.getElementById('f-idInstitucional').value.trim(),
+    nombre,puesto,
+    clinica:document.getElementById('f-clinica').value,
+    turno:document.getElementById('f-turno').value,
+    horario:{...S.slots},
+    telefono:document.getElementById('f-telefono').value.trim(),
+    correoInstitucional:document.getElementById('f-correoInstitucional').value.trim(),
+    correo:document.getElementById('f-correo').value.trim(),
+    foto,
+  };
+  if(S.editId){const i=S.data.maestros.findIndex(x=>x.id===S.editId);if(i>-1)S.data.maestros[i]=rec;}
+  else S.data.maestros.push(rec);
+  saveData();renderAll();
+populateMaterias('f-clinica');closePanel();
+});
+
+/* Ver maestro */
+function renderVerHorario(horario){
+  const h=horario||{};
+  const head=`<tr><th>Bloque</th>${DIAS_FULL.map(d=>`<th>${d}</th>`).join('')}</tr>`;
+  const body=SLOTS.map((s,si)=>`<tr><td>${s}</td>${DIAS.map(d=>{
+    const on=!!h[`${d}_${si}`];
+    return`<td>${on?`<span class="slot-on">✓</span>`:''}</td>`;
+  }).join('')}</tr>`).join('');
+  document.getElementById('ver-horario').innerHTML=`<thead>${head}</thead><tbody>${body}</tbody>`;
+}
+
+function verMaestro(id){
+  const m=S.data.maestros.find(x=>x.id===id);if(!m)return;
+  S.verId=id;
+  const avEl=document.getElementById('ver-avatar');
+  if(m.foto){avEl.innerHTML=`<img src="${m.foto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;}
+  else{avEl.textContent=initials(m.nombre);}
+  document.getElementById('ver-nombre').textContent=m.nombre||'Maestro';
+  document.getElementById('ver-sub').textContent=(m.puesto||'')+(m.turno?' · '+m.turno:'');
+  const campos=[
+    ['ID del programa',m.id],['ID institucional',m.idInstitucional],
+    ['Clínica / Materia',m.clinica],
+    ['Teléfono',m.telefono],['Correo institucional',m.correoInstitucional],['Correo personal',m.correo],
+  ];
+  document.getElementById('ver-body').innerHTML=campos.filter(([,v])=>v).map(([l,v])=>`
+    <div class="detail-row"><span>${l}</span><span>${esc(v)}</span></div>`).join('');
+  renderVerHorario(m.horario);
+  document.getElementById('modal-ver').classList.add('open');
+}
+
+function handleRowClick(e,id){
+  if(e.target.closest('.btn-icon,.row-check'))return;
+  if(S.selMode){toggleSel(e,id);return;}
+  verMaestro(id);
+}
+document.getElementById('cerrar-ver').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+document.getElementById('btn-ver-cerrar').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+document.getElementById('btn-ver-editar').addEventListener('click',()=>{
+  document.getElementById('modal-ver').classList.remove('open');
+  openPanel(S.verId);
+});
+document.getElementById('btn-ver-eliminar').addEventListener('click',()=>{
+  document.getElementById('modal-ver').classList.remove('open');
+  abrirConfirm([S.verId]);
+});
+
+/* Eliminación */
+function abrirEliminar(e,id){e.stopPropagation();abrirConfirm([id]);}
+function abrirConfirm(ids){
+  const n=ids.length;
+  document.getElementById('confirm-msg').innerHTML=`¿Eliminar <strong>${n} maestro${n>1?'s':''}</strong>? Escribe <strong>ELIMINAR</strong> para confirmar.`;
+  document.getElementById('inp-confirm').value='';
+  document.getElementById('inp-confirm').style.borderColor='';
+  document.getElementById('modal-confirm').dataset.ids=JSON.stringify(ids);
+  document.getElementById('modal-confirm').classList.add('open');
+}
+document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+  if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
+    document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
+  }
+  const ids=JSON.parse(document.getElementById('modal-confirm').dataset.ids||'[]');
+  S.data.maestros=S.data.maestros.filter(m=>!ids.includes(m.id));
+  saveData();document.getElementById('modal-confirm').classList.remove('open');
+  salirSel();renderAll();
+populateMaterias('f-clinica');
+});
+
+/* Selección */
+function toggleSel(e,id){
+  e.stopPropagation();
+  if(S.sel.has(id))S.sel.delete(id);else S.sel.add(id);
+  actualizarSel();renderLista();
+}
+function actualizarSel(){
+  const n=S.sel.size;
+  document.getElementById('sel-count').textContent=n===1?'1 seleccionado':`${n} seleccionados`;
+  document.getElementById('btn-del-sel').disabled=n===0;
+}
+function entrarSel(){
+  S.selMode=true;S.sel.clear();
+  document.getElementById('sel-bar').classList.add('open');
+  document.getElementById('btn-sel').textContent='Cancelar';
+  document.getElementById('btn-nuevo').style.display='none';
+  actualizarSel();renderLista();
+}
+function salirSel(){
+  S.selMode=false;S.sel.clear();
+  document.getElementById('sel-bar').classList.remove('open');
+  document.getElementById('btn-sel').textContent='Seleccionar';
+  document.getElementById('btn-nuevo').style.display='';
+  renderLista();
+}
+document.getElementById('btn-sel').addEventListener('click',()=>S.selMode?salirSel():entrarSel());
+document.getElementById('btn-cancel-sel').addEventListener('click',salirSel);
+document.getElementById('btn-sel-todos').addEventListener('click',()=>{
+  const todos=S.data.maestros.map(m=>m.id);
+  const all=todos.every(id=>S.sel.has(id));
+  if(all)S.sel.clear();else todos.forEach(id=>S.sel.add(id));
+  actualizarSel();renderLista();
+});
+document.getElementById('btn-del-sel').addEventListener('click',()=>{
+  if(!S.sel.size)return;
+  abrirConfirm([...S.sel]);
+});
+
+document.getElementById('buscar').addEventListener('input',renderLista);
+document.getElementById('filtro-puesto').addEventListener('change',renderLista);
+document.getElementById('filtro-horario').addEventListener('change',renderLista);
+
+buildHorarioTable();
+renderAll();
+populateMaterias('f-clinica');
+
+/* ── Materias dinámicas desde catálogo ── */
+function populateMaterias(selectId, currentVal){
+  const sel=document.getElementById(selectId);if(!sel)return;
+  try{
+    const d=localStorage.getItem('clinica_materias_v1');
+    if(d){
+      const parsed=JSON.parse(d);
+      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
+      if(mats.length){
+        const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
+        const groups={};
+        mats.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
+        sel.innerHTML='<option value="">— Seleccionar —</option>';
+        ORDEN.forEach(g=>{
+          if(!groups[g]||!groups[g].length)return;
+          const og=document.createElement('optgroup');og.label=g;
+          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+          sel.appendChild(og);
+        });
+        Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
+          const og=document.createElement('optgroup');og.label=g;
+          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+          sel.appendChild(og);
+        });
+        return;
+      }
+    }
+  }catch(e){}
+  if(currentVal){Array.from(sel.options).forEach(o=>{if(o.value===currentVal)o.selected=true;});}
+}
+
+</script>
+</body>
+</html>

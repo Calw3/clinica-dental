@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clínica Dental Universitaria Anáhuac</title>
+<style>
+  :root{
+    --teal-50:#FDEEE2; --teal-600:#C2570D; --teal-800:#8C3F09; --teal-900:#5C2906;
+    --coral-50:#FAECE7; --coral-600:#993C1D; --coral-800:#712B13;
+    --red-50:#FCEBEB; --red-600:#A32D2D;
+    --amber-50:#FAEEDA; --amber-600:#854F0B;
+    --blue-50:#E6F1FB; --blue-800:#0C447C;
+    --bg:#F7F6F2; --surface:#FFFFFF; --surface-1:#F1F0EA;
+    --text-primary:#1F1F1D; --text-secondary:#5F5E5A; --text-muted:#888780;
+    --border:#E3E1D8; --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background:var(--bg); color:var(--text-primary);
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:20px 20px 80px;}
+  header{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:24px;}
+  .eyebrow{font-size:13px; color:var(--text-muted); margin:0; letter-spacing:.02em;}
+  h1{font-size:26px; font-weight:600; margin:4px 0 0; color:var(--teal-900);}
+  .sync-note{font-size:12px; color:var(--text-muted);}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:24px;}
+  .stat-card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+  .stat-card p{margin:0;}
+  .stat-label{font-size:13px; color:var(--text-secondary);}
+  .stat-value{font-size:26px; font-weight:600; margin-top:4px !important;}
+  .stat-value.alert{color:var(--red-600);}
+  nav.tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:20px;}
+  .tab-btn{
+    border:none; background:transparent; padding:10px 16px; font-size:14px; cursor:pointer;
+    color:var(--text-secondary); border-bottom:2px solid transparent; font-family:inherit;
+  }
+  .tab-btn.active{color:var(--teal-800); border-bottom-color:var(--teal-600); font-weight:600;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  form.add-form{
+    display:grid; gap:10px; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:16px; margin-bottom:20px;
+  }
+  form.add-form .row{display:grid; gap:10px;}
+  .field label{display:block; font-size:12px; color:var(--text-secondary); margin-bottom:4px;}
+  input, select{
+    width:100%; height:36px; border:1px solid var(--border); border-radius:var(--radius);
+    padding:0 10px; font-size:14px; font-family:inherit; background:#fff; color:var(--text-primary);
+  }
+  input:focus, select:focus{outline:none; border-color:var(--teal-600); box-shadow:0 0 0 2px var(--teal-50);}
+  button{
+    cursor:pointer; font-family:inherit; font-size:14px;
+  }
+  .btn-primary{
+    background:var(--teal-600); color:#fff; border:none; border-radius:var(--radius);
+    height:38px; padding:0 16px; font-weight:600; display:inline-flex; align-items:center; gap:6px; justify-content:center;
+  }
+  .btn-primary:hover{background:var(--teal-800);}
+  .btn-icon{
+    background:transparent; border:1px solid var(--border); border-radius:var(--radius);
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:var(--text-secondary);
+  }
+  .btn-icon:hover{background:var(--red-50); color:var(--red-600); border-color:var(--red-50);}
+  .list-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px 4px; border-top:1px solid var(--border);
+  }
+  .list-row:first-child{border-top:none;}
+  .row-title{margin:0; font-weight:600; font-size:14px;}
+  .row-sub{margin:3px 0 0; font-size:13px; color:var(--text-secondary);}
+  .badge{font-size:12px; padding:4px 10px; border-radius:var(--radius); font-weight:600;}
+  .badge-pendiente{background:var(--amber-50); color:var(--amber-600);}
+  .badge-confirmada{background:var(--teal-50); color:var(--teal-800);}
+  .badge-atendida{background:#EAF3DE; color:#27500A;}
+  .badge-alerta{background:var(--red-50); color:var(--red-600);}
+  .avatar{
+    width:36px; height:36px; border-radius:50%; background:var(--coral-50); color:var(--coral-800);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0;
+    overflow:hidden;
+  }
+  .left-group{display:flex; gap:12px; align-items:flex-start;}
+  .empty-state{padding:36px 16px; text-align:center; color:var(--text-secondary);}
+  .empty-state p:first-child{margin:0; font-weight:600; color:var(--text-primary);}
+  .empty-state p:last-child{margin:4px 0 0; font-size:13px;}
+  .footer-note{margin-top:32px; font-size:12px; color:var(--text-muted); text-align:center;}
+  @media(min-width:680px){
+    form.add-form .row.row-citas{grid-template-columns:1.4fr 1fr 0.8fr 1.4fr 0.9fr auto;}
+    form.add-form .row.row-inv{grid-template-columns:1.6fr 0.7fr 0.7fr 0.7fr auto;}
+    form.add-form .row > .btn-primary{align-self:end;}
+  }
+  .panel-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .panel-toolbar input[type="text"]{max-width:280px;}
+  .filtros-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+  .filtros-row select{width:auto; min-width:160px;}
+  textarea{
+    width:100%; border:1px solid var(--border); border-radius:var(--radius);
+    padding:8px 10px; font-size:14px; font-family:inherit; resize:vertical; min-height:60px;
+  }
+  textarea:focus{outline:none; border-color:var(--teal-600); box-shadow:0 0 0 2px var(--teal-50);}
+  .btn-group{display:flex; gap:8px; flex-wrap:wrap;}
+  .opt-btn{
+    flex:1; min-width:110px; border:1px solid var(--border); background:#fff; border-radius:var(--radius);
+    padding:10px 12px; font-size:13px; color:var(--text-secondary); text-align:center;
+  }
+  .opt-btn.selected{border-color:var(--teal-600); background:var(--teal-50); color:var(--teal-800); font-weight:600;}
+  .form-section-title{font-size:13px; font-weight:700; color:var(--teal-800); margin:18px 0 4px; text-transform:uppercase; letter-spacing:.03em;}
+  .form-section-title:first-child{margin-top:0;}
+  .grid-2{display:grid; gap:10px;}
+  @media(min-width:600px){ .grid-2{grid-template-columns:1fr 1fr;} }
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(31,31,29,.45);
+    align-items:flex-start; justify-content:center; padding:32px 16px; overflow-y:auto; z-index:50;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:#fff; border-radius:12px; max-width:640px; width:100%; padding:24px;
+  }
+  .modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+  .modal-head h3{margin:0; font-size:18px; font-weight:600;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid var(--border); padding-top:16px;}
+  .btn-secondary{background:#fff; border:1px solid var(--border); border-radius:var(--radius); height:38px; padding:0 16px; color:var(--text-secondary);}
+  .detail-row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid var(--border); font-size:13px;}
+  .detail-row:first-child{border-top:none;}
+  .detail-row span:first-child{color:var(--text-secondary);}
+  .detail-row span:last-child{font-weight:500; text-align:right;}
+  .grid-3{display:grid; gap:10px;}
+  @media(min-width:600px){ .grid-3{grid-template-columns:1fr 1fr 1fr;} }
+  .signature-wrap canvas{
+    width:100%; height:160px; border:1px solid var(--border); border-radius:var(--radius);
+    background:#fff; touch-action:none; display:block;
+  }
+  .photo-tile{
+    display:flex; align-items:center; justify-content:center; height:120px; border:1px dashed var(--border);
+    border-radius:var(--radius); cursor:pointer; overflow:hidden; background:#fff;
+  }
+  .photo-tile:hover{border-color:var(--teal-600);}
+  .photo-tile img{width:100%; height:100%; object-fit:cover; display:none;}
+  .photo-tile-empty{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:12px; color:var(--text-secondary);}
+  .photo-tile-empty i{font-style:normal; font-size:20px;}
+  .doc-preview-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-top:8px;}
+  .doc-preview-row figure{margin:0;}
+  .doc-preview-row img{width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block;}
+  .doc-preview-row figcaption{font-size:12px; color:var(--text-secondary); margin-top:4px; text-align:center;}
+  .pagos-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+  .pagos-table th{text-align:left;font-size:11px;font-weight:700;color:var(--text-secondary);padding:6px 8px;border-bottom:2px solid var(--border);white-space:nowrap;}
+  .pagos-table td{padding:8px 8px;border-bottom:1px solid var(--border);vertical-align:top;}
+  .pagos-table tr:last-child td{border-bottom:none;}
+  .pagos-table tr:hover td{background:var(--surface-1);}
+  .pagos-total-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;margin-top:4px;border-top:2px solid var(--border);font-size:13px;}
+  .pagos-total-row strong{font-size:15px;color:var(--teal-800);}
+  .trat-pill{display:inline-block;background:var(--teal-50);color:var(--teal-800);border-radius:4px;padding:1px 7px;font-size:11px;margin:1px 2px 1px 0;}
+  .badge-hc{background:#EAF3DE;color:#27500A;font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600;white-space:nowrap;}
+  .badge-hc-pend{background:var(--amber-50);color:var(--amber-600);font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600;white-space:nowrap;}
+  .hc-summary-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .hc-tag{background:var(--teal-50);color:var(--teal-800);border-radius:4px;padding:2px 8px;font-size:12px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <a href="index.html" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;">
+          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>
+          Inicio
+        </a>
+        <div>
+          <p class="eyebrow">Expedientes clínicos de pacientes</p>
+          <h1>Clínica Dental Universitaria Anáhuac</h1>
+        </div>
+      </div>
+      <span class="sync-note">Los datos se guardan en este navegador</span>
+    </header>
+  <section class="panel active" id="panel-expedientes">
+    <div class="panel-toolbar">
+      <input type="text" id="buscar-expediente" placeholder="Buscar paciente...">
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-secondary" id="btn-abrir-filtros">Filtrar <span id="filtros-activos-count"></span></button>
+        <button type="button" class="btn-primary" id="btn-nuevo-expediente">+ Nuevo expediente</button>
+      </div>
+    </div>
+    <div id="expedientes-list"></div>
+  </section>
+
+  <p class="footer-note">Control interno · Clínica Dental Universitaria Anáhuac Xalapa</p>
+</div>
+
+<div class="modal-overlay" id="modal-expediente">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-expediente-titulo">Nuevo expediente clínico</h3>
+      <button type="button" class="btn-icon" id="cerrar-modal-expediente" aria-label="Cerrar">✕</button>
+    </div>
+    <form id="form-expediente">
+
+      <div class="form-section-title">Identificación</div>
+      <div class="grid-2">
+        <div class="field"><label>ID paciente</label><input name="idPaciente" readonly></div>
+        <div class="field"><label>Nombre del paciente *</label><input required name="nombre" placeholder="Nombre completo"></div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Sexo</label>
+        <div class="btn-group" data-group="sexo">
+          <button type="button" class="opt-btn" data-value="Masculino">Masculino</button>
+          <button type="button" class="opt-btn" data-value="Femenino">Femenino</button>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Edad</label><input type="number" min="0" name="edad" placeholder="0"></div>
+        <div class="field"><label>Fecha de nacimiento</label><input type="date" name="fechaNacimiento"></div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Lugar de nacimiento</label><input name="lugarNacimiento"></div>
+
+      <div class="form-section-title">Datos de contacto</div>
+      <div class="field"><label>Dirección</label><input name="direccion"></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Teléfono</label><input name="telefono" type="tel"></div>
+        <div class="field"><label>Correo electrónico</label><input name="correo" type="email"></div>
+      </div>
+
+      <div class="form-section-title">Perfil general</div>
+      <div class="grid-2">
+        <div class="field"><label>Escolaridad</label>
+          <select name="escolaridad">
+            <option value="">Selecciona...</option>
+            <option>Primaria</option><option>Secundaria</option><option>Preparatoria</option>
+            <option>Licenciatura</option><option>Posgrado</option><option>Ninguna</option>
+          </select>
+        </div>
+        <div class="field"><label>Estado civil</label>
+          <select name="estadoCivil">
+            <option value="">Selecciona...</option>
+            <option>Soltero(a)</option><option>Casado(a)</option><option>Unión libre</option>
+            <option>Divorciado(a)</option><option>Viudo(a)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Profesión/oficio</label><input name="profesion"></div>
+        <div class="field"><label>Ocupación actual</label><input name="ocupacion"></div>
+      </div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Religión</label>
+          <select name="religion">
+            <option value="">Selecciona...</option>
+            <option>Católica</option><option>Cristiana</option><option>Otra</option><option>Ninguna</option>
+          </select>
+        </div>
+        <div class="field"><label>Referido por</label><input name="referido"></div>
+      </div>
+
+      <div class="form-section-title">Clasificación del paciente</div>
+      <div class="field"><label>Tipo de paciente</label>
+        <div class="btn-group" data-group="tipoPaciente">
+          <button type="button" class="opt-btn" data-value="Externo">Externo</button>
+          <button type="button" class="opt-btn" data-value="Comunidad Anáhuac">Comunidad Anáhuac</button>
+          <button type="button" class="opt-btn" data-value="Estudiante">Estudiante</button>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Tipo de historia clínica</label>
+        <div class="btn-group" data-group="tipoHistoria">
+          <button type="button" class="opt-btn" data-value="Adulto">Adulto</button>
+          <button type="button" class="opt-btn" data-value="Pediátrico">Pediátrico</button>
+        </div>
+      </div>
+
+
+      <div class="form-section-title">Salud y emergencias</div>
+      <div class="grid-2">
+        <div class="field"><label>En caso de emergencia llamar a</label><input name="emergenciaContacto"></div>
+        <div class="field"><label>Teléfono de emergencia</label><input name="emergenciaTelefono" type="tel"></div>
+      </div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Alergia/tratamiento médico actual</label>
+          <select name="alergia">
+            <option value="">Selecciona...</option>
+            <option>Ninguna</option><option>Alergia a medicamentos</option>
+            <option>Tratamiento médico en curso</option><option>Otra</option>
+          </select>
+        </div>
+        <div class="field"><label>Especifique</label><input name="alergiaEspecifique"></div>
+      </div>
+
+      <div class="form-section-title">Documentos y firma</div>
+      <div class="field">
+        <label>Fotografía del paciente</label>
+        <label class="photo-tile" for="input-fotografiaPaciente">
+          <img id="preview-fotografiaPaciente" style="display:none;">
+          <span class="photo-tile-empty"><i>📷</i>Tomar/subir foto</span>
+        </label>
+        <input type="file" accept="image/*" capture="environment" id="input-fotografiaPaciente" name="fotografiaPaciente" style="display:none;">
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label>Firma conformidad de datos</label>
+        <div class="signature-wrap">
+          <canvas id="firma-canvas" width="560" height="160"></canvas>
+          <button type="button" class="btn-secondary" id="limpiar-firma" style="margin-top:8px;">Limpiar firma</button>
+        </div>
+        <input type="hidden" name="firma">
+      </div>
+
+      <div class="grid-2" style="margin-top:14px;">
+        <div class="field">
+          <label>Fotografía anverso de identificación</label>
+          <label class="photo-tile" for="input-fotografiaAnverso">
+            <img id="preview-fotografiaAnverso" style="display:none;">
+            <span class="photo-tile-empty"><i>📷</i>Tomar/subir foto</span>
+          </label>
+          <input type="file" accept="image/*" capture="environment" id="input-fotografiaAnverso" name="fotografiaAnverso" style="display:none;">
+        </div>
+        <div class="field">
+          <label>Fotografía reverso de identificación</label>
+          <label class="photo-tile" for="input-fotografiaReverso">
+            <img id="preview-fotografiaReverso" style="display:none;">
+            <span class="photo-tile-empty"><i>📷</i>Tomar/subir foto</span>
+          </label>
+          <input type="file" accept="image/*" capture="environment" id="input-fotografiaReverso" name="fotografiaReverso" style="display:none;">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelar-expediente">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar expediente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-ver-expediente">
+  <div class="modal" style="position:relative;">
+    <button type="button" class="btn-icon" id="cerrar-modal-ver" aria-label="Cerrar" style="position:absolute; top:12px; right:12px; background:#fff; z-index:1;">✕</button>
+    <div id="ver-expediente-foto" style="width:100%; height:280px; border-radius:12px; overflow:hidden; background:var(--teal-50); margin-bottom:16px; display:flex; align-items:center; justify-content:center; font-size:56px; font-weight:700; color:var(--teal-800);"></div>
+    <div class="modal-head">
+      <h3 id="ver-expediente-nombre">Expediente</h3>
+    </div>
+    <div id="ver-expediente-body"></div>
+    <div class="modal-actions" style="flex-wrap:wrap;">
+      <button type="button" class="btn-secondary" id="eliminar-expediente-actual">Eliminar expediente</button>
+      <button type="button" class="btn-secondary" id="editar-expediente-actual">Editar</button>
+      <button type="button" class="btn-primary" id="hc-completa-actual" style="background:var(--teal-800);">📄 Historia Clínica Completa del Paciente</button>
+      <button type="button" class="btn-primary" id="cerrar-ver-expediente">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-confirmar-eliminar">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <h3>Eliminar expediente</h3>
+      <button type="button" class="btn-icon" id="cerrar-modal-confirmar" aria-label="Cerrar">✕</button>
+    </div>
+    <p style="font-size:14px; color:var(--text-secondary); margin:8px 0 16px;">
+      ¿Estás seguro de que deseas eliminar al paciente del banco de expedientes de pacientes? Si es así, escribe <strong>ELIMINAR</strong> para confirmar.
+    </p>
+    <input type="text" id="input-confirmar-eliminar" placeholder="Escribe ELIMINAR">
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="cancelar-confirmar-eliminar">Cancelar</button>
+      <button type="button" class="btn-primary" id="confirmar-eliminar-definitivo" style="background:var(--red-600);">Eliminar definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-filtros">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-head">
+      <h3>Filtrar expedientes</h3>
+      <button type="button" class="btn-icon" id="cerrar-modal-filtros" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="field"><label>Tipo de paciente</label>
+        <select id="filtro-tipoPaciente">
+          <option value="">Todos</option>
+          <option value="Externo">Externo</option>
+          <option value="Comunidad Anáhuac">Comunidad Anáhuac</option>
+          <option value="Estudiante">Estudiante</option>
+        </select>
+      </div>
+      <div class="field"><label>Tipo de historia clínica</label>
+        <select id="filtro-tipoHistoria">
+          <option value="">Todas</option>
+          <option value="Adulto">Adulto</option>
+          <option value="Pediátrico">Pediátrico</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:10px;">
+      <div class="field"><label>Sexo</label>
+        <select id="filtro-sexo">
+          <option value="">Todos</option>
+          <option value="Masculino">Masculino</option>
+          <option value="Femenino">Femenino</option>
+        </select>
+      </div>
+      <div class="field"><label>Escolaridad</label>
+        <select id="filtro-escolaridad">
+          <option value="">Todas</option>
+          <option>Primaria</option><option>Secundaria</option><option>Preparatoria</option>
+          <option>Licenciatura</option><option>Posgrado</option><option>Ninguna</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:10px;">
+      <div class="field"><label>Estado civil</label>
+        <select id="filtro-estadoCivil">
+          <option value="">Todos</option>
+          <option>Soltero(a)</option><option>Casado(a)</option><option>Unión libre</option>
+          <option>Divorciado(a)</option><option>Viudo(a)</option>
+        </select>
+      </div>
+      <div class="field"><label>Religión</label>
+        <select id="filtro-religion">
+          <option value="">Todas</option>
+          <option>Católica</option><option>Cristiana</option><option>Otra</option><option>Ninguna</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:10px;">
+      <div class="field"><label>Alergia/tratamiento médico</label>
+        <select id="filtro-alergia">
+          <option value="">Todos</option>
+          <option>Ninguna</option><option>Alergia a medicamentos</option>
+          <option>Tratamiento médico en curso</option><option>Otra</option>
+        </select>
+      </div>
+      <div class="field"><label>Rango de edad</label>
+        <div style="display:flex; gap:8px;">
+          <input type="number" id="filtro-edadMin" placeholder="Mín.">
+          <input type="number" id="filtro-edadMax" placeholder="Máx.">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section-title">Fechas</div>
+    <div class="grid-2">
+      <div class="field"><label>Fecha de nacimiento desde</label><input type="date" id="filtro-fechaNacimientoDesde"></div>
+      <div class="field"><label>Fecha de nacimiento hasta</label><input type="date" id="filtro-fechaNacimientoHasta"></div>
+    </div>
+    <div class="grid-2" style="margin-top:10px;">
+      <div class="field"><label>Última visita desde</label><input type="date" id="filtro-ultimaVisitaDesde"></div>
+      <div class="field"><label>Última visita hasta</label><input type="date" id="filtro-ultimaVisitaHasta"></div>
+    </div>
+
+    <div class="form-section-title">Contacto y ubicación</div>
+    <div class="grid-2">
+      <div class="field"><label>Lugar de nacimiento</label><input type="text" id="filtro-lugarNacimiento" placeholder="Contiene..."></div>
+      <div class="field"><label>Dirección</label><input type="text" id="filtro-direccion" placeholder="Contiene..."></div>
+    </div>
+    <div class="grid-2" style="margin-top:10px;">
+      <div class="field"><label>Teléfono</label><input type="text" id="filtro-telefono" placeholder="Contiene..."></div>
+      <div class="field"><label>Correo electrónico</label><input type="text" id="filtro-correo" placeholder="Contiene..."></div>
+    </div>
+
+    <div class="form-section-title">Perfil y referencia</div>
+    <div class="grid-2">
+      <div class="field"><label>Profesión/oficio</label><input type="text" id="filtro-profesion" placeholder="Contiene..."></div>
+      <div class="field"><label>Ocupación actual</label><input type="text" id="filtro-ocupacion" placeholder="Contiene..."></div>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>Referido por</label><input type="text" id="filtro-referido" placeholder="Contiene..."></div>
+
+    <div class="form-section-title">Antecedentes clínicos</div>
+    <div class="field"><label>Padecimiento actual</label><input type="text" id="filtro-padecimiento" placeholder="Contiene..."></div>
+    <div class="field" style="margin-top:10px;"><label>Hábitos</label><input type="text" id="filtro-habitos" placeholder="Contiene..."></div>
+    <div class="field" style="margin-top:10px;"><label>Consentimientos informados</label><input type="text" id="filtro-consentimientos" placeholder="Contiene..."></div>
+    <div class="field" style="margin-top:10px;"><label>Datos relevantes previo al tratamiento</label><input type="text" id="filtro-datosRelevantes" placeholder="Contiene..."></div>
+
+    <div class="form-section-title">Emergencias</div>
+    <div class="grid-2">
+      <div class="field"><label>Contacto de emergencia</label><input type="text" id="filtro-emergenciaContacto" placeholder="Contiene..."></div>
+      <div class="field"><label>Teléfono de emergencia</label><input type="text" id="filtro-emergenciaTelefono" placeholder="Contiene..."></div>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>Especifique alergia</label><input type="text" id="filtro-alergiaEspecifique" placeholder="Contiene..."></div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="limpiar-filtros">Limpiar filtros</button>
+      <button type="button" class="btn-primary" id="aplicar-filtros">Ver resultados</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'clinica_dental_data_v1';
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { expedientes: [] };
+}
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE.data));
+}
+
+const STATE = { data: loadData(), editingId: null };
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function initials(name){
+  return name.trim().split(/\s+/).slice(0,2).map(w => w[0] || '').join('').toUpperCase();
+}
+function fmtFecha(f){
+  if(!f) return '';
+  const d = new Date(f + 'T00:00:00');
+  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short' });
+}
+
+function badge(estado){
+  return `<span class="badge badge-${estado}">${estado}</span>`;
+}
+function emptyState(title, body){
+  return `<div class="empty-state"><p>${title}</p><p>${body}</p></div>`;
+}
+
+const FILTRO_SELECT_IDS = ['tipoPaciente','tipoHistoria','sexo','escolaridad','estadoCivil','religion','alergia'];
+const FILTRO_TEXTO_IDS = [
+  'lugarNacimiento','direccion','telefono','correo','profesion','ocupacion','referido',
+  'padecimiento','habitos','consentimientos','datosRelevantes','emergenciaContacto',
+  'emergenciaTelefono','alergiaEspecifique'
+];
+const FILTRO_FECHA_IDS = ['fechaNacimiento','ultimaVisita'];
+
+function renderExpedientes(){
+  const term = (document.getElementById('buscar-expediente').value || '').toLowerCase();
+  const fEdadMin = document.getElementById('filtro-edadMin').value;
+  const fEdadMax = document.getElementById('filtro-edadMax').value;
+
+  let rows = STATE.data.expedientes.filter(e => e.nombre.toLowerCase().includes(term));
+
+  FILTRO_SELECT_IDS.forEach(key => {
+    const val = document.getElementById('filtro-' + key).value;
+    if(val) rows = rows.filter(e => e[key] === val);
+  });
+  FILTRO_TEXTO_IDS.forEach(key => {
+    const val = (document.getElementById('filtro-' + key).value || '').toLowerCase().trim();
+    if(val) rows = rows.filter(e => (e[key] || '').toLowerCase().includes(val));
+  });
+  FILTRO_FECHA_IDS.forEach(key => {
+    const desde = document.getElementById('filtro-' + key + 'Desde').value;
+    const hasta = document.getElementById('filtro-' + key + 'Hasta').value;
+    if(desde) rows = rows.filter(e => e[key] && e[key] >= desde);
+    if(hasta) rows = rows.filter(e => e[key] && e[key] <= hasta);
+  });
+  if(fEdadMin) rows = rows.filter(e => Number(e.edad || 0) >= Number(fEdadMin));
+  if(fEdadMax) rows = rows.filter(e => Number(e.edad || 0) <= Number(fEdadMax));
+
+  rows = rows.slice().sort((a,b) => a.nombre.localeCompare(b.nombre));
+
+  const hayFiltros = term
+    || FILTRO_SELECT_IDS.some(key => document.getElementById('filtro-' + key).value)
+    || FILTRO_TEXTO_IDS.some(key => document.getElementById('filtro-' + key).value)
+    || FILTRO_FECHA_IDS.some(key => document.getElementById('filtro-' + key + 'Desde').value || document.getElementById('filtro-' + key + 'Hasta').value)
+    || fEdadMin || fEdadMax;
+  contarFiltrosActivos();
+  document.getElementById('expedientes-list').innerHTML = rows.length === 0
+    ? (hayFiltros
+        ? emptyState('No se encontraron pacientes.', 'Ajusta la búsqueda o los filtros para ver más resultados.')
+        : emptyState('No hay expedientes capturados.', 'Registra un paciente para iniciar su historial clínico.'))
+    : rows.map(e => {
+      const avatar = e.fotografiaPaciente
+        ? `<img src="${e.fotografiaPaciente}" style="width:100%; height:100%; object-fit:cover;">`
+        : initials(e.nombre);
+      const ficha = [
+        e.sexo, e.edad ? e.edad + ' años' : '', e.tipoPaciente, e.tipoHistoria, e.telefono
+      ].filter(Boolean).join(' · ');
+      const hcBadge = e.historiaClinica
+        ? `<span class="badge-hc">HC ✓</span>`
+        : `<span class="badge-hc-pend">HC pendiente</span>`;
+      return `
+      <div class="list-row" data-ver="${e.id}" style="cursor:pointer;">
+        <div class="left-group">
+          <div class="avatar">${avatar}</div>
+          <div>
+            <p class="row-title">${escapeHtml(e.nombre)}</p>
+            <p class="row-sub">${ficha ? escapeHtml(ficha) : 'Sin datos capturados'}</p>
+          </div>
+        </div>
+        ${hcBadge}
+      </div>`;
+    }).join('');
+}
+
+function renderAll(){
+  renderExpedientes();
+}
+
+const EXPEDIENTE_FIELDS = [
+  ['idPaciente','ID paciente'], ['nombre','Nombre del paciente'], ['sexo','Sexo'],
+  ['edad','Edad'], ['fechaNacimiento','Fecha de nacimiento'], ['lugarNacimiento','Lugar de nacimiento'],
+  ['direccion','Dirección'], ['telefono','Teléfono'], ['correo','Correo electrónico'],
+  ['escolaridad','Escolaridad'], ['estadoCivil','Estado civil'], ['profesion','Profesión/oficio'],
+  ['ocupacion','Ocupación actual'], ['religion','Religión'], ['referido','Referido por'],
+  ['tipoPaciente','Tipo de paciente'], ['tipoHistoria','Tipo de historia clínica'],
+  ['padecimiento','Padecimiento actual'], ['habitos','Hábitos'], ['ultimaVisita','Última visita al dentista'],
+  ['consentimientos','Consentimientos informados'], ['datosRelevantes','Datos relevantes previo al tratamiento'],
+  ['emergenciaContacto','En caso de emergencia llamar a'], ['emergenciaTelefono','Teléfono de emergencia'],
+  ['alergia','Alergia/tratamiento médico actual'], ['alergiaEspecifique','Especifique']
+];
+
+const DOC_FIELDS = [
+  ['fotografiaPaciente','Fotografía del paciente'],
+  ['fotografiaAnverso','Identificación · anverso'],
+  ['fotografiaReverso','Identificación · reverso']
+];
+
+function openExpedienteModal(id){
+  const form = document.getElementById('form-expediente');
+  form.reset();
+  form.querySelectorAll('.opt-btn.selected').forEach(b => b.classList.remove('selected'));
+  STATE.editingId = id || null;
+  clearSignaturePad();
+  DOC_FIELDS.forEach(([key]) => {
+    const img = document.getElementById('preview-' + key);
+    img.style.display = 'none';
+    img.removeAttribute('data-value');
+    img.nextElementSibling.style.display = 'flex';
+  });
+
+  if(id){
+    const record = STATE.data.expedientes.find(x => x.id === id);
+    document.getElementById('modal-expediente-titulo').textContent = 'Editar expediente clínico';
+    EXPEDIENTE_FIELDS.forEach(([key]) => {
+      const input = form.querySelector(`[name="${key}"]`);
+      if(input) input.value = record[key] || '';
+    });
+    ['sexo','tipoPaciente','tipoHistoria'].forEach(group => {
+      const value = record[group];
+      const btn = form.querySelector(`[data-group="${group}"] [data-value="${value}"]`);
+      if(btn) btn.classList.add('selected');
+    });
+    if(record.firma) loadSignatureIntoPad(record.firma);
+    DOC_FIELDS.forEach(([key]) => {
+      if(record[key]){
+        const img = document.getElementById('preview-' + key);
+        img.src = record[key];
+        img.style.display = 'block';
+        img.setAttribute('data-value', record[key]);
+        img.nextElementSibling.style.display = 'none';
+      }
+    });
+  } else {
+    document.getElementById('modal-expediente-titulo').textContent = 'Nuevo expediente clínico';
+    form.querySelector('[name="idPaciente"]').value = uid();
+  }
+
+  document.getElementById('modal-expediente').classList.add('open');
+}
+function closeExpedienteModal(){
+  document.getElementById('modal-expediente').classList.remove('open');
+}
+
+const firmaCanvas = document.getElementById('firma-canvas');
+const firmaCtx = firmaCanvas.getContext('2d');
+let firmaDrawing = false;
+let firmaHasContent = false;
+
+function firmaPos(e){
+  const rect = firmaCanvas.getBoundingClientRect();
+  const scaleX = firmaCanvas.width / rect.width;
+  const scaleY = firmaCanvas.height / rect.height;
+  const point = e.touches ? e.touches[0] : e;
+  return { x: (point.clientX - rect.left) * scaleX, y: (point.clientY - rect.top) * scaleY };
+}
+function firmaStart(e){
+  e.preventDefault();
+  firmaDrawing = true;
+  const p = firmaPos(e);
+  firmaCtx.beginPath();
+  firmaCtx.moveTo(p.x, p.y);
+}
+function firmaMove(e){
+  if(!firmaDrawing) return;
+  e.preventDefault();
+  const p = firmaPos(e);
+  firmaCtx.lineWidth = 2;
+  firmaCtx.lineCap = 'round';
+  firmaCtx.strokeStyle = '#1F1F1D';
+  firmaCtx.lineTo(p.x, p.y);
+  firmaCtx.stroke();
+  firmaHasContent = true;
+}
+function firmaEnd(){ firmaDrawing = false; }
+
+firmaCanvas.addEventListener('mousedown', firmaStart);
+firmaCanvas.addEventListener('mousemove', firmaMove);
+window.addEventListener('mouseup', firmaEnd);
+firmaCanvas.addEventListener('touchstart', firmaStart, { passive:false });
+firmaCanvas.addEventListener('touchmove', firmaMove, { passive:false });
+firmaCanvas.addEventListener('touchend', firmaEnd);
+
+function clearSignaturePad(){
+  firmaCtx.clearRect(0, 0, firmaCanvas.width, firmaCanvas.height);
+  firmaHasContent = false;
+}
+function isSignaturePadEmpty(){ return !firmaHasContent; }
+function loadSignatureIntoPad(dataUrl){
+  const img = new Image();
+  img.onload = () => {
+    firmaCtx.clearRect(0, 0, firmaCanvas.width, firmaCanvas.height);
+    firmaCtx.drawImage(img, 0, 0, firmaCanvas.width, firmaCanvas.height);
+    firmaHasContent = true;
+  };
+  img.src = dataUrl;
+}
+document.getElementById('limpiar-firma').addEventListener('click', clearSignaturePad);
+
+DOC_FIELDS.forEach(([key]) => {
+  document.getElementById('input-' + key).addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = document.getElementById('preview-' + key);
+      img.src = reader.result;
+      img.style.display = 'block';
+      img.setAttribute('data-value', reader.result);
+      img.nextElementSibling.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+document.getElementById('btn-nuevo-expediente').addEventListener('click', () => openExpedienteModal());
+document.getElementById('cerrar-modal-expediente').addEventListener('click', closeExpedienteModal);
+document.getElementById('cancelar-expediente').addEventListener('click', closeExpedienteModal);
+
+document.querySelectorAll('#form-expediente .btn-group').forEach(group => {
+  group.addEventListener('click', (e) => {
+    const btn = e.target.closest('.opt-btn');
+    if(!btn) return;
+    group.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+});
+
+document.getElementById('form-expediente').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const record = { id: STATE.editingId || fd.get('idPaciente') };
+  EXPEDIENTE_FIELDS.forEach(([key]) => { if(key !== 'idPaciente') record[key] = fd.get(key) || ''; });
+  record.idPaciente = fd.get('idPaciente');
+  record.sexo = document.querySelector('[data-group="sexo"] .selected')?.dataset.value || '';
+  record.tipoPaciente = document.querySelector('[data-group="tipoPaciente"] .selected')?.dataset.value || '';
+  record.tipoHistoria = document.querySelector('[data-group="tipoHistoria"] .selected')?.dataset.value || '';
+  record.firma = isSignaturePadEmpty() ? '' : firmaCanvas.toDataURL('image/png');
+  DOC_FIELDS.forEach(([key]) => {
+    record[key] = document.getElementById('preview-' + key).getAttribute('data-value') || '';
+  });
+
+  if(STATE.editingId){
+    const idx = STATE.data.expedientes.findIndex(x => x.id === STATE.editingId);
+    if(idx > -1) STATE.data.expedientes[idx] = record;
+  } else {
+    STATE.data.expedientes.push(record);
+  }
+  saveData(); renderAll(); closeExpedienteModal();
+});
+
+function verExpediente(id){
+  const e = STATE.data.expedientes.find(x => x.id === id);
+  if(!e) return;
+  document.getElementById('ver-expediente-nombre').textContent = e.nombre || 'Expediente';
+  document.getElementById('ver-expediente-foto').innerHTML = e.fotografiaPaciente
+    ? `<img src="${e.fotografiaPaciente}" style="width:100%; height:100%; object-fit:cover;">`
+    : initials(e.nombre);
+  let html = EXPEDIENTE_FIELDS
+    .filter(([key]) => e[key])
+    .map(([key,label]) => `<div class="detail-row"><span>${label}</span><span>${escapeHtml(e[key])}</span></div>`)
+    .join('');
+
+  const docs = DOC_FIELDS.filter(([key]) => e[key] && key !== 'fotografiaPaciente');
+  if(e.firma || docs.length){
+    html += '<div class="doc-preview-row">';
+    if(e.firma) html += `<figure><img src="${e.firma}"><figcaption>Firma conformidad</figcaption></figure>`;
+    docs.forEach(([key,label]) => { html += `<figure><img src="${e[key]}"><figcaption>${label}</figcaption></figure>`; });
+    html += '</div>';
+  }
+
+  if(e.historiaClinica){
+    const hc = e.historiaClinica;
+    html += `<div class="form-section-title" style="margin-top:16px;">Historia Clínica</div>`;
+    if(hc.fechaLlenado) html += `<div class="detail-row"><span>Fecha de llenado</span><span>${hc.fechaLlenado}</span></div>`;
+    if(hc.padecimiento && hc.padecimiento.length){
+      html += `<div class="detail-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <span style="color:var(--text-secondary);">Padecimiento actual</span>
+        <div class="hc-summary-tags">${hc.padecimiento.map(p=>`<span class="hc-tag">${escapeHtml(p)}</span>`).join('')}</div>
+      </div>`;
+    }
+    if(hc.observaciones) html += `<div class="detail-row"><span>Observaciones</span><span>${escapeHtml(hc.observaciones)}</span></div>`;
+  }
+
+  /* ── Pagos y visitas ── */
+  try {
+    const pagosData = JSON.parse(localStorage.getItem('clinica_pagos_v1') || '[]');
+    const nombrePac = (e.nombre || '').toLowerCase().trim();
+    const pagosP = pagosData.filter(p => (p.paciente || '').toLowerCase().trim() === nombrePac)
+                            .sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+    const notasEv = e.notasEvolucion || [];
+    html += `<div class="form-section-title" style="margin-top:16px;">Pagos y visitas (${pagosP.length})</div>`;
+    if(pagosP.length === 0){
+      html += `<p style="font-size:13px;color:var(--text-muted);margin:4px 0 8px;">Sin registros de pagos aún.</p>`;
+    } else {
+      const totalGlobal = pagosP.reduce((s,p) => {
+        const t = p.total !== undefined ? Number(p.total) :
+          (Number(p.totalA)||0)+(Number(p.totalB)||0)+(Number(p.totalC)||0)-(Number(p.descuento)||0);
+        return s + t;
+      }, 0);
+      html += `<div style="overflow-x:auto;"><table class="pagos-table">
+        <thead><tr>
+          <th>Fecha</th><th>Clínica</th><th>Estudiante</th><th>Tratamientos</th><th style="text-align:right;">Total</th><th></th>
+        </tr></thead><tbody>`;
+      pagosP.forEach(p => {
+        const total = p.total !== undefined ? Number(p.total) :
+          (Number(p.totalA)||0)+(Number(p.totalB)||0)+(Number(p.totalC)||0)-(Number(p.descuento)||0);
+        const trats = (p.tratamientos && p.tratamientos.length)
+          ? p.tratamientos.map(t => `<span class="trat-pill">${escapeHtml(t.nombre)}</span>`).join('')
+          : [p.tratA, p.tratB, p.tratC].filter(Boolean).map(t => `<span class="trat-pill">${escapeHtml(t)}</span>`).join('');
+        const tieneNota = notasEv.some(n => n.pagoId === p.id);
+        const btnNota = p.id ? `<button type="button" class="btn-nota-ev" data-expid="${id}" data-pagoid="${escapeHtml(p.id)}" title="${tieneNota?'Ver nota de evolución':'Agregar nota de evolución'}" style="background:${tieneNota?'var(--teal-50)':'#fff'};border:1px solid ${tieneNota?'var(--teal-600)':'var(--border)'};color:${tieneNota?'var(--teal-800)':'var(--text-secondary)'};border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;white-space:nowrap;">${tieneNota?'📝 Ver nota':'📝 Nota'}</button>` : '';
+        html += `<tr>
+          <td>${escapeHtml(p.fecha||'—')}</td>
+          <td>${escapeHtml(p.clinica||'—')}</td>
+          <td>${escapeHtml(p.estudiante||'—')}</td>
+          <td>${trats||'—'}</td>
+          <td style="text-align:right;font-weight:600;">$${total.toFixed(2)}</td>
+          <td style="white-space:nowrap;">${btnNota}</td>
+        </tr>`;
+      });
+      html += `</tbody></table></div>
+        <div class="pagos-total-row">
+          <span style="color:var(--text-secondary);">${pagosP.length} visita${pagosP.length!==1?'s':''}</span>
+          <span>Total acumulado: <strong>$${totalGlobal.toFixed(2)}</strong></span>
+        </div>`;
+    }
+
+    // ── Justificantes y Recetas (clinica_justificantes_v1) ──
+    let jData = {justificantes:[],recetas:[]};
+    try{ jData = JSON.parse(localStorage.getItem('clinica_justificantes_v1')||'{}'); jData.justificantes=jData.justificantes||[]; jData.recetas=jData.recetas||[]; }catch(e2){}
+    const docsP = [
+      ...jData.justificantes.filter(j=>(j.paciente||'').toLowerCase().trim()===nombrePac).map(j=>({...j,_tipo:'just'})),
+      ...jData.recetas.filter(r=>(r.paciente||'').toLowerCase().trim()===nombrePac).map(r=>({...r,_tipo:'rec'})),
+    ].sort((a,b)=>(b.fechaAtencion||b.fechaEmision||'').localeCompare(a.fechaAtencion||a.fechaEmision||''));
+    html += `<div class="form-section-title" style="margin-top:16px;">Justificantes y recetas (${docsP.length})</div>`;
+    if(docsP.length===0){
+      html += `<p style="font-size:13px;color:var(--text-muted);margin:4px 0 8px;">Sin documentos registrados.</p>`;
+    } else {
+      html += `<div style="overflow-x:auto;"><table class="pagos-table"><thead><tr><th>Tipo</th><th>Fecha</th><th>Folio</th><th>Detalle</th><th></th></tr></thead><tbody>`;
+      docsP.forEach(doc=>{
+        const esJust = doc._tipo==='just';
+        const tipoPill = esJust
+          ? `<span class="trat-pill" style="background:var(--teal-50);color:var(--teal-800);">Justificante</span>`
+          : `<span class="trat-pill" style="background:var(--blue-50);color:var(--blue-800);">Receta</span>`;
+        const detalle = esJust
+          ? escapeHtml((doc.diagnostico||'').slice(0,60)+(doc.diagnostico?.length>60?'…':''))
+          : (doc.medicamentos||[]).map(m=>`<span class="trat-pill">${escapeHtml(m.nombre)}</span>`).join('') || '—';
+        html += `<tr>
+          <td>${tipoPill}</td>
+          <td>${escapeHtml(doc.fechaAtencion||doc.fechaEmision||'—')}</td>
+          <td><span class="trat-pill" style="${esJust?'':'background:var(--blue-50);color:var(--blue-800);'}">${escapeHtml(doc.folio||'—')}</span></td>
+          <td style="max-width:200px;">${detalle}</td>
+          <td style="white-space:nowrap;display:flex;gap:5px;">
+            <button type="button" class="btn-edit-just" data-id="${escapeHtml(doc.id)}" data-tipo="${doc._tipo}" style="background:#fff;border:1px solid var(--border);color:var(--text-secondary);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;">✏️ Editar</button>
+            <button type="button" class="btn-print-just" data-id="${escapeHtml(doc.id)}" data-tipo="${doc._tipo}" style="background:${esJust?'var(--teal-50)':'var(--blue-50)'};border:1px solid ${esJust?'var(--teal-600)':'var(--blue-800)'};color:${esJust?'var(--teal-800)':'var(--blue-800)'};border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;">🖨️ Imprimir</button>
+          </td>
+        </tr>`;
+      });
+      html += `</tbody></table></div>`;
+    }
+    html += `<div style="display:flex;gap:8px;margin-top:8px;">
+      <button type="button" class="btn-nueva-just" data-tipo="just" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--teal-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nuevo justificante</button>
+      <button type="button" class="btn-nueva-just" data-tipo="rec" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--blue-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nueva receta</button>
+    </div>`;
+  } catch(err){}
+
+  document.getElementById('ver-expediente-body').innerHTML = html;
+  document.getElementById('eliminar-expediente-actual').dataset.id = id;
+  document.getElementById('modal-ver-expediente').classList.add('open');
+}
+document.getElementById('cerrar-modal-ver').addEventListener('click', () => document.getElementById('modal-ver-expediente').classList.remove('open'));
+document.getElementById('cerrar-ver-expediente').addEventListener('click', () => document.getElementById('modal-ver-expediente').classList.remove('open'));
+document.getElementById('eliminar-expediente-actual').addEventListener('click', (e) => {
+  const id = e.target.dataset.id;
+  document.getElementById('input-confirmar-eliminar').value = '';
+  document.getElementById('confirmar-eliminar-definitivo').dataset.id = id;
+  document.getElementById('modal-confirmar-eliminar').classList.add('open');
+});
+document.getElementById('cerrar-modal-confirmar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
+document.getElementById('cancelar-confirmar-eliminar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
+document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', (e) => {
+  const id = e.target.dataset.id;
+  const texto = document.getElementById('input-confirmar-eliminar').value.trim();
+  if(texto !== 'ELIMINAR'){
+    document.getElementById('input-confirmar-eliminar').style.borderColor = 'var(--red-600)';
+    return;
+  }
+  STATE.data.expedientes = STATE.data.expedientes.filter(x => x.id !== id);
+  saveData(); renderAll();
+  document.getElementById('modal-confirmar-eliminar').classList.remove('open');
+  document.getElementById('modal-ver-expediente').classList.remove('open');
+});
+document.getElementById('editar-expediente-actual').addEventListener('click', (e) => {
+  const id = document.getElementById('eliminar-expediente-actual').dataset.id;
+  document.getElementById('modal-ver-expediente').classList.remove('open');
+  openExpedienteModal(id);
+});
+function contarFiltrosActivos(){
+  let count = FILTRO_SELECT_IDS.filter(key => document.getElementById('filtro-' + key).value).length;
+  count += FILTRO_TEXTO_IDS.filter(key => document.getElementById('filtro-' + key).value).length;
+  FILTRO_FECHA_IDS.forEach(key => {
+    if(document.getElementById('filtro-' + key + 'Desde').value) count++;
+    if(document.getElementById('filtro-' + key + 'Hasta').value) count++;
+  });
+  if(document.getElementById('filtro-edadMin').value) count++;
+  if(document.getElementById('filtro-edadMax').value) count++;
+  document.getElementById('filtros-activos-count').textContent = count > 0 ? `(${count})` : '';
+}
+
+document.getElementById('btn-abrir-filtros').addEventListener('click', () => {
+  document.getElementById('modal-filtros').classList.add('open');
+});
+document.getElementById('cerrar-modal-filtros').addEventListener('click', () => {
+  document.getElementById('modal-filtros').classList.remove('open');
+});
+document.getElementById('aplicar-filtros').addEventListener('click', () => {
+  renderExpedientes();
+  document.getElementById('modal-filtros').classList.remove('open');
+});
+
+document.getElementById('buscar-expediente').addEventListener('input', renderExpedientes);
+FILTRO_SELECT_IDS.forEach(key => document.getElementById('filtro-' + key).addEventListener('change', renderExpedientes));
+FILTRO_TEXTO_IDS.forEach(key => document.getElementById('filtro-' + key).addEventListener('input', renderExpedientes));
+FILTRO_FECHA_IDS.forEach(key => {
+  document.getElementById('filtro-' + key + 'Desde').addEventListener('change', renderExpedientes);
+  document.getElementById('filtro-' + key + 'Hasta').addEventListener('change', renderExpedientes);
+});
+document.getElementById('filtro-edadMin').addEventListener('input', renderExpedientes);
+document.getElementById('filtro-edadMax').addEventListener('input', renderExpedientes);
+document.getElementById('limpiar-filtros').addEventListener('click', () => {
+  document.getElementById('buscar-expediente').value = '';
+  FILTRO_SELECT_IDS.forEach(key => { document.getElementById('filtro-' + key).value = ''; });
+  FILTRO_TEXTO_IDS.forEach(key => { document.getElementById('filtro-' + key).value = ''; });
+  FILTRO_FECHA_IDS.forEach(key => {
+    document.getElementById('filtro-' + key + 'Desde').value = '';
+    document.getElementById('filtro-' + key + 'Hasta').value = '';
+  });
+  document.getElementById('filtro-edadMin').value = '';
+  document.getElementById('filtro-edadMax').value = '';
+  renderExpedientes();
+});
+
+document.getElementById('expedientes-list').addEventListener('click', (e) => {
+  if(e.target.closest('[data-del]')) return;
+  const row = e.target.closest('[data-ver]');
+  if(row) verExpediente(row.dataset.ver);
+});
+
+document.getElementById('hc-completa-actual').addEventListener('click', () => {
+  const id = document.getElementById('eliminar-expediente-actual').dataset.id;
+  location.href = 'historia-clinica.html?id=' + encodeURIComponent(id);
+});
+
+document.getElementById('modal-ver-expediente').addEventListener('click', (e) => {
+  const btnNota = e.target.closest('.btn-nota-ev');
+  if(btnNota){
+    location.href = 'nota-evolucion.html?expId=' + encodeURIComponent(btnNota.dataset.expid) + '&pagoId=' + encodeURIComponent(btnNota.dataset.pagoid);
+    return;
+  }
+  const btnVerRec = e.target.closest('.btn-ver-receta');
+  if(btnVerRec){
+    location.href = 'receta-medica.html?expId=' + encodeURIComponent(btnVerRec.dataset.expid) + '&recId=' + encodeURIComponent(btnVerRec.dataset.recid);
+    return;
+  }
+  const btnNuevaRec = e.target.closest('#btn-nueva-receta');
+  if(btnNuevaRec){
+    location.href = 'receta-medica.html?expId=' + encodeURIComponent(btnNuevaRec.dataset.expid);
+    return;
+  }
+  const btnEditJust = e.target.closest('.btn-edit-just');
+  if(btnEditJust){
+    location.href = 'justificantes.html?openId=' + encodeURIComponent(btnEditJust.dataset.id) + '&tipo=' + encodeURIComponent(btnEditJust.dataset.tipo);
+    return;
+  }
+  const btnPrintJust = e.target.closest('.btn-print-just');
+  if(btnPrintJust){
+    const jData = JSON.parse(localStorage.getItem('clinica_justificantes_v1')||'{}');
+    if(btnPrintJust.dataset.tipo === 'just') printJustificante(jData.justificantes?.find(x=>x.id===btnPrintJust.dataset.id));
+    else printRecetaJust(jData.recetas?.find(x=>x.id===btnPrintJust.dataset.id));
+    return;
+  }
+  const btnNuevaJust = e.target.closest('.btn-nueva-just');
+  if(btnNuevaJust){
+    location.href = 'justificantes.html?tab=' + encodeURIComponent(btnNuevaJust.dataset.tipo);
+    return;
+  }
+});
+
+function printJustificante(j){
+  if(!j) return;
+  const dias = j.dias==1?'un (1) día hábil':`${j.dias} (${j.dias}) días hábiles`;
+  const firmaHTML = j.firma?`<img src="${j.firma}" style="height:70px;display:block;margin:0 auto 4px;">`:'<div style="height:70px;border-bottom:1px solid #333;width:200px;margin:0 auto;"></div>';
+  const win = window.open('','_blank','width=800,height=650');
+  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Justificante ${escapeHtml(j.folio)}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;font-size:13px;color:#111;}
+@page{size:letter;margin:18mm 20mm;}.page{max-width:700px;margin:0 auto;padding:28px 32px 40px;}
+.hdr{display:flex;align-items:center;gap:16px;border-bottom:3px solid #C2570D;padding-bottom:14px;margin-bottom:20px;}
+.logo{width:52px;height:52px;border-radius:10px;background:#C2570D;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.folio-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.doc-title{font-size:17px;font-weight:700;text-transform:uppercase;color:#5C2906;}
+.folio-info{text-align:right;font-size:11px;color:#555;line-height:1.6;}
+.body-text{font-size:13px;line-height:1.9;text-align:justify;margin-bottom:20px;}
+.diag{border-left:3px solid #C2570D;padding:10px 14px;background:#fdf6f0;border-radius:4px;font-size:13px;margin:16px 0 24px;}
+.firma-section{margin-top:40px;display:flex;justify-content:flex-end;}
+.firma-block{text-align:center;min-width:220px;}
+.firma-linea{border-top:1px solid #333;margin-top:8px;padding-top:6px;font-size:12px;}
+.footer-doc{margin-top:40px;border-top:1px solid #ddd;padding-top:10px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
+<div class="page">
+  <div class="hdr"><div class="logo"><svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" stroke-linecap="round"/><circle cx="12" cy="9" r="2.5"/></svg></div>
+  <div><p style="font-size:15px;font-weight:700;color:#5C2906;">Clínica Dental Universitaria Anáhuac</p><p style="font-size:11px;color:#888;margin-top:2px;">Universidad Anáhuac Xalapa · Servicios de Salud Bucal</p></div></div>
+  <div class="folio-row"><p class="doc-title">Justificante Médico</p>
+  <div class="folio-info"><strong>Folio: ${escapeHtml(j.folio)}</strong><br>Fecha de emisión: ${escapeHtml(j.fechaEmision||'')}<br>Fecha de atención: ${escapeHtml(j.fechaAtencion||'')}</div></div>
+  <p class="body-text">Por medio del presente documento, la <strong>Clínica Dental Universitaria Anáhuac Xalapa</strong> hace constar que el(la) paciente <strong>${escapeHtml(j.paciente)}</strong> recibió atención odontológica el día <strong>${escapeHtml(j.fechaAtencion||'')}</strong>${j.alumno?`, siendo atendido(a) por el(la) alumno(a) <strong>${escapeHtml(j.alumno)}</strong>`:''}, bajo la supervisión del(la) <strong>C.D. ${escapeHtml(j.maestro||'')}</strong>.</p>
+  <p style="font-size:13px;font-weight:600;margin-bottom:6px;color:#5C2906;">Diagnóstico / procedimiento realizado:</p>
+  <div class="diag">${escapeHtml(j.diagnostico||'')}</div>
+  <p class="body-text">Por lo anterior, se justifica la inasistencia del(la) paciente a sus actividades por <strong>${dias}</strong>, contados a partir del <strong>${escapeHtml(j.fechaAtencion||'')}</strong>.</p>
+  <div class="firma-section"><div class="firma-block">${firmaHTML}<p class="firma-linea">C.D. ${escapeHtml(j.maestro||'')}</p><p style="font-size:11px;color:#666;margin-top:2px;">Maestro supervisor · Clínica Dental Universitaria Anáhuac</p></div></div>
+  <div class="footer-doc"><span>Clínica Dental Universitaria Anáhuac · Xalapa, Veracruz</span><span>Folio: ${escapeHtml(j.folio)}</span></div>
+</div><script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  win.document.close();
+}
+
+function printRecetaJust(r){
+  if(!r) return;
+  const firmaHTML = r.firma?`<img src="${r.firma}" style="height:70px;display:block;margin:0 auto 4px;">`:'<div style="height:70px;border-bottom:1px solid #333;width:200px;margin:0 auto;"></div>';
+  const medsHTML = (r.medicamentos||[]).map((m,i)=>`<tr style="border-top:1px solid #eee;">
+    <td style="padding:10px 12px;font-weight:700;font-size:16px;color:#C2570D;width:36px;vertical-align:top;">${i+1}</td>
+    <td style="padding:10px 12px;border-left:1px solid #eee;width:40%;"><p style="font-weight:700;font-size:14px;">${escapeHtml(m.nombre||'')}</p></td>
+    <td style="padding:10px 12px;border-left:1px solid #eee;font-size:12px;color:#444;">
+      ${m.cantidad?`<p><strong>Cantidad:</strong> ${escapeHtml(m.cantidad)}</p>`:''}
+      ${m.frecuencia?`<p><strong>Cada cuánto:</strong> ${escapeHtml(m.frecuencia)}</p>`:''}
+      ${m.duracion?`<p><strong>Por cuánto tiempo:</strong> ${escapeHtml(m.duracion)}</p>`:''}
+    </td></tr>`).join('');
+  const win = window.open('','_blank','width=800,height=650');
+  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Receta ${escapeHtml(r.folio)}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;font-size:13px;color:#111;}
+@page{size:letter;margin:18mm 20mm;}.page{max-width:700px;margin:0 auto;padding:28px 32px 40px;}
+.hdr{display:flex;align-items:center;gap:16px;border-bottom:3px solid #0C447C;padding-bottom:14px;margin-bottom:20px;}
+.logo{width:52px;height:52px;border-radius:10px;background:#0C447C;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-title{font-size:17px;font-weight:700;text-transform:uppercase;color:#0C447C;}
+.folio-info{text-align:right;font-size:11px;color:#555;line-height:1.6;}
+.folio-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.pat-box{background:#f0f6ff;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;line-height:1.7;}
+table.meds{width:100%;border-collapse:collapse;border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:20px;}
+table.meds thead{background:#0C447C;color:#fff;}
+table.meds th{padding:9px 12px;font-size:12px;text-align:left;}
+.ind-box{background:#f0f6ff;border-left:3px solid #0C447C;padding:10px 14px;font-size:13px;margin-bottom:20px;border-radius:4px;}
+.firma-section{margin-top:40px;display:flex;justify-content:flex-end;}
+.firma-block{text-align:center;min-width:220px;}
+.firma-linea{border-top:1px solid #333;margin-top:8px;padding-top:6px;font-size:12px;}
+.footer-doc{margin-top:30px;border-top:1px solid #ddd;padding-top:10px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
+<div class="page">
+  <div class="hdr"><div class="logo"><svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8l-5-5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 3v5h10M8 13h8M8 17h5" stroke-linecap="round"/></svg></div>
+  <div><p style="font-size:15px;font-weight:700;color:#0C447C;">Clínica Dental Universitaria Anáhuac</p><p style="font-size:11px;color:#888;margin-top:2px;">Universidad Anáhuac Xalapa · Servicios de Salud Bucal</p></div></div>
+  <div class="folio-row"><p class="doc-title">Receta Médica</p>
+  <div class="folio-info"><strong>Folio: ${escapeHtml(r.folio)}</strong><br>Fecha de emisión: ${escapeHtml(r.fechaEmision||'')}<br>Fecha de atención: ${escapeHtml(r.fechaAtencion||'')}</div></div>
+  <div class="pat-box"><p><strong>Paciente:</strong> ${escapeHtml(r.paciente||'')}</p>${r.alumno?`<p><strong>Atendido por:</strong> ${escapeHtml(r.alumno)}</p>`:''}<p><strong>Supervisor:</strong> C.D. ${escapeHtml(r.maestro||'')}</p></div>
+  <table class="meds"><thead><tr><th>#</th><th>Medicamento</th><th>Indicaciones</th></tr></thead><tbody>${medsHTML}</tbody></table>
+  ${r.indicaciones?`<p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#0C447C;margin-bottom:6px;">Indicaciones generales</p><div class="ind-box">${escapeHtml(r.indicaciones)}</div>`:''}
+  <div class="firma-section"><div class="firma-block">${firmaHTML}<p class="firma-linea">C.D. ${escapeHtml(r.maestro||'')}</p><p style="font-size:11px;color:#666;margin-top:2px;">Maestro supervisor · Clínica Dental Universitaria Anáhuac</p></div></div>
+  <div class="footer-doc"><span>Clínica Dental Universitaria Anáhuac · Xalapa, Veracruz</span><span>Folio: ${escapeHtml(r.folio)}</span></div>
+</div><script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  win.document.close();
+}
+
+document.body.addEventListener('click', (e) => {
+  const del = e.target.closest('[data-del]');
+  if(!del) return;
+  const key = del.dataset.del;
+  const id = del.dataset.id;
+  STATE.data[key] = STATE.data[key].filter(x => x.id !== id);
+  saveData(); renderAll();
+});
+
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistencia · Servicio Social</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --green-50:#EAF3DE;--green-600:#3A7A10;--green-800:#27500A;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;--amber-800:#5C3308;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:960px;margin:0 auto;padding:20px 20px 80px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border);}
+.tab-btn{background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-secondary);padding:8px 16px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;}
+.tab-btn.active{color:var(--teal-600);border-bottom-color:var(--teal-600);}
+.tab-btn:hover:not(.active){color:var(--text-primary);}
+
+/* ══ KIOSK ══ */
+#tab-kiosk{display:flex;flex-direction:column;align-items:center;padding:20px 0 40px;}
+.kiosk-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:40px 36px;width:100%;max-width:460px;text-align:center;box-shadow:0 2px 20px rgba(0,0,0,.06);}
+.kiosk-logo{width:64px;height:64px;border-radius:16px;background:var(--teal-600);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.kiosk-logo svg{width:34px;height:34px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.kiosk-title{font-size:18px;font-weight:700;color:var(--teal-900);margin-bottom:4px;}
+.kiosk-date{font-size:13px;color:var(--text-secondary);margin-bottom:28px;}
+.kiosk-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);text-align:left;margin-bottom:6px;}
+.kiosk-input{width:100%;height:52px;border:2px solid var(--border);border-radius:10px;font-size:20px;font-family:inherit;text-align:center;letter-spacing:.1em;color:var(--text-primary);background:#fff;transition:border-color .15s;}
+.kiosk-input:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 3px var(--teal-50);}
+.kiosk-input.error{border-color:var(--red-600);background:var(--red-50);}
+.kiosk-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+.btn-entrada{background:var(--green-600);color:#fff;border:none;border-radius:10px;height:54px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
+.btn-entrada:hover{background:var(--green-800);}
+.btn-salida{background:var(--teal-600);color:#fff;border:none;border-radius:10px;height:54px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
+.btn-salida:hover{background:var(--teal-800);}
+.btn-entrada svg,.btn-salida svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.kiosk-error{font-size:12px;color:var(--red-600);font-weight:600;margin-top:10px;min-height:18px;}
+
+/* Confirmación */
+.confirm-card{display:none;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px 28px;width:100%;max-width:460px;text-align:center;box-shadow:0 2px 20px rgba(0,0,0,.06);}
+.confirm-card.entrada-mode{border-color:var(--green-600);box-shadow:0 0 0 3px rgba(58,122,16,.1);}
+.confirm-card.salida-mode{border-color:var(--teal-600);box-shadow:0 0 0 3px rgba(194,87,13,.1);}
+.confirm-icon{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.confirm-icon.entrada-mode{background:var(--green-50);}
+.confirm-icon.salida-mode{background:var(--teal-50);}
+.confirm-icon svg{width:28px;height:28px;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.confirm-icon.entrada-mode svg{stroke:var(--green-800);}
+.confirm-icon.salida-mode svg{stroke:var(--teal-800);}
+.confirm-tipo{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.confirm-tipo.entrada-mode{color:var(--green-600);}
+.confirm-tipo.salida-mode{color:var(--teal-600);}
+.confirm-nombre{font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+.confirm-puesto{font-size:13px;color:var(--text-secondary);margin-bottom:16px;}
+.confirm-time{font-size:32px;font-weight:700;color:var(--teal-900);font-variant-numeric:tabular-nums;}
+.confirm-date{font-size:13px;color:var(--text-muted);margin-top:3px;}
+.confirm-progress{width:100%;height:3px;background:var(--border);border-radius:2px;margin-top:20px;overflow:hidden;}
+.confirm-progress-bar{height:100%;border-radius:2px;animation:shrink 4s linear forwards;}
+.entrada-mode .confirm-progress-bar{background:var(--green-600);}
+.salida-mode .confirm-progress-bar{background:var(--teal-600);}
+@keyframes shrink{from{width:100%}to{width:0%}}
+
+/* ══ HISTORIAL ══ */
+#tab-historial{display:none;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.stat-label{font-size:11px;color:var(--text-secondary);}
+.stat-value{font-size:20px;font-weight:600;margin-top:2px;color:var(--teal-900);}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:200px;}
+.search-input:focus{outline:none;border-color:var(--teal-600);}
+.filtro-select{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.filtro-select:focus{outline:none;border-color:var(--teal-600);}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.lista-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.list-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-top:1px solid var(--border);}
+.list-row:first-child{border-top:none;}
+.tipo-dot{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:700;}
+.tipo-dot.entrada{background:var(--green-50);color:var(--green-800);}
+.tipo-dot.salida{background:var(--teal-50);color:var(--teal-800);}
+.tipo-dot svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.row-info{flex:1;min-width:0;}
+.row-title{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-sub{font-size:11px;color:var(--text-secondary);margin-top:1px;}
+.row-time{font-size:14px;font-weight:700;color:var(--text-primary);flex-shrink:0;font-variant-numeric:tabular-nums;}
+.row-date{font-size:11px;color:var(--text-muted);flex-shrink:0;text-align:right;}
+.tipo-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;flex-shrink:0;}
+.tipo-badge.entrada{background:var(--green-50);color:var(--green-800);}
+.tipo-badge.salida{background:var(--teal-50);color:var(--teal-800);}
+.empty-state{padding:40px 20px;text-align:center;color:var(--text-secondary);}
+.empty-state p:first-child{font-weight:600;color:var(--text-primary);}
+.empty-state p:last-child{font-size:12px;margin-top:3px;}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Asistencia · Servicio Social</h1>
+      </div>
+      <span id="reloj-header" style="font-size:13px;font-weight:600;color:var(--teal-800);font-variant-numeric:tabular-nums;"></span>
+    </header>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="kiosk">Registrar asistencia</button>
+    <button class="tab-btn" data-tab="historial">Historial</button>
+  </div>
+
+  <!-- ══ TAB KIOSK ══ -->
+  <div id="tab-kiosk">
+
+    <!-- Formulario de entrada/salida -->
+    <div class="kiosk-card" id="kiosk-form">
+      <div class="kiosk-logo">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <p class="kiosk-title">Servicio Social · Asistencia</p>
+      <p class="kiosk-date" id="kiosk-fecha"></p>
+      <p class="kiosk-label">ID Institucional</p>
+      <input type="text" class="kiosk-input" id="kiosk-id" placeholder="Ej. MA2018042" autocomplete="off" maxlength="20"
+        onkeydown="if(event.key==='Enter')document.getElementById('btn-entrada').focus()">
+      <div class="kiosk-btns">
+        <button class="btn-entrada" id="btn-entrada" onclick="registrar('Entrada')">
+          <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Entrada
+        </button>
+        <button class="btn-salida" id="btn-salida" onclick="registrar('Salida')">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Salida
+        </button>
+      </div>
+      <p class="kiosk-error" id="kiosk-error"></p>
+    </div>
+
+    <!-- Confirmación -->
+    <div class="confirm-card" id="confirm-card">
+      <div class="confirm-icon" id="confirm-icon">
+        <svg id="confirm-svg-entrada" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        <svg id="confirm-svg-salida" viewBox="0 0 24 24" style="display:none;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
+      <p class="confirm-tipo" id="confirm-tipo"></p>
+      <p class="confirm-nombre" id="confirm-nombre"></p>
+      <p class="confirm-puesto" id="confirm-puesto"></p>
+      <p class="confirm-time" id="confirm-time"></p>
+      <p class="confirm-date" id="confirm-date"></p>
+      <div class="confirm-progress"><div class="confirm-progress-bar" id="confirm-bar"></div></div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB HISTORIAL ══ -->
+  <div id="tab-historial">
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" class="search-input" id="buscar" placeholder="Buscar nombre o ID...">
+        <input type="date" class="filtro-select" id="filtro-fecha" style="width:150px;">
+        <select class="filtro-select" id="filtro-tipo">
+          <option value="">Entrada y Salida</option>
+          <option value="Entrada">Solo Entrada</option>
+          <option value="Salida">Solo Salida</option>
+        </select>
+      </div>
+    </div>
+    <div class="lista-wrap">
+      <div id="lista-asistencia"></div>
+      <div id="empty-h" class="empty-state" style="display:none;">
+        <p>Sin registros para este filtro.</p>
+        <p>Los registros de asistencia aparecerán aquí.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<script>
+const KEY='clinica_asistencia_ss_v1';
+function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{registros:[]};}
+function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DIAS_S=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function pad(n){return String(n).padStart(2,'0');}
+function todayISO(){const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+function fmtHora(ts){const d=new Date(ts);return`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;}
+function fmtFechaLarga(iso){const[y,m,d]=iso.split('-');const f=new Date(iso+'T12:00:00');return`${DIAS_S[f.getDay()]} ${parseInt(d)} de ${MESES[parseInt(m)-1]} de ${y}`;}
+function fmtFechaCorta(iso){const[y,m,d]=iso.split('-');return`${parseInt(d)}/${parseInt(m)}/${y}`;}
+
+const S={data:loadData(),tab:'kiosk'};
+
+/* ─── Reloj ─── */
+function tickReloj(){
+  const d=new Date();
+  const h=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  document.getElementById('reloj-header').textContent=h;
+  document.getElementById('kiosk-fecha').textContent=`${DIAS_S[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
+}
+tickReloj();
+setInterval(tickReloj,1000);
+
+/* ─── Tabs ─── */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    S.tab=btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    document.getElementById('tab-kiosk').style.display=S.tab==='kiosk'?'flex':'none';
+    document.getElementById('tab-historial').style.display=S.tab==='historial'?'':'none';
+    if(S.tab==='historial'){
+      document.getElementById('filtro-fecha').value=todayISO();
+      renderHistorial();
+    }
+  });
+});
+
+/* ─── Buscar alumno por ID institucional ─── */
+function getMaestro(idInstitucional){
+  try{
+    const d=localStorage.getItem('clinica_alumnos_v1');
+    if(d){
+      const p=JSON.parse(d);
+      return (p.alumnos||[]).find(a=>(a.idInstitucional||'').toUpperCase().trim()===(idInstitucional||'').toUpperCase().trim())||null;
+    }
+  }catch(e){}
+  return null;
+}
+
+/* ─── Registrar ─── */
+let confirmTimer=null;
+function registrar(tipo){
+  const idVal=document.getElementById('kiosk-id').value.trim();
+  const errEl=document.getElementById('kiosk-error');
+  const inp=document.getElementById('kiosk-id');
+
+  if(!idVal){
+    errEl.textContent='Ingresa tu ID institucional.';
+    inp.classList.add('error');
+    inp.focus();
+    setTimeout(()=>{inp.classList.remove('error');errEl.textContent='';},2000);
+    return;
+  }
+
+  const maestro=getMaestro(idVal);
+  if(!maestro){
+    errEl.textContent='ID institucional no encontrado. Verifica e intenta de nuevo.';
+    inp.classList.add('error');
+    setTimeout(()=>{inp.classList.remove('error');errEl.textContent='';},3000);
+    return;
+  }
+
+  errEl.textContent='';
+  inp.classList.remove('error');
+
+  const now=new Date();
+  const rec={
+    id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+    alumnoId:maestro.id||'',
+    idInstitucional:maestro.idInstitucional,
+    nombre:maestro.nombre,
+    semestre:maestro.semestre?'Semestre '+maestro.semestre:'',
+    tipo,
+    timestamp:now.toISOString(),
+    fecha:todayISO(),
+    hora:`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
+  };
+  S.data.registros.push(rec);
+  saveData();
+
+  /* Mostrar confirmación */
+  mostrarConfirm(rec);
+  inp.value='';
+}
+
+function mostrarConfirm(rec){
+  const isEntrada=rec.tipo==='Entrada';
+  const form=document.getElementById('kiosk-form');
+  const card=document.getElementById('confirm-card');
+
+  form.style.display='none';
+  card.style.display='block';
+  card.className='confirm-card '+(isEntrada?'entrada-mode':'salida-mode');
+
+  document.getElementById('confirm-icon').className='confirm-icon '+(isEntrada?'entrada-mode':'salida-mode');
+  document.getElementById('confirm-svg-entrada').style.display=isEntrada?'':'none';
+  document.getElementById('confirm-svg-salida').style.display=isEntrada?'none':'';
+
+  document.getElementById('confirm-tipo').className='confirm-tipo '+(isEntrada?'entrada-mode':'salida-mode');
+  document.getElementById('confirm-tipo').textContent=rec.tipo+' registrada';
+  document.getElementById('confirm-nombre').textContent=rec.nombre;
+  document.getElementById('confirm-puesto').textContent=rec.semestre||'';
+  document.getElementById('confirm-time').textContent=rec.hora;
+
+  const d=new Date(rec.timestamp);
+  document.getElementById('confirm-date').textContent=`${DIAS_S[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
+
+  /* Barra de progreso y auto-volver */
+  const bar=document.getElementById('confirm-bar');
+  bar.style.animation='none';
+  void bar.offsetWidth;
+  bar.style.animation='shrink 4s linear forwards';
+
+  clearTimeout(confirmTimer);
+  confirmTimer=setTimeout(()=>{
+    card.style.display='none';
+    form.style.display='block';
+    document.getElementById('kiosk-id').focus();
+  },4000);
+}
+
+/* ─── Stats ─── */
+function renderStats(){
+  const hoy=document.getElementById('filtro-fecha').value||todayISO();
+  const diaRegs=S.data.registros.filter(r=>r.fecha===hoy);
+  const entradas=diaRegs.filter(r=>r.tipo==='Entrada').length;
+  const salidas=diaRegs.filter(r=>r.tipo==='Salida').length;
+  const personas=new Set(diaRegs.map(r=>r.idInstitucional)).size;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Registros hoy</p><p class="stat-value">${diaRegs.length}</p></div>
+    <div class="stat"><p class="stat-label">Entradas</p><p class="stat-value" style="color:var(--green-800)">${entradas}</p></div>
+    <div class="stat"><p class="stat-label">Salidas</p><p class="stat-value" style="color:var(--teal-800)">${salidas}</p></div>
+    <div class="stat"><p class="stat-label">Personas distintas</p><p class="stat-value">${personas}</p></div>`;
+}
+
+/* ─── Historial ─── */
+function renderHistorial(){
+  renderStats();
+  const term=(document.getElementById('buscar').value||'').toLowerCase();
+  const fecha=document.getElementById('filtro-fecha').value;
+  const tipo=document.getElementById('filtro-tipo').value;
+
+  let rows=S.data.registros.filter(r=>{
+    const mt=(r.nombre||'').toLowerCase().includes(term)||(r.idInstitucional||'').toLowerCase().includes(term);
+    const mf=!fecha||r.fecha===fecha;
+    const mti=!tipo||r.tipo===tipo;
+    return mt&&mf&&mti;
+  }).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+
+  const lista=document.getElementById('lista-asistencia');
+  const empty=document.getElementById('empty-h');
+  if(!rows.length){lista.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+
+  lista.innerHTML=rows.map(r=>`
+    <div class="list-row">
+      <div class="tipo-dot ${r.tipo==='Entrada'?'entrada':'salida'}">
+        ${r.tipo==='Entrada'
+          ?`<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>`
+          :`<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`}
+      </div>
+      <div class="row-info">
+        <p class="row-title">${esc(r.nombre)}</p>
+        <p class="row-sub">ID: ${esc(r.idInstitucional)}${r.semestre?' · '+esc(r.semestre):''}</p>
+      </div>
+      <span class="tipo-badge ${r.tipo==='Entrada'?'entrada':'salida'}">${esc(r.tipo)}</span>
+      <div style="text-align:right;flex-shrink:0;">
+        <p class="row-time">${esc(r.hora)}</p>
+        <p class="row-date">${fmtFechaCorta(r.fecha)}</p>
+      </div>
+    </div>`).join('');
+}
+
+/* ─── Imprimir día ─── */
+document.getElementById('btn-imprimir-dia').addEventListener('click',()=>{
+  const fecha=document.getElementById('filtro-fecha').value||todayISO();
+  const rows=S.data.registros.filter(r=>r.fecha===fecha).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  const entradas=rows.filter(r=>r.tipo==='Entrada').length;
+  const salidas=rows.filter(r=>r.tipo==='Salida').length;
+  const filas=rows.map(r=>`<tr>
+    <td>${esc(r.nombre)}</td>
+    <td>${esc(r.idInstitucional)}</td>
+    <td>${esc(r.semestre)}</td>
+    <td class="${r.tipo==='Entrada'?'ent':'sal'}">${esc(r.tipo)}</td>
+    <td style="font-weight:700;font-variant-numeric:tabular-nums;">${esc(r.hora)}</td>
+  </tr>`).join('');
+  const win=window.open('','_blank','width=800,height=650');
+  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Asistencia ${fecha}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#111;padding:24px 32px;}
+  @page{size:letter;margin:15mm 18mm;}
+  .header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .logo-box{width:48px;height:48px;border-radius:8px;background:#C2570D;display:flex;align-items:center;justify-content:center;}
+  .logo-box svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;}
+  .clinic-name{font-size:14px;font-weight:700;color:#5C2906;}
+  .clinic-sub{font-size:10px;color:#888;margin-top:2px;}
+  h2{font-size:15px;font-weight:700;color:#5C2906;margin-bottom:4px;}
+  .meta{font-size:11px;color:#666;margin-bottom:16px;}
+  .resumen{display:flex;gap:20px;margin-bottom:16px;}
+  .res-item{background:#F7F6F2;border:1px solid #E3E1D8;border-radius:6px;padding:8px 16px;text-align:center;}
+  .res-label{font-size:10px;color:#888;}
+  .res-val{font-size:18px;font-weight:700;color:#5C2906;margin-top:1px;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:#F1F0EA;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#888;padding:7px 10px;text-align:left;border-bottom:1px solid #E3E1D8;}
+  td{padding:7px 10px;border-bottom:1px solid #E3E1D8;font-size:12px;}
+  tr:last-child td{border-bottom:none;}
+  .ent{color:#27500A;font-weight:700;}
+  .sal{color:#8C3F09;font-weight:700;}
+  .footer{margin-top:24px;border-top:1px solid #ddd;padding-top:8px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style></head><body>
+<div class="header">
+  <div class="logo-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+  <div><p class="clinic-name">Clínica Dental Universitaria Anáhuac</p><p class="clinic-sub">Universidad Anáhuac Xalapa · Servicios de Salud Bucal</p></div>
+</div>
+<h2>Registro de Asistencia · Servicio Social</h2>
+<p class="meta">Fecha: <strong>${fmtFechaLarga(fecha)}</strong> &nbsp;|&nbsp; Total registros: <strong>${rows.length}</strong></p>
+<div class="resumen">
+  <div class="res-item"><p class="res-label">Entradas</p><p class="res-val">${entradas}</p></div>
+  <div class="res-item"><p class="res-label">Salidas</p><p class="res-val">${salidas}</p></div>
+  <div class="res-item"><p class="res-label">Personas</p><p class="res-val">${new Set(rows.map(r=>r.idInstitucional)).size}</p></div>
+</div>
+<table>
+  <thead><tr><th>Nombre</th><th>ID Institucional</th><th>Puesto</th><th>Tipo</th><th>Hora</th></tr></thead>
+  <tbody>${filas||'<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">Sin registros</td></tr>'}</tbody>
+</table>
+<div class="footer">
+  <span>Clínica Dental Universitaria Anáhuac · Xalapa, Veracruz</span>
+  <span>Impreso: ${new Date().toLocaleString('es-MX')}</span>
+</div>
+<script>window.onload=()=>{window.print();}<\/script>
+</body></html>`);
+  win.document.close();
+});
+
+document.getElementById('buscar').addEventListener('input',renderHistorial);
+document.getElementById('filtro-fecha').addEventListener('change',renderHistorial);
+document.getElementById('filtro-tipo').addEventListener('change',renderHistorial);
+
+/* Init */
+document.getElementById('filtro-fecha').value=todayISO();
+document.getElementById('tab-kiosk').style.display='flex';
+document.getElementById('kiosk-id').focus();
+</script>
+</body>
+</html>

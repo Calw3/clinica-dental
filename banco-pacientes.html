@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco de Pacientes</title>
+<style>
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --coral-50:#FAECE7;--coral-800:#712B13;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --green-50:#EAF3DE;--green-800:#27500A;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;--amber-800:#5C3308;
+  --blue-50:#E6F1FB;--blue-800:#0C447C;
+  --purple-50:#EEEDFE;--purple-800:#3C3489;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:980px;margin:0 auto;padding:20px 20px 80px;}
+header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+.header-text{flex:1}
+.eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
+h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.stat-label{font-size:11px;color:var(--text-secondary);}
+.stat-value{font-size:22px;font-weight:600;margin-top:2px;color:var(--teal-900);}
+/* Toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:220px;}
+.search-input:focus{outline:none;border-color:var(--teal-600);}
+.filtro-select{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.filtro-select:focus{outline:none;border-color:var(--teal-600);}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+/* Lista */
+.lista-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.list-row:first-child{border-top:none;}
+.list-row:hover{background:var(--teal-50);}
+.pac-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.pac-avatar.pediatrico{background:var(--blue-50);color:var(--blue-800);}
+.pac-avatar.adulto{background:var(--coral-50);color:var(--coral-800);}
+.pac-avatar.geriatrico{background:var(--purple-50);color:var(--purple-800);}
+.row-info{flex:1;min-width:0;}
+.row-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap;flex-shrink:0;}
+.badge-espera{background:var(--amber-50);color:var(--amber-800);}
+.badge-asignado{background:var(--green-50);color:var(--green-800);}
+.tipo-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap;flex-shrink:0;}
+.tipo-pediatrico{background:var(--blue-50);color:var(--blue-800);}
+.tipo-adulto{background:var(--coral-50);color:var(--coral-800);}
+.tipo-geriatrico{background:var(--purple-50);color:var(--purple-800);}
+.btn-asignar{background:var(--green-50);color:var(--green-800);border:1px solid var(--green-800);border-radius:var(--radius);padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.btn-asignar:hover{background:var(--green-800);color:#fff;}
+.btn-icon{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:14px;flex-shrink:0;}
+.btn-icon:hover{background:var(--red-50);color:var(--red-600);}
+.empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
+.empty-state p:first-child{font-weight:600;color:var(--text-primary);font-size:15px;}
+.empty-state p:last-child{font-size:13px;margin-top:4px;}
+/* Panel */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.35);z-index:40;}
+.panel-overlay.open{display:block;}
+.panel{position:fixed;top:0;right:-100%;width:min(500px,100vw);height:100vh;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);transition:right .25s ease;}
+.panel.open{right:0;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.panel-actions{display:flex;gap:8px;}
+.panel-body{flex:1;overflow-y:auto;padding:20px;}
+/* Form */
+.section-title{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.section-title:first-child{margin-top:0;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
+.field input,.field select{height:36px;}
+.field textarea{padding:8px 10px;resize:vertical;min-height:60px;line-height:1.5;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+.field input[readonly]{background:var(--surface-1);color:var(--text-muted);}
+/* Tipo selector */
+.tipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.tipo-card{border:2px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.tipo-card:hover{border-color:var(--teal-600);}
+.tipo-card.selected{border-color:currentColor;}
+.tipo-card.sel-pediatrico{border-color:var(--blue-800);background:var(--blue-50);}
+.tipo-card.sel-adulto{border-color:var(--coral-800);background:var(--coral-50);}
+.tipo-card.sel-geriatrico{border-color:var(--purple-800);background:var(--purple-50);}
+.tipo-card-icon{font-size:22px;margin-bottom:4px;}
+.tipo-card-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.tipo-card.sel-pediatrico .tipo-card-label{color:var(--blue-800);}
+.tipo-card.sel-adulto .tipo-card-label{color:var(--coral-800);}
+.tipo-card.sel-geriatrico .tipo-card-label{color:var(--purple-800);}
+/* Autocomplete */
+.ac-wrap{position:relative;}
+.ac-list{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:220px;overflow-y:auto;}
+.ac-list.open{display:block;}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;}
+.ac-item:hover,.ac-item.focused{background:var(--teal-50);}
+.ac-group{padding:5px 10px 3px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);border-top:1px solid var(--border);}
+.ac-group:first-child{border-top:none;}
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;z-index:60;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:480px;width:100%;padding:24px;}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.modal-head h3{font-size:17px;font-weight:600;line-height:1.3;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;flex-wrap:wrap;}
+.detail-row{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-top:1px solid var(--border);font-size:13px;}
+.detail-row:first-child{border-top:none;}
+.detail-row span:first-child{color:var(--text-secondary);flex-shrink:0;}
+.detail-row span:last-child{font-weight:500;text-align:right;}
+.asignado-box{display:flex;align-items:center;gap:10px;background:var(--green-50);border:1px solid var(--green-800);border-radius:var(--radius);padding:10px 12px;margin-top:10px;}
+.asignado-box svg{width:18px;height:18px;fill:none;stroke:var(--green-800);stroke-width:2;stroke-linecap:round;flex-shrink:0;}
+.asignado-box p{font-size:13px;color:var(--green-800);font-weight:600;}
+.asignado-box span{font-size:11px;color:var(--green-800);opacity:.8;}
+/* Modal asignar */
+.modal-asignar{max-width:400px;}
+footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+  <header>
+      <a class="back-btn" href="index.html">
+        <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Inicio
+      </a>
+      <div class="header-text">
+        <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
+        <h1>Banco de Pacientes</h1>
+      </div>
+      <span style="font-size:11px;color:var(--text-muted);">Los datos se guardan en este navegador</span>
+    </header>
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-input" id="buscar" placeholder="Buscar nombre, tratamiento...">
+      <select class="filtro-select" id="filtro-tipo">
+        <option value="">Todos los tipos</option>
+        <option value="Pediátrico">Pediátrico</option>
+        <option value="Adulto">Adulto</option>
+        <option value="Geriátrico">Geriátrico</option>
+      </select>
+      <select class="filtro-select" id="filtro-estado">
+        <option value="">Todos</option>
+        <option value="En espera">En espera</option>
+        <option value="Asignado">Asignado</option>
+      </select>
+    </div>
+    <button class="btn-primary" id="btn-nuevo">+ Nuevo paciente</button>
+  </div>
+
+  <div class="lista-wrap">
+    <div id="lista"></div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <p>Sin pacientes en el banco.</p>
+      <p>Agrega el primero con el botón "+ Nuevo paciente".</p>
+    </div>
+  </div>
+
+  <footer>Control interno · Clínica Dental Universitaria Anáhuac Xalapa</footer>
+</div>
+
+<!-- ═══ Panel lateral ═══ -->
+<div class="panel-overlay" id="panel-overlay"></div>
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <h3 id="panel-title">Nuevo paciente</h3>
+    <div class="panel-actions">
+      <button class="btn-secondary" id="btn-cancel" style="height:32px;font-size:13px;padding:0 12px;">Cancelar</button>
+      <button class="btn-primary" id="btn-save" style="height:32px;">Guardar</button>
+    </div>
+  </div>
+  <div class="panel-body">
+
+    <p class="section-title">Datos del paciente</p>
+    <div class="field">
+      <label>Nombre completo *</label>
+      <input type="text" id="f-nombre" placeholder="Apellidos y nombre del paciente">
+    </div>
+    <div class="field">
+      <label>Teléfono</label>
+      <input type="tel" id="f-telefono" placeholder="10 dígitos">
+    </div>
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input type="email" id="f-correo" placeholder="correo@ejemplo.com">
+    </div>
+
+    <p class="section-title">Tipo de paciente *</p>
+    <div class="tipo-grid">
+      <div class="tipo-card" data-tipo="Pediátrico" onclick="selTipo(this)">
+        <div class="tipo-card-icon">🧒</div>
+        <div class="tipo-card-label">Pediátrico</div>
+      </div>
+      <div class="tipo-card" data-tipo="Adulto" onclick="selTipo(this)">
+        <div class="tipo-card-icon">🧑</div>
+        <div class="tipo-card-label">Adulto</div>
+      </div>
+      <div class="tipo-card" data-tipo="Geriátrico" onclick="selTipo(this)">
+        <div class="tipo-card-icon">🧓</div>
+        <div class="tipo-card-label">Geriátrico</div>
+      </div>
+    </div>
+    <input type="hidden" id="f-tipo">
+
+    <p class="section-title">Atención clínica</p>
+    <div class="field">
+      <label>Tratamiento requerido *</label>
+      <textarea id="f-tratamiento" placeholder="Describe el tratamiento o padecimiento del paciente..."></textarea>
+    </div>
+    <div class="field">
+      <label>Especialidad / clínica a la que se dirige *</label>
+      <div class="ac-wrap">
+        <input type="text" id="f-especialidad" placeholder="Buscar especialidad..." autocomplete="off">
+        <div class="ac-list" id="ac-especialidad"></div>
+      </div>
+    </div>
+
+    <p class="section-title">Asignación</p>
+    <div class="field">
+      <label>Alumno asignado</label>
+      <div class="ac-wrap">
+        <input type="text" id="f-alumno" placeholder="Buscar en base de alumnos..." autocomplete="off">
+        <div class="ac-list" id="ac-alumno"></div>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">Déjalo vacío si aún no se ha asignado.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ Modal ver paciente ═══ -->
+<div class="modal-bg" id="modal-ver">
+  <div class="modal">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="pac-avatar" id="ver-avatar" style="width:48px;height:48px;font-size:15px;flex-shrink:0;"></div>
+        <div>
+          <h3 id="ver-nombre"></h3>
+          <div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;" id="ver-badges"></div>
+        </div>
+      </div>
+      <button class="btn-icon" id="cerrar-ver">✕</button>
+    </div>
+    <div id="ver-body"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-ver-editar">Editar</button>
+      <button class="btn-secondary" id="btn-ver-eliminar" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-primary" id="btn-ver-asignar" style="display:none;background:var(--green-800);">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 11l2 2 4-4"/></svg>
+        Asignar alumno
+      </button>
+      <button class="btn-secondary" id="btn-ver-cerrar">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Modal asignar alumno ═══ -->
+<div class="modal-bg" id="modal-asignar">
+  <div class="modal modal-asignar">
+    <div class="modal-head">
+      <div>
+        <h3>Asignar alumno</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin-top:4px;" id="ma-sub"></p>
+      </div>
+      <button class="btn-icon" id="cerrar-ma">✕</button>
+    </div>
+    <div class="field">
+      <label>Alumno *</label>
+      <div class="ac-wrap">
+        <input type="text" id="ma-alumno" placeholder="Buscar en base de alumnos..." autocomplete="off">
+        <div class="ac-list" id="ac-ma-alumno"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="ma-cancel">Cancelar</button>
+      <button class="btn-primary" id="ma-guardar">Guardar asignación</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Modal confirmar eliminación ═══ -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-head"><h3>Eliminar paciente</h3><button class="btn-icon" id="cerrar-confirm">✕</button></div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Esta acción no se puede deshacer. Escribe <strong>ELIMINAR</strong> para confirmar.</p>
+    <input type="text" id="inp-confirm" placeholder="Escribe ELIMINAR"
+      style="width:100%;height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelar-confirm">Cancelar</button>
+      <button id="btn-confirm-del" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='clinica_banco_pacientes_v1';
+function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{pacientes:[]};}
+function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+function uid(){return'BP-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,4).toUpperCase();}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+
+const ESPECIALIDADES=[
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral I'},
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral II'},
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral III'},
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral IV'},
+  {grupo:'Clínicas Integrales',nombre:'Clínica Integral V'},
+  {grupo:'Clínicas Integrales',nombre:'Servicio Social'},
+  {grupo:'Especialidades Clínicas',nombre:'Endodoncia I'},
+  {grupo:'Especialidades Clínicas',nombre:'Endodoncia II'},
+  {grupo:'Especialidades Clínicas',nombre:'Cirugía Bucal'},
+  {grupo:'Especialidades Clínicas',nombre:'Periodoncia'},
+  {grupo:'Especialidades Clínicas',nombre:'Periodoncia Avanzada'},
+  {grupo:'Especialidades Clínicas',nombre:'Odontopediatría'},
+  {grupo:'Especialidades Clínicas',nombre:'Odontopediatría Avanzada'},
+  {grupo:'Especialidades Clínicas',nombre:'Rehabilitación Bucal Fija'},
+  {grupo:'Especialidades Clínicas',nombre:'Prótesis Removible'},
+  {grupo:'Especialidades Clínicas',nombre:'Prostodoncia Total'},
+  {grupo:'Especialidades Clínicas',nombre:'Bases Protésicas en Implantología'},
+  {grupo:'Especialidades Clínicas',nombre:'Integración Clínica'},
+  {grupo:'Especialidades Clínicas',nombre:'Bases Quirúrgicas'},
+  {grupo:'Especialidades Clínicas',nombre:'Anestesiología'},
+  {grupo:'Especialidades Clínicas',nombre:'Diagnóstico en Ortodoncia'},
+  {grupo:'Especialidades Clínicas',nombre:'Terapia de Odontología de Mínima Invasión'},
+  {grupo:'Especialidades Clínicas',nombre:'Terapia Odontológica de Mínima Invasión'},
+  {grupo:'Diagnóstico',nombre:'Imagenología'},
+  {grupo:'Diagnóstico',nombre:'Diagnóstico Imagen'},
+  {grupo:'Diagnóstico',nombre:'Diagnóstico Integral en Odontología'},
+];
+
+const S={data:loadData(),editId:null,verId:null,asignarId:null};
+
+/* ─── Tipo selector ─── */
+function selTipo(card){
+  document.querySelectorAll('.tipo-card').forEach(c=>{
+    c.className='tipo-card';
+  });
+  const tipo=card.dataset.tipo;
+  const cls=tipo==='Pediátrico'?'sel-pediatrico':tipo==='Adulto'?'sel-adulto':'sel-geriatrico';
+  card.classList.add(cls);
+  document.getElementById('f-tipo').value=tipo;
+}
+function setTipoUI(tipo){
+  document.querySelectorAll('.tipo-card').forEach(c=>{
+    c.className='tipo-card';
+    if(c.dataset.tipo===tipo){
+      const cls=tipo==='Pediátrico'?'sel-pediatrico':tipo==='Adulto'?'sel-adulto':'sel-geriatrico';
+      c.classList.add(cls);
+    }
+  });
+  document.getElementById('f-tipo').value=tipo||'';
+}
+
+/* ─── Autocomplete genérico ─── */
+function setupAC(inputId,listId,getItems){
+  const inp=document.getElementById(inputId);
+  const list=document.getElementById(listId);
+  let focused=-1;
+  function render(term){
+    const items=getItems().filter(n=>n.toLowerCase().includes(term.toLowerCase())).slice(0,16);
+    if(!items.length){list.classList.remove('open');return;}
+    list.innerHTML=items.map(n=>`<div class="ac-item">${esc(n)}</div>`).join('');
+    list.classList.add('open');focused=-1;
+    list.querySelectorAll('.ac-item').forEach((el,i)=>{
+      el.addEventListener('mousedown',ev=>{ev.preventDefault();inp.value=items[i];list.classList.remove('open');});
+    });
+  }
+  inp.addEventListener('input',()=>render(inp.value));
+  inp.addEventListener('focus',()=>render(inp.value));
+  inp.addEventListener('blur',()=>setTimeout(()=>list.classList.remove('open'),150));
+  inp.addEventListener('keydown',e=>{
+    const its=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();focused=Math.min(focused+1,its.length-1);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='ArrowUp'){e.preventDefault();focused=Math.max(focused-1,0);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='Enter'&&focused>=0){e.preventDefault();inp.value=its[focused].textContent;list.classList.remove('open');}
+    else if(e.key==='Escape'){list.classList.remove('open');}
+  });
+}
+
+/* Autocomplete especialidades con grupos */
+function setupACEsp(inputId,listId){
+  const inp=document.getElementById(inputId);
+  const list=document.getElementById(listId);
+  let focused=-1,flatItems=[];
+  function render(term){
+    const matches=ESPECIALIDADES.filter(e=>e.nombre.toLowerCase().includes(term.toLowerCase()));
+    if(!matches.length){list.classList.remove('open');return;}
+    const grupos=[...new Set(matches.map(e=>e.grupo))];
+    flatItems=[];
+    list.innerHTML=grupos.map(g=>{
+      const items=matches.filter(e=>e.grupo===g);
+      items.forEach(e=>flatItems.push(e.nombre));
+      return`<div class="ac-group">${esc(g)}</div>`+items.map(e=>`<div class="ac-item">${esc(e.nombre)}</div>`).join('');
+    }).join('');
+    list.classList.add('open');focused=-1;
+    list.querySelectorAll('.ac-item').forEach((el,i)=>{
+      el.addEventListener('mousedown',ev=>{ev.preventDefault();inp.value=flatItems[i];list.classList.remove('open');});
+    });
+  }
+  inp.addEventListener('input',()=>render(inp.value));
+  inp.addEventListener('focus',()=>render(inp.value||''));
+  inp.addEventListener('blur',()=>setTimeout(()=>list.classList.remove('open'),150));
+  inp.addEventListener('keydown',e=>{
+    const its=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();focused=Math.min(focused+1,its.length-1);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='ArrowUp'){e.preventDefault();focused=Math.max(focused-1,0);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='Enter'&&focused>=0){e.preventDefault();inp.value=flatItems[focused];list.classList.remove('open');}
+    else if(e.key==='Escape'){list.classList.remove('open');}
+  });
+}
+
+function getAlumnos(){
+  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}
+  return[];
+}
+
+setupACEsp('f-especialidad','ac-especialidad');
+setupAC('f-alumno','ac-alumno',getAlumnos);
+setupAC('ma-alumno','ac-ma-alumno',getAlumnos);
+
+/* ─── Stats ─── */
+function renderStats(){
+  const total=S.data.pacientes.length;
+  const espera=S.data.pacientes.filter(p=>!p.alumno).length;
+  const asignados=S.data.pacientes.filter(p=>p.alumno).length;
+  const ped=S.data.pacientes.filter(p=>p.tipo==='Pediátrico').length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Total pacientes</p><p class="stat-value">${total}</p></div>
+    <div class="stat"><p class="stat-label" style="color:var(--amber-600)">En espera</p><p class="stat-value" style="color:var(--amber-800)">${espera}</p></div>
+    <div class="stat"><p class="stat-label" style="color:var(--green-800)">Asignados</p><p class="stat-value" style="color:var(--green-800)">${asignados}</p></div>
+    <div class="stat"><p class="stat-label">Pediátricos</p><p class="stat-value" style="color:var(--blue-800)">${ped}</p></div>`;
+}
+
+/* ─── Lista ─── */
+function tipoClass(t){return t==='Pediátrico'?'pediatrico':t==='Adulto'?'adulto':'geriatrico';}
+function tipoBadgeClass(t){return t==='Pediátrico'?'tipo-pediatrico':t==='Adulto'?'tipo-adulto':'tipo-geriatrico';}
+
+function renderLista(){
+  const term=(document.getElementById('buscar').value||'').toLowerCase();
+  const tFiltro=document.getElementById('filtro-tipo').value;
+  const eFiltro=document.getElementById('filtro-estado').value;
+  let rows=S.data.pacientes.filter(p=>{
+    const mt=(p.nombre||'').toLowerCase().includes(term)||(p.tratamiento||'').toLowerCase().includes(term)||(p.especialidad||'').toLowerCase().includes(term);
+    const mti=!tFiltro||p.tipo===tFiltro;
+    const me=!eFiltro||(eFiltro==='Asignado'?!!p.alumno:!p.alumno);
+    return mt&&mti&&me;
+  }).sort((a,b)=>(a.alumno?1:0)-(b.alumno?1:0)||(a.nombre||'').localeCompare(b.nombre||''));
+
+  const lista=document.getElementById('lista');
+  const empty=document.getElementById('empty-state');
+  if(!rows.length){lista.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  lista.innerHTML=rows.map(p=>`
+    <div class="list-row" onclick="verPaciente('${p.id}')">
+      <div class="pac-avatar ${tipoClass(p.tipo)}">${initials(p.nombre)}</div>
+      <div class="row-info">
+        <p class="row-title">${esc(p.nombre)}</p>
+        <p class="row-sub">${esc(p.especialidad||'Sin especialidad')}${p.alumno?' · Alumno: '+esc(p.alumno):''}</p>
+      </div>
+      <span class="tipo-badge ${tipoBadgeClass(p.tipo)}">${esc(p.tipo)}</span>
+      <span class="status-badge ${p.alumno?'badge-asignado':'badge-espera'}">${p.alumno?'Asignado':'En espera'}</span>
+      ${!p.alumno?`<button class="btn-asignar" onclick="abrirAsignar(event,'${p.id}')">Asignar</button>`:''}
+      <button class="btn-icon" onclick="abrirEliminar(event,'${p.id}')">✕</button>
+    </div>`).join('');
+}
+
+function renderAll(){renderStats();renderLista();}
+
+/* ─── Panel ─── */
+function openPanel(id){
+  S.editId=id||null;
+  document.getElementById('f-nombre').value='';
+  document.getElementById('f-telefono').value='';
+  document.getElementById('f-correo').value='';
+  document.getElementById('f-tratamiento').value='';
+  document.getElementById('f-especialidad').value='';
+  document.getElementById('f-alumno').value='';
+  setTipoUI('');
+
+  if(id){
+    const p=S.data.pacientes.find(x=>x.id===id);
+    document.getElementById('panel-title').textContent='Editar paciente';
+    document.getElementById('f-nombre').value=p.nombre||'';
+    document.getElementById('f-telefono').value=p.telefono||'';
+    document.getElementById('f-correo').value=p.correo||'';
+    document.getElementById('f-tratamiento').value=p.tratamiento||'';
+    document.getElementById('f-especialidad').value=p.especialidad||'';
+    document.getElementById('f-alumno').value=p.alumno||'';
+    setTipoUI(p.tipo||'');
+  } else {
+    document.getElementById('panel-title').textContent='Nuevo paciente';
+  }
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+  setTimeout(()=>document.getElementById('f-nombre').focus(),250);
+}
+function closePanel(){
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+}
+document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
+document.getElementById('btn-cancel').addEventListener('click',closePanel);
+document.getElementById('panel-overlay').addEventListener('click',closePanel);
+
+/* ─── Guardar ─── */
+document.getElementById('btn-save').addEventListener('click',()=>{
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const tipo=document.getElementById('f-tipo').value;
+  const tratamiento=document.getElementById('f-tratamiento').value.trim();
+  const especialidad=document.getElementById('f-especialidad').value.trim();
+  if(!nombre){document.getElementById('f-nombre').focus();return;}
+  if(!tipo){
+    document.querySelector('.tipo-grid').scrollIntoView({behavior:'smooth'});
+    document.querySelector('.section-title+.tipo-grid').style.outline='2px solid var(--red-600)';
+    setTimeout(()=>document.querySelector('.section-title+.tipo-grid').style.outline='',2000);
+    return;
+  }
+  if(!tratamiento){document.getElementById('f-tratamiento').focus();return;}
+  if(!especialidad){document.getElementById('f-especialidad').focus();return;}
+  const rec={
+    id:S.editId||uid(),
+    nombre,tipo,
+    telefono:document.getElementById('f-telefono').value.trim(),
+    correo:document.getElementById('f-correo').value.trim(),
+    tratamiento,especialidad,
+    alumno:document.getElementById('f-alumno').value.trim(),
+    fechaRegistro:S.editId?(S.data.pacientes.find(x=>x.id===S.editId)||{}).fechaRegistro:new Date().toISOString(),
+  };
+  if(S.editId){const i=S.data.pacientes.findIndex(x=>x.id===S.editId);if(i>-1)S.data.pacientes[i]=rec;}
+  else S.data.pacientes.push(rec);
+  saveData();renderAll();
+populateMaterias('f-especialidad');closePanel();
+});
+
+/* ─── Ver paciente ─── */
+function verPaciente(id){
+  const p=S.data.pacientes.find(x=>x.id===id);if(!p)return;
+  S.verId=id;
+  const av=document.getElementById('ver-avatar');
+  av.textContent=initials(p.nombre);
+  av.className=`pac-avatar ${tipoClass(p.tipo)}`;
+  document.getElementById('ver-nombre').textContent=p.nombre;
+  document.getElementById('ver-badges').innerHTML=`
+    <span class="tipo-badge ${tipoBadgeClass(p.tipo)}">${esc(p.tipo)}</span>
+    <span class="status-badge ${p.alumno?'badge-asignado':'badge-espera'}">${p.alumno?'Asignado':'En espera'}</span>`;
+  const campos=[
+    ['Teléfono',p.telefono||'—'],
+    ['Correo',p.correo||'—'],
+    ['Especialidad',p.especialidad],
+  ];
+  let html=campos.map(([l,v])=>`<div class="detail-row"><span>${l}</span><span>${esc(v)}</span></div>`).join('');
+  html+=`<div class="detail-row" style="flex-direction:column;gap:4px;align-items:flex-start;">
+    <span style="color:var(--text-secondary);">Tratamiento requerido</span>
+    <span style="font-weight:500;text-align:left;">${esc(p.tratamiento)}</span>
+  </div>`;
+  if(p.alumno){
+    html+=`<div class="asignado-box">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 11l2 2 4-4"/></svg>
+      <div><p>${esc(p.alumno)}</p><span>Alumno asignado</span></div>
+    </div>`;
+  }
+  document.getElementById('ver-body').innerHTML=html;
+  document.getElementById('btn-ver-asignar').style.display=p.alumno?'none':'';
+  document.getElementById('modal-ver').classList.add('open');
+}
+
+document.getElementById('cerrar-ver').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+document.getElementById('btn-ver-cerrar').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+document.getElementById('btn-ver-editar').addEventListener('click',()=>{
+  document.getElementById('modal-ver').classList.remove('open');openPanel(S.verId);
+});
+document.getElementById('btn-ver-eliminar').addEventListener('click',()=>{
+  document.getElementById('modal-ver').classList.remove('open');abrirEliminarDirect(S.verId);
+});
+document.getElementById('btn-ver-asignar').addEventListener('click',()=>{
+  document.getElementById('modal-ver').classList.remove('open');abrirAsignarDirect(S.verId);
+});
+
+/* ─── Modal asignar ─── */
+function abrirAsignar(e,id){e.stopPropagation();abrirAsignarDirect(id);}
+function abrirAsignarDirect(id){
+  S.asignarId=id;
+  const p=S.data.pacientes.find(x=>x.id===id);
+  document.getElementById('ma-sub').textContent=p?p.nombre:'';
+  document.getElementById('ma-alumno').value=p&&p.alumno?p.alumno:'';
+  document.getElementById('modal-asignar').classList.add('open');
+  setTimeout(()=>document.getElementById('ma-alumno').focus(),200);
+}
+document.getElementById('cerrar-ma').addEventListener('click',()=>document.getElementById('modal-asignar').classList.remove('open'));
+document.getElementById('ma-cancel').addEventListener('click',()=>document.getElementById('modal-asignar').classList.remove('open'));
+document.getElementById('ma-guardar').addEventListener('click',()=>{
+  const alumno=document.getElementById('ma-alumno').value.trim();
+  if(!alumno){document.getElementById('ma-alumno').focus();return;}
+  const i=S.data.pacientes.findIndex(x=>x.id===S.asignarId);
+  if(i>-1)S.data.pacientes[i].alumno=alumno;
+  saveData();renderAll();
+populateMaterias('f-especialidad');
+  document.getElementById('modal-asignar').classList.remove('open');
+});
+
+/* ─── Eliminar ─── */
+function abrirEliminar(e,id){e.stopPropagation();abrirEliminarDirect(id);}
+function abrirEliminarDirect(id){
+  document.getElementById('inp-confirm').value='';
+  document.getElementById('inp-confirm').style.borderColor='';
+  document.getElementById('modal-confirm').dataset.id=id;
+  document.getElementById('modal-confirm').classList.add('open');
+}
+document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+  if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
+    document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
+  }
+  S.data.pacientes=S.data.pacientes.filter(x=>x.id!==document.getElementById('modal-confirm').dataset.id);
+  saveData();renderAll();
+populateMaterias('f-especialidad');document.getElementById('modal-confirm').classList.remove('open');
+});
+
+document.getElementById('buscar').addEventListener('input',renderLista);
+document.getElementById('filtro-tipo').addEventListener('change',renderLista);
+document.getElementById('filtro-estado').addEventListener('change',renderLista);
+renderAll();
+populateMaterias('f-especialidad');
+
+/* ── Materias dinámicas desde catálogo ── */
+function populateMaterias(selectId, currentVal){
+  const sel=document.getElementById(selectId);if(!sel)return;
+  try{
+    const d=localStorage.getItem('clinica_materias_v1');
+    if(d){
+      const parsed=JSON.parse(d);
+      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
+      if(mats.length){
+        const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
+        const groups={};
+        mats.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
+        sel.innerHTML='<option value="">— Seleccionar —</option>';
+        ORDEN.forEach(g=>{
+          if(!groups[g]||!groups[g].length)return;
+          const og=document.createElement('optgroup');og.label=g;
+          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+          sel.appendChild(og);
+        });
+        // grupos extra no contemplados en ORDEN
+        Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
+          const og=document.createElement('optgroup');og.label=g;
+          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+          sel.appendChild(og);
+        });
+        return;
+      }
+    }
+  }catch(e){}
+  // fallback: mantiene opciones hardcodeadas
+  if(currentVal){Array.from(sel.options).forEach(o=>{if(o.value===currentVal)o.selected=true;});}
+}
+
+</script>
+</body>
+</html>
