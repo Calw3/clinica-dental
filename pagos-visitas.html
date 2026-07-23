@@ -986,7 +986,7 @@ document.getElementById('btn-del-sel').addEventListener('click',()=>{
 /* Modal confirm — mover a papelera */
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
@@ -1107,7 +1107,7 @@ document.getElementById('btn-sel-pap-todos').addEventListener('click',()=>{
   if(all)S.selPap.clear();else todos.forEach(id=>S.selPap.add(id));
   actualizarSelPap();renderPapelera();
 });
-document.getElementById('btn-restaurar-sel').addEventListener('click',()=>{
+document.getElementById('btn-restaurar-sel').addEventListener('click',async ()=>{
   [...S.selPap].forEach(id=>{
     const idx=S.papelera.findIndex(p=>p.id===id);
     if(idx===-1)return;
@@ -1134,7 +1134,7 @@ document.getElementById('btn-vaciar').addEventListener('click',()=>{
 /* Modal eliminación permanente */
 document.getElementById('cerrar-perm').addEventListener('click',()=>document.getElementById('modal-perm').classList.remove('open'));
 document.getElementById('cancelar-perm').addEventListener('click',()=>document.getElementById('modal-perm').classList.remove('open'));
-document.getElementById('btn-confirm-perm').addEventListener('click',()=>{
+document.getElementById('btn-confirm-perm').addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm-perm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm-perm').style.borderColor='var(--red-600)';return;
   }
