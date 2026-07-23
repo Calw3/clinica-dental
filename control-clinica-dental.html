@@ -475,7 +475,7 @@
 <script>
 const SUPABASE_URL = 'https://mkatcueeyxgetschqplm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const STATE = { data: { expedientes: [] }, editingId: null };
 
@@ -555,7 +555,7 @@ function toCamel(row) {
 async function cargarExpedientes() {
   mostrarCargando(true);
   try {
-    const { data, error } = await supabase.from('expedientes').select('*').order('nombre');
+    const { data, error } = await sbClient.from('expedientes').select('*').order('nombre');
     if(error){
       console.error('Error cargando:', error);
       document.getElementById('expedientes-list').innerHTML =
@@ -576,13 +576,13 @@ async function cargarExpedientes() {
 
 async function guardarExpediente(record) {
   const row = toSnake(record);
-  const { error } = await supabase.from('expedientes').upsert(row, { onConflict: 'id' });
+  const { error } = await sbClient.from('expedientes').upsert(row, { onConflict: 'id' });
   if(error) console.error('Error guardando:', error);
   await cargarExpedientes();
 }
 
 async function eliminarExpediente(id) {
-  const { error } = await supabase.from('expedientes').delete().eq('id', id);
+  const { error } = await sbClient.from('expedientes').delete().eq('id', id);
   if(error) console.error('Error eliminando:', error);
   await cargarExpedientes();
 }
