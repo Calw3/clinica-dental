@@ -149,20 +149,13 @@
     <div style="display:flex; align-items:center; gap:12px;">
       <a href="index.html" class="btn-secondary" style="text-decoration:none; font-size:13px; height:34px; display:flex; align-items:center; padding:0 14px;">← Inicio</a>
       <div>
-        <p class="eyebrow">Sistema de Gestión Clínica · MedBase MX</p>
+        <p class="eyebrow">Expedientes clínicos de pacientes</p>
         <h1>Clínica Dental Universitaria Anáhuac</h1>
       </div>
     </div>
     <span class="sync-note">Datos sincronizados en la nube · MedBase MX</span>
   </header>
 
-  <nav class="tabs" id="tabs-main">
-    <button class="tab-btn active" data-tab="expedientes">Expedientes</button>
-    <button class="tab-btn" data-tab="visitas">Visitas</button>
-    <button class="tab-btn" data-tab="pagos">Pagos</button>
-  </nav>
-
-  <!-- PANEL EXPEDIENTES -->
   <section class="panel active" id="panel-expedientes">
     <div class="panel-toolbar">
       <input type="text" id="buscar-expediente" placeholder="Buscar paciente...">
@@ -172,25 +165,6 @@
       </div>
     </div>
     <div id="expedientes-list"></div>
-  </section>
-
-  <!-- PANEL VISITAS -->
-  <section class="panel" id="panel-visitas">
-    <div class="panel-toolbar">
-      <input type="text" id="buscar-visita" placeholder="Buscar paciente o doctor...">
-      <button type="button" class="btn-primary" id="btn-nueva-visita">+ Nueva visita</button>
-    </div>
-    <div id="visitas-list"></div>
-  </section>
-
-  <!-- PANEL PAGOS -->
-  <section class="panel" id="panel-pagos">
-    <div class="panel-toolbar">
-      <input type="text" id="buscar-pago" placeholder="Buscar paciente o concepto...">
-      <button type="button" class="btn-primary" id="btn-nuevo-pago">+ Nuevo pago</button>
-    </div>
-    <div id="pagos-resumen" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px;"></div>
-    <div id="pagos-list"></div>
   </section>
 
   <p class="footer-note">Control interno · Clínica Dental Universitaria Anáhuac Xalapa</p>
