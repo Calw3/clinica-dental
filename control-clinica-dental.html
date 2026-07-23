@@ -10,7 +10,6 @@
     --coral-50:#FAECE7; --coral-600:#993C1D; --coral-800:#712B13;
     --red-50:#FCEBEB; --red-600:#A32D2D;
     --amber-50:#FAEEDA; --amber-600:#854F0B;
-    --blue-50:#E6F1FB; --blue-800:#0C447C;
     --bg:#F7F6F2; --surface:#FFFFFF; --surface-1:#F1F0EA;
     --text-primary:#1F1F1D; --text-secondary:#5F5E5A; --text-muted:#888780;
     --border:#E3E1D8; --radius:8px;
@@ -20,7 +19,7 @@
     margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     background:var(--bg); color:var(--text-primary);
   }
-  .wrap{max-width:980px; margin:0 auto; padding:20px 20px 80px;}
+  .wrap{max-width:980px; margin:0 auto; padding:32px 20px 80px;}
   header{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:24px;}
   .eyebrow{font-size:13px; color:var(--text-muted); margin:0; letter-spacing:.02em;}
   h1{font-size:26px; font-weight:600; margin:4px 0 0; color:var(--teal-900);}
@@ -143,35 +142,18 @@
   .doc-preview-row figure{margin:0;}
   .doc-preview-row img{width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block;}
   .doc-preview-row figcaption{font-size:12px; color:var(--text-secondary); margin-top:4px; text-align:center;}
-  .pagos-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
-  .pagos-table th{text-align:left;font-size:11px;font-weight:700;color:var(--text-secondary);padding:6px 8px;border-bottom:2px solid var(--border);white-space:nowrap;}
-  .pagos-table td{padding:8px 8px;border-bottom:1px solid var(--border);vertical-align:top;}
-  .pagos-table tr:last-child td{border-bottom:none;}
-  .pagos-table tr:hover td{background:var(--surface-1);}
-  .pagos-total-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;margin-top:4px;border-top:2px solid var(--border);font-size:13px;}
-  .pagos-total-row strong{font-size:15px;color:var(--teal-800);}
-  .trat-pill{display:inline-block;background:var(--teal-50);color:var(--teal-800);border-radius:4px;padding:1px 7px;font-size:11px;margin:1px 2px 1px 0;}
-  .badge-hc{background:#EAF3DE;color:#27500A;font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600;white-space:nowrap;}
-  .badge-hc-pend{background:var(--amber-50);color:var(--amber-600);font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600;white-space:nowrap;}
-  .hc-summary-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
-  .hc-tag{background:var(--teal-50);color:var(--teal-800);border-radius:4px;padding:2px 8px;font-size:12px;}
 </style>
 </head>
 <body>
-  <div class="wrap">
+<div class="wrap">
   <header>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <a href="index.html" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;">
-          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>
-          Inicio
-        </a>
-        <div>
-          <p class="eyebrow">Expedientes clínicos de pacientes</p>
-          <h1>Clínica Dental Universitaria Anáhuac</h1>
-        </div>
-      </div>
-      <span class="sync-note">Los datos se guardan en este navegador</span>
-    </header>
+    <div>
+      <p class="eyebrow">Expedientes clínicos de pacientes</p>
+      <h1>Clínica Dental Universitaria Anáhuac</h1>
+    </div>
+    <span class="sync-note">Datos sincronizados en la nube · MedBase MX</span>
+  </header>
+
   <section class="panel active" id="panel-expedientes">
     <div class="panel-toolbar">
       <input type="text" id="buscar-expediente" placeholder="Buscar paciente...">
@@ -264,6 +246,14 @@
         </div>
       </div>
 
+      <div class="form-section-title">Antecedentes clínicos</div>
+      <div class="field"><label>Padecimiento actual</label><textarea name="padecimiento"></textarea></div>
+      <div class="field" style="margin-top:10px;"><label>Hábitos</label><textarea name="habitos" placeholder="Tabaquismo, bruxismo, alcohol..."></textarea></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Fecha de última visita al dentista</label><input type="date" name="ultimaVisita"></div>
+        <div class="field"><label>Consentimientos informados</label><input name="consentimientos" placeholder="Firmado, pendiente..."></div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Datos relevantes previo al tratamiento</label><textarea name="datosRelevantes"></textarea></div>
 
       <div class="form-section-title">Salud y emergencias</div>
       <div class="grid-2">
@@ -335,10 +325,9 @@
       <h3 id="ver-expediente-nombre">Expediente</h3>
     </div>
     <div id="ver-expediente-body"></div>
-    <div class="modal-actions" style="flex-wrap:wrap;">
+    <div class="modal-actions">
       <button type="button" class="btn-secondary" id="eliminar-expediente-actual">Eliminar expediente</button>
       <button type="button" class="btn-secondary" id="editar-expediente-actual">Editar</button>
-      <button type="button" class="btn-primary" id="hc-completa-actual" style="background:var(--teal-800);">📄 Historia Clínica Completa del Paciente</button>
       <button type="button" class="btn-primary" id="cerrar-ver-expediente">Cerrar</button>
     </div>
   </div>
@@ -479,21 +468,114 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const STORAGE_KEY = 'clinica_dental_data_v1';
+const SUPABASE_URL = 'https://mkatcueeyxgetschqplm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function loadData(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  return { expedientes: [] };
-}
-function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE.data));
+const STATE = { data: { expedientes: [] }, editingId: null };
+
+// Mapeo camelCase → snake_case para Supabase
+function toSnake(record) {
+  return {
+    id: record.id,
+    nombre: record.nombre || '',
+    id_paciente: record.idPaciente || '',
+    sexo: record.sexo || '',
+    edad: record.edad || '',
+    fecha_nacimiento: record.fechaNacimiento || '',
+    lugar_nacimiento: record.lugarNacimiento || '',
+    direccion: record.direccion || '',
+    telefono: record.telefono || '',
+    correo: record.correo || '',
+    escolaridad: record.escolaridad || '',
+    estado_civil: record.estadoCivil || '',
+    profesion: record.profesion || '',
+    ocupacion: record.ocupacion || '',
+    religion: record.religion || '',
+    referido: record.referido || '',
+    tipo_paciente: record.tipoPaciente || '',
+    tipo_historia: record.tipoHistoria || '',
+    padecimiento: record.padecimiento || '',
+    habitos: record.habitos || '',
+    ultima_visita: record.ultimaVisita || '',
+    consentimientos: record.consentimientos || '',
+    datos_relevantes: record.datosRelevantes || '',
+    emergencia_contacto: record.emergenciaContacto || '',
+    emergencia_telefono: record.emergenciaTelefono || '',
+    alergia: record.alergia || '',
+    alergia_especifique: record.alergiaEspecifique || '',
+    firma: record.firma || '',
+    fotografia_paciente: record.fotografiaPaciente || '',
+    fotografia_anverso: record.fotografiaAnverso || '',
+    fotografia_reverso: record.fotografiaReverso || '',
+  };
 }
 
-const STATE = { data: loadData(), editingId: null };
+function toCamel(row) {
+  return {
+    id: row.id,
+    nombre: row.nombre,
+    idPaciente: row.id_paciente,
+    sexo: row.sexo,
+    edad: row.edad,
+    fechaNacimiento: row.fecha_nacimiento,
+    lugarNacimiento: row.lugar_nacimiento,
+    direccion: row.direccion,
+    telefono: row.telefono,
+    correo: row.correo,
+    escolaridad: row.escolaridad,
+    estadoCivil: row.estado_civil,
+    profesion: row.profesion,
+    ocupacion: row.ocupacion,
+    religion: row.religion,
+    referido: row.referido,
+    tipoPaciente: row.tipo_paciente,
+    tipoHistoria: row.tipo_historia,
+    padecimiento: row.padecimiento,
+    habitos: row.habitos,
+    ultimaVisita: row.ultima_visita,
+    consentimientos: row.consentimientos,
+    datosRelevantes: row.datos_relevantes,
+    emergenciaContacto: row.emergencia_contacto,
+    emergenciaTelefono: row.emergencia_telefono,
+    alergia: row.alergia,
+    alergiaEspecifique: row.alergia_especifique,
+    firma: row.firma,
+    fotografiaPaciente: row.fotografia_paciente,
+    fotografiaAnverso: row.fotografia_anverso,
+    fotografiaReverso: row.fotografia_reverso,
+  };
+}
+
+async function cargarExpedientes() {
+  mostrarCargando(true);
+  const { data, error } = await supabase.from('expedientes').select('*').order('nombre');
+  if(error){ console.error('Error cargando:', error); mostrarCargando(false); return; }
+  STATE.data.expedientes = (data || []).map(toCamel);
+  mostrarCargando(false);
+  renderAll();
+}
+
+async function guardarExpediente(record) {
+  const row = toSnake(record);
+  const { error } = await supabase.from('expedientes').upsert(row, { onConflict: 'id' });
+  if(error) console.error('Error guardando:', error);
+  await cargarExpedientes();
+}
+
+async function eliminarExpediente(id) {
+  const { error } = await supabase.from('expedientes').delete().eq('id', id);
+  if(error) console.error('Error eliminando:', error);
+  await cargarExpedientes();
+}
+
+function mostrarCargando(show) {
+  let el = document.getElementById('loading-indicator');
+  if(!el){ el = document.createElement('div'); el.id='loading-indicator'; el.style.cssText='position:fixed;top:16px;right:16px;background:var(--teal-600);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;z-index:100;display:none;'; el.textContent='Sincronizando...'; document.body.appendChild(el); }
+  el.style.display = show ? 'block' : 'none';
+}
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -511,13 +593,6 @@ function fmtFecha(f){
 
 function badge(estado){
   return `<span class="badge badge-${estado}">${estado}</span>`;
-}
-
-/* HC completa cuando el doctor (profesor) ha firmado */
-function hcEsCompleta(hc){
-  if(!hc) return false;
-  const aut = hc.autorizaciones || {};
-  return !!(aut.profFirma && aut.profFirma.trim());
 }
 function emptyState(title, body){
   return `<div class="empty-state"><p>${title}</p><p>${body}</p></div>`;
@@ -574,9 +649,6 @@ function renderExpedientes(){
       const ficha = [
         e.sexo, e.edad ? e.edad + ' años' : '', e.tipoPaciente, e.tipoHistoria, e.telefono
       ].filter(Boolean).join(' · ');
-      const hcBadge = hcEsCompleta(e.historiaClinica)
-        ? `<span class="badge-hc">HC ✓</span>`
-        : `<span class="badge-hc-pend">HC pendiente</span>`;
       return `
       <div class="list-row" data-ver="${e.id}" style="cursor:pointer;">
         <div class="left-group">
@@ -586,7 +658,6 @@ function renderExpedientes(){
             <p class="row-sub">${ficha ? escapeHtml(ficha) : 'Sin datos capturados'}</p>
           </div>
         </div>
-        ${hcBadge}
       </div>`;
     }).join('');
 }
@@ -744,7 +815,7 @@ document.querySelectorAll('#form-expediente .btn-group').forEach(group => {
   });
 });
 
-document.getElementById('form-expediente').addEventListener('submit', (e) => {
+document.getElementById('form-expediente').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
   const record = { id: STATE.editingId || fd.get('idPaciente') };
@@ -758,13 +829,8 @@ document.getElementById('form-expediente').addEventListener('submit', (e) => {
     record[key] = document.getElementById('preview-' + key).getAttribute('data-value') || '';
   });
 
-  if(STATE.editingId){
-    const idx = STATE.data.expedientes.findIndex(x => x.id === STATE.editingId);
-    if(idx > -1) STATE.data.expedientes[idx] = record;
-  } else {
-    STATE.data.expedientes.push(record);
-  }
-  saveData(); renderAll(); closeExpedienteModal();
+  closeExpedienteModal();
+  await guardarExpediente(record);
 });
 
 function verExpediente(id){
@@ -787,102 +853,6 @@ function verExpediente(id){
     html += '</div>';
   }
 
-  if(e.historiaClinica){
-    const hc = e.historiaClinica;
-    html += `<div class="form-section-title" style="margin-top:16px;">Historia Clínica</div>`;
-    if(hc.fechaLlenado) html += `<div class="detail-row"><span>Fecha de llenado</span><span>${hc.fechaLlenado}</span></div>`;
-    if(hc.padecimiento && hc.padecimiento.length){
-      html += `<div class="detail-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
-        <span style="color:var(--text-secondary);">Padecimiento actual</span>
-        <div class="hc-summary-tags">${hc.padecimiento.map(p=>`<span class="hc-tag">${escapeHtml(p)}</span>`).join('')}</div>
-      </div>`;
-    }
-    if(hc.observaciones) html += `<div class="detail-row"><span>Observaciones</span><span>${escapeHtml(hc.observaciones)}</span></div>`;
-  }
-
-  /* ── Pagos y visitas ── */
-  try {
-    const pagosData = JSON.parse(localStorage.getItem('clinica_pagos_v1') || '[]');
-    const nombrePac = (e.nombre || '').toLowerCase().trim();
-    const pagosP = pagosData.filter(p => (p.paciente || '').toLowerCase().trim() === nombrePac)
-                            .sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
-    const notasEv = e.notasEvolucion || [];
-    html += `<div class="form-section-title" style="margin-top:16px;">Pagos y visitas (${pagosP.length})</div>`;
-    if(pagosP.length === 0){
-      html += `<p style="font-size:13px;color:var(--text-muted);margin:4px 0 8px;">Sin registros de pagos aún.</p>`;
-    } else {
-      const totalGlobal = pagosP.reduce((s,p) => {
-        const t = p.total !== undefined ? Number(p.total) :
-          (Number(p.totalA)||0)+(Number(p.totalB)||0)+(Number(p.totalC)||0)-(Number(p.descuento)||0);
-        return s + t;
-      }, 0);
-      html += `<div style="overflow-x:auto;"><table class="pagos-table">
-        <thead><tr>
-          <th>Fecha</th><th>Clínica</th><th>Estudiante</th><th>Tratamientos</th><th style="text-align:right;">Total</th><th></th>
-        </tr></thead><tbody>`;
-      pagosP.forEach(p => {
-        const total = p.total !== undefined ? Number(p.total) :
-          (Number(p.totalA)||0)+(Number(p.totalB)||0)+(Number(p.totalC)||0)-(Number(p.descuento)||0);
-        const trats = (p.tratamientos && p.tratamientos.length)
-          ? p.tratamientos.map(t => `<span class="trat-pill">${escapeHtml(t.nombre)}</span>`).join('')
-          : [p.tratA, p.tratB, p.tratC].filter(Boolean).map(t => `<span class="trat-pill">${escapeHtml(t)}</span>`).join('');
-        const tieneNota = notasEv.some(n => n.pagoId === p.id);
-        const btnNota = p.id ? `<button type="button" class="btn-nota-ev" data-expid="${id}" data-pagoid="${escapeHtml(p.id)}" title="${tieneNota?'Ver nota de evolución':'Agregar nota de evolución'}" style="background:${tieneNota?'var(--teal-50)':'#fff'};border:1px solid ${tieneNota?'var(--teal-600)':'var(--border)'};color:${tieneNota?'var(--teal-800)':'var(--text-secondary)'};border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;white-space:nowrap;">${tieneNota?'📝 Ver nota':'📝 Nota'}</button>` : '';
-        html += `<tr>
-          <td>${escapeHtml(p.fecha||'—')}</td>
-          <td>${escapeHtml(p.clinica||'—')}</td>
-          <td>${escapeHtml(p.estudiante||'—')}</td>
-          <td>${trats||'—'}</td>
-          <td style="text-align:right;font-weight:600;">$${total.toFixed(2)}</td>
-          <td style="white-space:nowrap;">${btnNota}</td>
-        </tr>`;
-      });
-      html += `</tbody></table></div>
-        <div class="pagos-total-row">
-          <span style="color:var(--text-secondary);">${pagosP.length} visita${pagosP.length!==1?'s':''}</span>
-          <span>Total acumulado: <strong>$${totalGlobal.toFixed(2)}</strong></span>
-        </div>`;
-    }
-
-    // ── Justificantes y Recetas (clinica_justificantes_v1) ──
-    let jData = {justificantes:[],recetas:[]};
-    try{ jData = JSON.parse(localStorage.getItem('clinica_justificantes_v1')||'{}'); jData.justificantes=jData.justificantes||[]; jData.recetas=jData.recetas||[]; }catch(e2){}
-    const docsP = [
-      ...jData.justificantes.filter(j=>(j.paciente||'').toLowerCase().trim()===nombrePac).map(j=>({...j,_tipo:'just'})),
-      ...jData.recetas.filter(r=>(r.paciente||'').toLowerCase().trim()===nombrePac).map(r=>({...r,_tipo:'rec'})),
-    ].sort((a,b)=>(b.fechaAtencion||b.fechaEmision||'').localeCompare(a.fechaAtencion||a.fechaEmision||''));
-    html += `<div class="form-section-title" style="margin-top:16px;">Justificantes y recetas (${docsP.length})</div>`;
-    if(docsP.length===0){
-      html += `<p style="font-size:13px;color:var(--text-muted);margin:4px 0 8px;">Sin documentos registrados.</p>`;
-    } else {
-      html += `<div style="overflow-x:auto;"><table class="pagos-table"><thead><tr><th>Tipo</th><th>Fecha</th><th>Folio</th><th>Detalle</th><th></th></tr></thead><tbody>`;
-      docsP.forEach(doc=>{
-        const esJust = doc._tipo==='just';
-        const tipoPill = esJust
-          ? `<span class="trat-pill" style="background:var(--teal-50);color:var(--teal-800);">Justificante</span>`
-          : `<span class="trat-pill" style="background:var(--blue-50);color:var(--blue-800);">Receta</span>`;
-        const detalle = esJust
-          ? escapeHtml((doc.diagnostico||'').slice(0,60)+(doc.diagnostico?.length>60?'…':''))
-          : (doc.medicamentos||[]).map(m=>`<span class="trat-pill">${escapeHtml(m.nombre)}</span>`).join('') || '—';
-        html += `<tr>
-          <td>${tipoPill}</td>
-          <td>${escapeHtml(doc.fechaAtencion||doc.fechaEmision||'—')}</td>
-          <td><span class="trat-pill" style="${esJust?'':'background:var(--blue-50);color:var(--blue-800);'}">${escapeHtml(doc.folio||'—')}</span></td>
-          <td style="max-width:200px;">${detalle}</td>
-          <td style="white-space:nowrap;display:flex;gap:5px;">
-            <button type="button" class="btn-edit-just" data-id="${escapeHtml(doc.id)}" data-tipo="${doc._tipo}" style="background:#fff;border:1px solid var(--border);color:var(--text-secondary);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;">✏️ Editar</button>
-            <button type="button" class="btn-print-just" data-id="${escapeHtml(doc.id)}" data-tipo="${doc._tipo}" style="background:${esJust?'var(--teal-50)':'var(--blue-50)'};border:1px solid ${esJust?'var(--teal-600)':'var(--blue-800)'};color:${esJust?'var(--teal-800)':'var(--blue-800)'};border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;">🖨️ Imprimir</button>
-          </td>
-        </tr>`;
-      });
-      html += `</tbody></table></div>`;
-    }
-    html += `<div style="display:flex;gap:8px;margin-top:8px;">
-      <button type="button" class="btn-nueva-just" data-tipo="just" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--teal-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nuevo justificante</button>
-      <button type="button" class="btn-nueva-just" data-tipo="rec" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--blue-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nueva receta</button>
-    </div>`;
-  } catch(err){}
-
   document.getElementById('ver-expediente-body').innerHTML = html;
   document.getElementById('eliminar-expediente-actual').dataset.id = id;
   document.getElementById('modal-ver-expediente').classList.add('open');
@@ -897,17 +867,16 @@ document.getElementById('eliminar-expediente-actual').addEventListener('click', 
 });
 document.getElementById('cerrar-modal-confirmar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
 document.getElementById('cancelar-confirmar-eliminar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
-document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', (e) => {
+document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', async (e) => {
   const id = e.target.dataset.id;
   const texto = document.getElementById('input-confirmar-eliminar').value.trim();
   if(texto !== 'ELIMINAR'){
     document.getElementById('input-confirmar-eliminar').style.borderColor = 'var(--red-600)';
     return;
   }
-  STATE.data.expedientes = STATE.data.expedientes.filter(x => x.id !== id);
-  saveData(); renderAll();
   document.getElementById('modal-confirmar-eliminar').classList.remove('open');
   document.getElementById('modal-ver-expediente').classList.remove('open');
+  await eliminarExpediente(id);
 });
 document.getElementById('editar-expediente-actual').addEventListener('click', (e) => {
   const id = document.getElementById('eliminar-expediente-actual').dataset.id;
@@ -965,135 +934,9 @@ document.getElementById('expedientes-list').addEventListener('click', (e) => {
   if(row) verExpediente(row.dataset.ver);
 });
 
-document.getElementById('hc-completa-actual').addEventListener('click', () => {
-  const id = document.getElementById('eliminar-expediente-actual').dataset.id;
-  location.href = 'historia-clinica.html?id=' + encodeURIComponent(id);
-});
 
-document.getElementById('modal-ver-expediente').addEventListener('click', (e) => {
-  const btnNota = e.target.closest('.btn-nota-ev');
-  if(btnNota){
-    location.href = 'nota-evolucion.html?expId=' + encodeURIComponent(btnNota.dataset.expid) + '&pagoId=' + encodeURIComponent(btnNota.dataset.pagoid);
-    return;
-  }
-  const btnVerRec = e.target.closest('.btn-ver-receta');
-  if(btnVerRec){
-    location.href = 'receta-medica.html?expId=' + encodeURIComponent(btnVerRec.dataset.expid) + '&recId=' + encodeURIComponent(btnVerRec.dataset.recid);
-    return;
-  }
-  const btnNuevaRec = e.target.closest('#btn-nueva-receta');
-  if(btnNuevaRec){
-    location.href = 'receta-medica.html?expId=' + encodeURIComponent(btnNuevaRec.dataset.expid);
-    return;
-  }
-  const btnEditJust = e.target.closest('.btn-edit-just');
-  if(btnEditJust){
-    location.href = 'justificantes.html?openId=' + encodeURIComponent(btnEditJust.dataset.id) + '&tipo=' + encodeURIComponent(btnEditJust.dataset.tipo);
-    return;
-  }
-  const btnPrintJust = e.target.closest('.btn-print-just');
-  if(btnPrintJust){
-    const jData = JSON.parse(localStorage.getItem('clinica_justificantes_v1')||'{}');
-    if(btnPrintJust.dataset.tipo === 'just') printJustificante(jData.justificantes?.find(x=>x.id===btnPrintJust.dataset.id));
-    else printRecetaJust(jData.recetas?.find(x=>x.id===btnPrintJust.dataset.id));
-    return;
-  }
-  const btnNuevaJust = e.target.closest('.btn-nueva-just');
-  if(btnNuevaJust){
-    location.href = 'justificantes.html?tab=' + encodeURIComponent(btnNuevaJust.dataset.tipo);
-    return;
-  }
-});
 
-function printJustificante(j){
-  if(!j) return;
-  const dias = j.dias==1?'un (1) día hábil':`${j.dias} (${j.dias}) días hábiles`;
-  const firmaHTML = j.firma?`<img src="${j.firma}" style="height:70px;display:block;margin:0 auto 4px;">`:'<div style="height:70px;border-bottom:1px solid #333;width:200px;margin:0 auto;"></div>';
-  const win = window.open('','_blank','width=800,height=650');
-  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Justificante ${escapeHtml(j.folio)}</title>
-<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;font-size:13px;color:#111;}
-@page{size:letter;margin:18mm 20mm;}.page{max-width:700px;margin:0 auto;padding:28px 32px 40px;}
-.hdr{display:flex;align-items:center;gap:16px;border-bottom:3px solid #C2570D;padding-bottom:14px;margin-bottom:20px;}
-.logo{width:52px;height:52px;border-radius:10px;background:#C2570D;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.folio-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
-.doc-title{font-size:17px;font-weight:700;text-transform:uppercase;color:#5C2906;}
-.folio-info{text-align:right;font-size:11px;color:#555;line-height:1.6;}
-.body-text{font-size:13px;line-height:1.9;text-align:justify;margin-bottom:20px;}
-.diag{border-left:3px solid #C2570D;padding:10px 14px;background:#fdf6f0;border-radius:4px;font-size:13px;margin:16px 0 24px;}
-.firma-section{margin-top:40px;display:flex;justify-content:flex-end;}
-.firma-block{text-align:center;min-width:220px;}
-.firma-linea{border-top:1px solid #333;margin-top:8px;padding-top:6px;font-size:12px;}
-.footer-doc{margin-top:40px;border-top:1px solid #ddd;padding-top:10px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
-<div class="page">
-  <div class="hdr"><div class="logo"><svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" stroke-linecap="round"/><circle cx="12" cy="9" r="2.5"/></svg></div>
-  <div><p style="font-size:15px;font-weight:700;color:#5C2906;">Clínica Dental Universitaria Anáhuac</p><p style="font-size:11px;color:#888;margin-top:2px;">Universidad Anáhuac Xalapa · Servicios de Salud Bucal</p></div></div>
-  <div class="folio-row"><p class="doc-title">Justificante Médico</p>
-  <div class="folio-info"><strong>Folio: ${escapeHtml(j.folio)}</strong><br>Fecha de emisión: ${escapeHtml(j.fechaEmision||'')}<br>Fecha de atención: ${escapeHtml(j.fechaAtencion||'')}</div></div>
-  <p class="body-text">Por medio del presente documento, la <strong>Clínica Dental Universitaria Anáhuac Xalapa</strong> hace constar que el(la) paciente <strong>${escapeHtml(j.paciente)}</strong> recibió atención odontológica el día <strong>${escapeHtml(j.fechaAtencion||'')}</strong>${j.alumno?`, siendo atendido(a) por el(la) alumno(a) <strong>${escapeHtml(j.alumno)}</strong>`:''}, bajo la supervisión del(la) <strong>C.D. ${escapeHtml(j.maestro||'')}</strong>.</p>
-  <p style="font-size:13px;font-weight:600;margin-bottom:6px;color:#5C2906;">Diagnóstico / procedimiento realizado:</p>
-  <div class="diag">${escapeHtml(j.diagnostico||'')}</div>
-  <p class="body-text">Por lo anterior, se justifica la inasistencia del(la) paciente a sus actividades por <strong>${dias}</strong>, contados a partir del <strong>${escapeHtml(j.fechaAtencion||'')}</strong>.</p>
-  <div class="firma-section"><div class="firma-block">${firmaHTML}<p class="firma-linea">C.D. ${escapeHtml(j.maestro||'')}</p><p style="font-size:11px;color:#666;margin-top:2px;">Maestro supervisor · Clínica Dental Universitaria Anáhuac</p></div></div>
-  <div class="footer-doc"><span>Clínica Dental Universitaria Anáhuac · Xalapa, Veracruz</span><span>Folio: ${escapeHtml(j.folio)}</span></div>
-</div><script>window.onload=()=>{window.print();}<\/script></body></html>`);
-  win.document.close();
-}
-
-function printRecetaJust(r){
-  if(!r) return;
-  const firmaHTML = r.firma?`<img src="${r.firma}" style="height:70px;display:block;margin:0 auto 4px;">`:'<div style="height:70px;border-bottom:1px solid #333;width:200px;margin:0 auto;"></div>';
-  const medsHTML = (r.medicamentos||[]).map((m,i)=>`<tr style="border-top:1px solid #eee;">
-    <td style="padding:10px 12px;font-weight:700;font-size:16px;color:#C2570D;width:36px;vertical-align:top;">${i+1}</td>
-    <td style="padding:10px 12px;border-left:1px solid #eee;width:40%;"><p style="font-weight:700;font-size:14px;">${escapeHtml(m.nombre||'')}</p></td>
-    <td style="padding:10px 12px;border-left:1px solid #eee;font-size:12px;color:#444;">
-      ${m.cantidad?`<p><strong>Cantidad:</strong> ${escapeHtml(m.cantidad)}</p>`:''}
-      ${m.frecuencia?`<p><strong>Cada cuánto:</strong> ${escapeHtml(m.frecuencia)}</p>`:''}
-      ${m.duracion?`<p><strong>Por cuánto tiempo:</strong> ${escapeHtml(m.duracion)}</p>`:''}
-    </td></tr>`).join('');
-  const win = window.open('','_blank','width=800,height=650');
-  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Receta ${escapeHtml(r.folio)}</title>
-<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;font-size:13px;color:#111;}
-@page{size:letter;margin:18mm 20mm;}.page{max-width:700px;margin:0 auto;padding:28px 32px 40px;}
-.hdr{display:flex;align-items:center;gap:16px;border-bottom:3px solid #0C447C;padding-bottom:14px;margin-bottom:20px;}
-.logo{width:52px;height:52px;border-radius:10px;background:#0C447C;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.doc-title{font-size:17px;font-weight:700;text-transform:uppercase;color:#0C447C;}
-.folio-info{text-align:right;font-size:11px;color:#555;line-height:1.6;}
-.folio-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-.pat-box{background:#f0f6ff;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;line-height:1.7;}
-table.meds{width:100%;border-collapse:collapse;border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:20px;}
-table.meds thead{background:#0C447C;color:#fff;}
-table.meds th{padding:9px 12px;font-size:12px;text-align:left;}
-.ind-box{background:#f0f6ff;border-left:3px solid #0C447C;padding:10px 14px;font-size:13px;margin-bottom:20px;border-radius:4px;}
-.firma-section{margin-top:40px;display:flex;justify-content:flex-end;}
-.firma-block{text-align:center;min-width:220px;}
-.firma-linea{border-top:1px solid #333;margin-top:8px;padding-top:6px;font-size:12px;}
-.footer-doc{margin-top:30px;border-top:1px solid #ddd;padding-top:10px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
-<div class="page">
-  <div class="hdr"><div class="logo"><svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8l-5-5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 3v5h10M8 13h8M8 17h5" stroke-linecap="round"/></svg></div>
-  <div><p style="font-size:15px;font-weight:700;color:#0C447C;">Clínica Dental Universitaria Anáhuac</p><p style="font-size:11px;color:#888;margin-top:2px;">Universidad Anáhuac Xalapa · Servicios de Salud Bucal</p></div></div>
-  <div class="folio-row"><p class="doc-title">Receta Médica</p>
-  <div class="folio-info"><strong>Folio: ${escapeHtml(r.folio)}</strong><br>Fecha de emisión: ${escapeHtml(r.fechaEmision||'')}<br>Fecha de atención: ${escapeHtml(r.fechaAtencion||'')}</div></div>
-  <div class="pat-box"><p><strong>Paciente:</strong> ${escapeHtml(r.paciente||'')}</p>${r.alumno?`<p><strong>Atendido por:</strong> ${escapeHtml(r.alumno)}</p>`:''}<p><strong>Supervisor:</strong> C.D. ${escapeHtml(r.maestro||'')}</p></div>
-  <table class="meds"><thead><tr><th>#</th><th>Medicamento</th><th>Indicaciones</th></tr></thead><tbody>${medsHTML}</tbody></table>
-  ${r.indicaciones?`<p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#0C447C;margin-bottom:6px;">Indicaciones generales</p><div class="ind-box">${escapeHtml(r.indicaciones)}</div>`:''}
-  <div class="firma-section"><div class="firma-block">${firmaHTML}<p class="firma-linea">C.D. ${escapeHtml(r.maestro||'')}</p><p style="font-size:11px;color:#666;margin-top:2px;">Maestro supervisor · Clínica Dental Universitaria Anáhuac</p></div></div>
-  <div class="footer-doc"><span>Clínica Dental Universitaria Anáhuac · Xalapa, Veracruz</span><span>Folio: ${escapeHtml(r.folio)}</span></div>
-</div><script>window.onload=()=>{window.print();}<\/script></body></html>`);
-  win.document.close();
-}
-
-document.body.addEventListener('click', (e) => {
-  const del = e.target.closest('[data-del]');
-  if(!del) return;
-  const key = del.dataset.del;
-  const id = del.dataset.id;
-  STATE.data[key] = STATE.data[key].filter(x => x.id !== id);
-  saveData(); renderAll();
-});
-
-renderAll();
+cargarExpedientes();
 </script>
 </body>
 </html>
