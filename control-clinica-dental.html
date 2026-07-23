@@ -31,13 +31,12 @@
   .stat-value{font-size:26px; font-weight:600; margin-top:4px !important;}
   .stat-value.alert{color:var(--red-600);}
   nav.tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:20px;}
-  .tab-btn{
-    border:none; background:transparent; padding:10px 16px; font-size:14px; cursor:pointer;
-    color:var(--text-secondary); border-bottom:2px solid transparent; font-family:inherit;
-  }
+  .tab-btn{border:none; background:transparent; padding:10px 16px; font-size:14px; cursor:pointer; color:var(--text-secondary); border-bottom:2px solid transparent; font-family:inherit;}
   .tab-btn.active{color:var(--teal-800); border-bottom-color:var(--teal-600); font-weight:600;}
-  .panel{display:none;}
-  .panel.active{display:block;}
+  .stat-card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px;}
+  .stat-card p{margin:0;}
+  .stat-label{font-size:13px; color:var(--text-secondary);}
+  .stat-value{font-size:22px; font-weight:600; margin-top:4px !important;}
   form.add-form{
     display:grid; gap:10px; background:var(--surface); border:1px solid var(--border);
     border-radius:12px; padding:16px; margin-bottom:20px;
@@ -150,13 +149,20 @@
     <div style="display:flex; align-items:center; gap:12px;">
       <a href="index.html" class="btn-secondary" style="text-decoration:none; font-size:13px; height:34px; display:flex; align-items:center; padding:0 14px;">← Inicio</a>
       <div>
-        <p class="eyebrow">Expedientes clínicos de pacientes</p>
+        <p class="eyebrow">Sistema de Gestión Clínica · MedBase MX</p>
         <h1>Clínica Dental Universitaria Anáhuac</h1>
       </div>
     </div>
     <span class="sync-note">Datos sincronizados en la nube · MedBase MX</span>
   </header>
 
+  <nav class="tabs" id="tabs-main">
+    <button class="tab-btn active" data-tab="expedientes">Expedientes</button>
+    <button class="tab-btn" data-tab="visitas">Visitas</button>
+    <button class="tab-btn" data-tab="pagos">Pagos</button>
+  </nav>
+
+  <!-- PANEL EXPEDIENTES -->
   <section class="panel active" id="panel-expedientes">
     <div class="panel-toolbar">
       <input type="text" id="buscar-expediente" placeholder="Buscar paciente...">
@@ -166,6 +172,25 @@
       </div>
     </div>
     <div id="expedientes-list"></div>
+  </section>
+
+  <!-- PANEL VISITAS -->
+  <section class="panel" id="panel-visitas">
+    <div class="panel-toolbar">
+      <input type="text" id="buscar-visita" placeholder="Buscar paciente o doctor...">
+      <button type="button" class="btn-primary" id="btn-nueva-visita">+ Nueva visita</button>
+    </div>
+    <div id="visitas-list"></div>
+  </section>
+
+  <!-- PANEL PAGOS -->
+  <section class="panel" id="panel-pagos">
+    <div class="panel-toolbar">
+      <input type="text" id="buscar-pago" placeholder="Buscar paciente o concepto...">
+      <button type="button" class="btn-primary" id="btn-nuevo-pago">+ Nuevo pago</button>
+    </div>
+    <div id="pagos-resumen" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px;"></div>
+    <div id="pagos-list"></div>
   </section>
 
   <p class="footer-note">Control interno · Clínica Dental Universitaria Anáhuac Xalapa</p>
@@ -471,13 +496,93 @@
   </div>
 </div>
 
+<!-- MODAL NUEVA VISITA -->
+<div class="modal-overlay" id="modal-visita">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-head">
+      <h3 id="modal-visita-titulo">Nueva visita</h3>
+      <button type="button" class="btn-icon" id="cerrar-modal-visita">✕</button>
+    </div>
+    <form id="form-visita">
+      <input type="hidden" name="visita-id">
+      <div class="field"><label>Paciente *</label>
+        <select name="visita-expediente-id" id="visita-expediente-id" required style="width:100%;">
+          <option value="">Selecciona un paciente...</option>
+        </select>
+      </div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Fecha *</label><input required type="date" name="visita-fecha"></div>
+        <div class="field"><label>Hora *</label><input required type="time" name="visita-hora"></div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Motivo *</label><input required name="visita-motivo" placeholder="Revisión, limpieza, extracción..."></div>
+      <div class="field" style="margin-top:10px;"><label>Doctor</label><input name="visita-doctor" placeholder="Nombre del doctor responsable"></div>
+      <div class="field" style="margin-top:10px;"><label>Estado</label>
+        <select name="visita-estado" style="width:100%;">
+          <option value="programada">Programada</option>
+          <option value="atendida">Atendida</option>
+          <option value="cancelada">Cancelada</option>
+          <option value="no_asistio">No asistió</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelar-visita">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar visita</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL NUEVO PAGO -->
+<div class="modal-overlay" id="modal-pago">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-head">
+      <h3 id="modal-pago-titulo">Nuevo pago</h3>
+      <button type="button" class="btn-icon" id="cerrar-modal-pago">✕</button>
+    </div>
+    <form id="form-pago">
+      <input type="hidden" name="pago-id">
+      <div class="field"><label>Paciente *</label>
+        <select name="pago-expediente-id" id="pago-expediente-id" required style="width:100%;">
+          <option value="">Selecciona un paciente...</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Concepto *</label><input required name="pago-concepto" placeholder="Limpieza dental, ortodoncia, extracción..."></div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Monto *</label><input required type="number" step="0.01" min="0" name="pago-monto" placeholder="0.00"></div>
+        <div class="field"><label>Fecha *</label><input required type="date" name="pago-fecha"></div>
+      </div>
+      <div class="grid-2" style="margin-top:10px;">
+        <div class="field"><label>Método de pago</label>
+          <select name="pago-metodo" style="width:100%;">
+            <option value="efectivo">Efectivo</option>
+            <option value="tarjeta">Tarjeta</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Estado</label>
+          <select name="pago-estado" style="width:100%;">
+            <option value="pagado">Pagado</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="parcial">Parcial</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelar-pago">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar pago</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = 'https://mkatcueeyxgetschqplm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
 const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const STATE = { data: { expedientes: [] }, editingId: null };
+const STATE = { data: { expedientes: [], visitas: [], pagos: [] }, editingId: null, tab: 'expedientes' };
 
 // Mapeo camelCase → snake_case para Supabase
 function toSnake(record) {
@@ -953,6 +1058,223 @@ document.getElementById('expedientes-list').addEventListener('click', (e) => {
 
 
 cargarExpedientes();
+
+/* ── TABS ───────────────────────────────────────────────────── */
+document.getElementById('tabs-main').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  const tab = btn.dataset.tab;
+  STATE.tab = tab;
+  document.querySelectorAll('#tabs-main .tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+  if(tab === 'visitas') cargarVisitas();
+  if(tab === 'pagos') cargarPagos();
+});
+
+/* ── VISITAS ─────────────────────────────────────────────────── */
+function fmtFechaVisita(f) {
+  if(!f) return '';
+  const d = new Date(f + 'T00:00:00');
+  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function badgeVisita(estado) {
+  const map = { programada:'badge-confirmada', atendida:'badge-atendida', cancelada:'badge-alerta', no_asistio:'badge-pendiente' };
+  const labels = { programada:'Programada', atendida:'Atendida', cancelada:'Cancelada', no_asistio:'No asistió' };
+  return `<span class="badge ${map[estado]||'badge-pendiente'}">${labels[estado]||estado}</span>`;
+}
+
+async function cargarVisitas() {
+  mostrarCargando(true);
+  const term = (document.getElementById('buscar-visita')?.value || '').toLowerCase();
+  let q = sbClient.from('visitas').select('*').order('fecha', { ascending: false });
+  const { data, error } = await q;
+  mostrarCargando(false);
+  if(error){ document.getElementById('visitas-list').innerHTML = `<div class="empty-state"><p>Error al cargar visitas</p><p>${error.message}</p></div>`; return; }
+  STATE.data.visitas = data || [];
+  renderVisitas(term);
+}
+
+function renderVisitas(term = '') {
+  const rows = STATE.data.visitas.filter(v =>
+    !term || v.nombre_paciente?.toLowerCase().includes(term) || v.doctor?.toLowerCase().includes(term) || v.motivo?.toLowerCase().includes(term)
+  );
+  document.getElementById('visitas-list').innerHTML = rows.length === 0
+    ? emptyState('No hay visitas registradas.', 'Agrega la primera visita para llevar el control de citas.')
+    : rows.map(v => `
+      <div class="list-row">
+        <div>
+          <p class="row-title">${escapeHtml(v.nombre_paciente || 'Sin nombre')}</p>
+          <p class="row-sub">${fmtFechaVisita(v.fecha)} · ${v.hora||''} ${v.doctor ? '· Dr. ' + escapeHtml(v.doctor) : ''} ${v.motivo ? '· ' + escapeHtml(v.motivo) : ''}</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          ${badgeVisita(v.estado)}
+          <button class="btn-icon" onclick="editarVisita('${v.id}')" title="Editar">✎</button>
+          <button class="btn-icon" onclick="eliminarVisita('${v.id}')" title="Eliminar" style="color:var(--red-600);">✕</button>
+        </div>
+      </div>`).join('');
+}
+
+function llenarSelectPacientes(selectId) {
+  const sel = document.getElementById(selectId);
+  const actual = sel.value;
+  sel.innerHTML = '<option value="">Selecciona un paciente...</option>';
+  STATE.data.expedientes.forEach(e => {
+    sel.innerHTML += `<option value="${e.id}">${escapeHtml(e.nombre)}</option>`;
+  });
+  if(actual) sel.value = actual;
+}
+
+function abrirModalVisita(id = null) {
+  const form = document.getElementById('form-visita');
+  form.reset();
+  llenarSelectPacientes('visita-expediente-id');
+  document.getElementById('modal-visita-titulo').textContent = id ? 'Editar visita' : 'Nueva visita';
+  if(id) {
+    const v = STATE.data.visitas.find(x => x.id === id);
+    if(v) {
+      form.querySelector('[name="visita-id"]').value = v.id;
+      document.getElementById('visita-expediente-id').value = v.expediente_id || '';
+      form.querySelector('[name="visita-fecha"]').value = v.fecha || '';
+      form.querySelector('[name="visita-hora"]').value = v.hora || '';
+      form.querySelector('[name="visita-motivo"]').value = v.motivo || '';
+      form.querySelector('[name="visita-doctor"]').value = v.doctor || '';
+      form.querySelector('[name="visita-estado"]').value = v.estado || 'programada';
+    }
+  }
+  document.getElementById('modal-visita').classList.add('open');
+}
+
+function editarVisita(id) { abrirModalVisita(id); }
+
+async function eliminarVisita(id) {
+  if(!confirm('¿Eliminar esta visita?')) return;
+  await sbClient.from('visitas').delete().eq('id', id);
+  await cargarVisitas();
+}
+
+document.getElementById('btn-nueva-visita').addEventListener('click', () => abrirModalVisita());
+document.getElementById('cerrar-modal-visita').addEventListener('click', () => document.getElementById('modal-visita').classList.remove('open'));
+document.getElementById('cancelar-visita').addEventListener('click', () => document.getElementById('modal-visita').classList.remove('open'));
+document.getElementById('buscar-visita').addEventListener('input', (e) => renderVisitas(e.target.value.toLowerCase()));
+
+document.getElementById('form-visita').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const expId = fd.get('visita-expediente-id');
+  const exp = STATE.data.expedientes.find(x => x.id === expId);
+  const id = fd.get('visita-id') || uid();
+  const row = {
+    id, expediente_id: expId, nombre_paciente: exp?.nombre || '',
+    fecha: fd.get('visita-fecha'), hora: fd.get('visita-hora'),
+    motivo: fd.get('visita-motivo'), doctor: fd.get('visita-doctor'),
+    estado: fd.get('visita-estado'),
+  };
+  await sbClient.from('visitas').upsert(row, { onConflict: 'id' });
+  document.getElementById('modal-visita').classList.remove('open');
+  await cargarVisitas();
+});
+
+/* ── PAGOS ───────────────────────────────────────────────────── */
+function badgePago(estado) {
+  const map = { pagado:'badge-atendida', pendiente:'badge-pendiente', parcial:'badge-confirmada' };
+  return `<span class="badge ${map[estado]||'badge-pendiente'}">${estado}</span>`;
+}
+
+function fmtMonto(m) {
+  return '$' + Number(m||0).toLocaleString('es-MX', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+async function cargarPagos() {
+  mostrarCargando(true);
+  const term = (document.getElementById('buscar-pago')?.value || '').toLowerCase();
+  const { data, error } = await sbClient.from('pagos').select('*').order('fecha', { ascending: false });
+  mostrarCargando(false);
+  if(error){ document.getElementById('pagos-list').innerHTML = `<div class="empty-state"><p>Error al cargar pagos</p><p>${error.message}</p></div>`; return; }
+  STATE.data.pagos = data || [];
+  renderPagos(term);
+}
+
+function renderPagos(term = '') {
+  const rows = STATE.data.pagos.filter(p =>
+    !term || p.nombre_paciente?.toLowerCase().includes(term) || p.concepto?.toLowerCase().includes(term)
+  );
+  const total = rows.reduce((s,p) => s + Number(p.monto||0), 0);
+  const pagados = rows.filter(p => p.estado === 'pagado').reduce((s,p) => s + Number(p.monto||0), 0);
+  const pendientes = rows.filter(p => p.estado === 'pendiente').reduce((s,p) => s + Number(p.monto||0), 0);
+
+  document.getElementById('pagos-resumen').innerHTML = `
+    <div class="stat-card"><p class="stat-label">Total facturado</p><p class="stat-value">${fmtMonto(total)}</p></div>
+    <div class="stat-card"><p class="stat-label">Pagado</p><p class="stat-value" style="color:#27500A;">${fmtMonto(pagados)}</p></div>
+    <div class="stat-card"><p class="stat-label">Pendiente</p><p class="stat-value" style="color:var(--red-600);">${fmtMonto(pendientes)}</p></div>
+  `;
+
+  document.getElementById('pagos-list').innerHTML = rows.length === 0
+    ? emptyState('No hay pagos registrados.', 'Agrega el primer pago para llevar el control financiero.')
+    : rows.map(p => `
+      <div class="list-row">
+        <div>
+          <p class="row-title">${escapeHtml(p.nombre_paciente||'Sin nombre')} <span style="font-weight:400; color:var(--text-secondary);">· ${escapeHtml(p.concepto||'')}</span></p>
+          <p class="row-sub">${fmtFechaVisita(p.fecha)} · ${p.metodo_pago||''}</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-weight:600; font-size:15px;">${fmtMonto(p.monto)}</span>
+          ${badgePago(p.estado)}
+          <button class="btn-icon" onclick="editarPago('${p.id}')" title="Editar">✎</button>
+          <button class="btn-icon" onclick="eliminarPago('${p.id}')" title="Eliminar" style="color:var(--red-600);">✕</button>
+        </div>
+      </div>`).join('');
+}
+
+function abrirModalPago(id = null) {
+  const form = document.getElementById('form-pago');
+  form.reset();
+  llenarSelectPacientes('pago-expediente-id');
+  document.getElementById('modal-pago-titulo').textContent = id ? 'Editar pago' : 'Nuevo pago';
+  if(id) {
+    const p = STATE.data.pagos.find(x => x.id === id);
+    if(p) {
+      form.querySelector('[name="pago-id"]').value = p.id;
+      document.getElementById('pago-expediente-id').value = p.expediente_id || '';
+      form.querySelector('[name="pago-concepto"]').value = p.concepto || '';
+      form.querySelector('[name="pago-monto"]').value = p.monto || '';
+      form.querySelector('[name="pago-fecha"]').value = p.fecha || '';
+      form.querySelector('[name="pago-metodo"]').value = p.metodo_pago || 'efectivo';
+      form.querySelector('[name="pago-estado"]').value = p.estado || 'pagado';
+    }
+  }
+  document.getElementById('modal-pago').classList.add('open');
+}
+
+function editarPago(id) { abrirModalPago(id); }
+
+async function eliminarPago(id) {
+  if(!confirm('¿Eliminar este pago?')) return;
+  await sbClient.from('pagos').delete().eq('id', id);
+  await cargarPagos();
+}
+
+document.getElementById('btn-nuevo-pago').addEventListener('click', () => abrirModalPago());
+document.getElementById('cerrar-modal-pago').addEventListener('click', () => document.getElementById('modal-pago').classList.remove('open'));
+document.getElementById('cancelar-pago').addEventListener('click', () => document.getElementById('modal-pago').classList.remove('open'));
+document.getElementById('buscar-pago').addEventListener('input', (e) => renderPagos(e.target.value.toLowerCase()));
+
+document.getElementById('form-pago').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const expId = fd.get('pago-expediente-id');
+  const exp = STATE.data.expedientes.find(x => x.id === expId);
+  const id = fd.get('pago-id') || uid();
+  const row = {
+    id, expediente_id: expId, nombre_paciente: exp?.nombre || '',
+    concepto: fd.get('pago-concepto'), monto: parseFloat(fd.get('pago-monto')||0),
+    fecha: fd.get('pago-fecha'), metodo_pago: fd.get('pago-metodo'),
+    estado: fd.get('pago-estado'),
+  };
+  await sbClient.from('pagos').upsert(row, { onConflict: 'id' });
+  document.getElementById('modal-pago').classList.remove('open');
+  await cargarPagos();
+});
 </script>
 </body>
 </html>
