@@ -147,9 +147,12 @@
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <p class="eyebrow">Expedientes clínicos de pacientes</p>
-      <h1>Clínica Dental Universitaria Anáhuac</h1>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="index.html" class="btn-secondary" style="text-decoration:none; font-size:13px; height:34px; display:flex; align-items:center; padding:0 14px;">← Inicio</a>
+      <div>
+        <p class="eyebrow">Expedientes clínicos de pacientes</p>
+        <h1>Clínica Dental Universitaria Anáhuac</h1>
+      </div>
     </div>
     <span class="sync-note">Datos sincronizados en la nube · MedBase MX</span>
   </header>
@@ -551,11 +554,24 @@ function toCamel(row) {
 
 async function cargarExpedientes() {
   mostrarCargando(true);
-  const { data, error } = await supabase.from('expedientes').select('*').order('nombre');
-  if(error){ console.error('Error cargando:', error); mostrarCargando(false); return; }
-  STATE.data.expedientes = (data || []).map(toCamel);
-  mostrarCargando(false);
-  renderAll();
+  try {
+    const { data, error } = await supabase.from('expedientes').select('*').order('nombre');
+    if(error){
+      console.error('Error cargando:', error);
+      document.getElementById('expedientes-list').innerHTML =
+        `<div class="empty-state"><p>Error al cargar expedientes</p><p>${error.message}</p></div>`;
+      mostrarCargando(false);
+      return;
+    }
+    STATE.data.expedientes = (data || []).map(toCamel);
+    mostrarCargando(false);
+    renderAll();
+  } catch(e) {
+    console.error('Error de conexión:', e);
+    document.getElementById('expedientes-list').innerHTML =
+      `<div class="empty-state"><p>Sin conexión a la base de datos</p><p>${e.message}</p></div>`;
+    mostrarCargando(false);
+  }
 }
 
 async function guardarExpediente(record) {
