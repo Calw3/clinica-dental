@@ -512,6 +512,13 @@ function fmtFecha(f){
 function badge(estado){
   return `<span class="badge badge-${estado}">${estado}</span>`;
 }
+
+/* HC completa cuando el doctor (profesor) ha firmado */
+function hcEsCompleta(hc){
+  if(!hc) return false;
+  const aut = hc.autorizaciones || {};
+  return !!(aut.profFirma && aut.profFirma.trim());
+}
 function emptyState(title, body){
   return `<div class="empty-state"><p>${title}</p><p>${body}</p></div>`;
 }
@@ -567,7 +574,7 @@ function renderExpedientes(){
       const ficha = [
         e.sexo, e.edad ? e.edad + ' años' : '', e.tipoPaciente, e.tipoHistoria, e.telefono
       ].filter(Boolean).join(' · ');
-      const hcBadge = e.historiaClinica
+      const hcBadge = hcEsCompleta(e.historiaClinica)
         ? `<span class="badge-hc">HC ✓</span>`
         : `<span class="badge-hc-pend">HC pendiente</span>`;
       return `

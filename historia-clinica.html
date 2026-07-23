@@ -1238,6 +1238,8 @@ const patientId = params.get('id');
 const data = loadData();
 const expIdx = data.expedientes.findIndex(x=>x.id===patientId);
 const exp = expIdx>-1 ? data.expedientes[expIdx] : null;
+// hc se declara aquí para que el listener de guardar (fuera del bloque else) pueda acceder a él
+let hc = {};
 
 
 function escapeHtml(s){
@@ -1639,7 +1641,14 @@ function setupAutCanvas(canvasId, clearBtnId){
   canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
   canvas.addEventListener('touchmove',e=>{if(!drawing)return;e.preventDefault();const p=pos(e);ctx.lineWidth=1.8;ctx.lineCap='round';ctx.strokeStyle='#1F1F1D';ctx.lineTo(p.x,p.y);ctx.stroke();hasContent=true;},{passive:false});
   canvas.addEventListener('touchend',()=>drawing=false);
-  document.getElementById(clearBtnId)?.addEventListener('click',()=>{ctx.clearRect(0,0,canvas.width,canvas.height);hasContent=false;});
+  document.getElementById(clearBtnId)?.addEventListener('click',()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height); hasContent=false;
+    // Si es la firma del doctor, borrarla en localStorage para que HC vuelva a "pendiente"
+    if(clearBtnId === 'limpiar-aut-prof' && exp && data.expedientes[expIdx]?.historiaClinica?.autorizaciones){
+      data.expedientes[expIdx].historiaClinica.autorizaciones.profFirma = '';
+      saveData(data);
+    }
+  });
   return { canvas, ctx, isHasContent:()=>hasContent, load:(url)=>{ if(!url) return; const img=new Image(); img.onload=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);hasContent=true;}; img.src=url; } };
 }
 
@@ -1682,7 +1691,7 @@ if(!exp){
     </div>`;
 
   /* Cargar datos guardados */
-  const hc = exp.historiaClinica || {};
+  hc = exp.historiaClinica || {};
 
   setGroup('grupo-sexo', hc.sexo || exp.sexo);
   setVal('hc-edad', hc.edad || exp.edad);
@@ -2079,8 +2088,8 @@ document.getElementById('btn-guardar-hc').addEventListener('click', ()=>{
     obsGenerales: val('hc-obs-generales'),
   };
   saveData(data);
-  document.getElementById('hc-badge-llenada').style.display='';
   showToast('Historia clínica guardada ✓');
+  setTimeout(()=> location.href = `control-clinica-dental.html`, 800);
 });
 
 </script>

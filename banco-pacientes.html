@@ -27,104 +27,149 @@ header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-botto
 .header-text{flex:1}
 .eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;}
 h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
-/* Stats */
+/* ── Stats: tarjetas de resumen (total, en espera, asignados…) ── */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
 .stat-label{font-size:11px;color:var(--text-secondary);}
 .stat-value{font-size:22px;font-weight:600;margin-top:2px;color:var(--teal-900);}
-/* Toolbar */
+
+/* ── Toolbar: fila con buscador, filtros y botón "+ Nuevo" ── */
 .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+/* agrupa buscador + filtros a la izquierda */
 .toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+/* campo de búsqueda; borde café al hacer clic */
 .search-input{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);width:220px;}
 .search-input:focus{outline:none;border-color:var(--teal-600);}
+/* selector de filtro (tipo, semestre…); hereda fuente del sistema */
 .filtro-select{height:36px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
 .filtro-select:focus{outline:none;border-color:var(--teal-600);}
+/* botón principal (café sólido); se oscurece al hover */
 .btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;}
 .btn-primary:hover{background:var(--teal-800);}
+/* botón secundario (blanco); borde café al hover */
 .btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 12px;color:var(--text-secondary);cursor:pointer;font-family:inherit;font-size:13px;}
 .btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
-/* Lista */
+
+/* ── Lista de pacientes ── */
+/* contenedor: overflow:hidden para que border-radius afecte a las filas internas */
 .lista-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+/* cada fila es un flex horizontal; hover café claro */
 .list-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s;}
+/* evita borde doble entre la caja y la primera fila */
 .list-row:first-child{border-top:none;}
 .list-row:hover{background:var(--teal-50);}
+/* círculo de iniciales; flex-shrink:0 evita que se aplaste */
 .pac-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+/* color del avatar según tipo de paciente */
 .pac-avatar.pediatrico{background:var(--blue-50);color:var(--blue-800);}
 .pac-avatar.adulto{background:var(--coral-50);color:var(--coral-800);}
 .pac-avatar.geriatrico{background:var(--purple-50);color:var(--purple-800);}
+/* zona de texto central; min-width:0 permite que ellipsis funcione en flex */
 .row-info{flex:1;min-width:0;}
+/* nombre: corta con "…" si es muy largo */
 .row-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* subtítulo (tratamiento, semestre…) */
 .row-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* pastilla de estado (En espera / Asignado) */
 .status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap;flex-shrink:0;}
 .badge-espera{background:var(--amber-50);color:var(--amber-800);}
 .badge-asignado{background:var(--green-50);color:var(--green-800);}
+/* pastilla de tipo (Pediátrico / Adulto / Geriátrico) */
 .tipo-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap;flex-shrink:0;}
 .tipo-pediatrico{background:var(--blue-50);color:var(--blue-800);}
 .tipo-adulto{background:var(--coral-50);color:var(--coral-800);}
 .tipo-geriatrico{background:var(--purple-50);color:var(--purple-800);}
+/* botón verde "Asignar"; se rellena al hover (inverso al btn-primary) */
 .btn-asignar{background:var(--green-50);color:var(--green-800);border:1px solid var(--green-800);border-radius:var(--radius);padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
 .btn-asignar:hover{background:var(--green-800);color:#fff;}
+/* botón icono (eliminar); se pone rojo al hover para advertir */
 .btn-icon{background:transparent;border:1px solid var(--border);border-radius:var(--radius);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;font-size:14px;flex-shrink:0;}
 .btn-icon:hover{background:var(--red-50);color:var(--red-600);}
+/* mensaje cuando no hay resultados */
 .empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
 .empty-state p:first-child{font-weight:600;color:var(--text-primary);font-size:15px;}
 .empty-state p:last-child{font-size:13px;margin-top:4px;}
-/* Panel */
+
+/* ── Panel lateral deslizante ── */
+/* overlay oscuro; aparece con clase .open */
 .panel-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.35);z-index:40;}
 .panel-overlay.open{display:block;}
+/* panel oculto fuera de pantalla (right:-100%); anima a right:0 al abrirse */
 .panel{position:fixed;top:0;right:-100%;width:min(500px,100vw);height:100vh;background:#fff;z-index:50;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);transition:right .25s ease;}
 .panel.open{right:0;}
+/* cabecera fija: título a la izquierda, botones a la derecha */
 .panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
 .panel-head h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
 .panel-actions{display:flex;gap:8px;}
+/* cuerpo con scroll propio; flex:1 ocupa el espacio restante */
 .panel-body{flex:1;overflow-y:auto;padding:20px;}
-/* Form */
+
+/* ── Formulario dentro del panel ── */
+/* separador de sección con título en mayúsculas */
 .section-title{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 .section-title:first-child{margin-top:0;}
 .field{margin-bottom:12px;}
+/* etiqueta de campo en mayúsculas pequeñas */
 .field label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+/* inputs, selects y textareas comparten estilos base */
 .field input,.field select,.field textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:13px;font-family:inherit;background:#fff;color:var(--text-primary);}
 .field input,.field select{height:36px;}
 .field textarea{padding:8px 10px;resize:vertical;min-height:60px;line-height:1.5;}
+/* borde café + sombra sutil al enfocar */
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+/* campo de solo lectura: fondo gris para indicar que no se edita */
 .field input[readonly]{background:var(--surface-1);color:var(--text-muted);}
-/* Tipo selector */
+
+/* ── Selector de tipo de paciente (Pediátrico / Adulto / Geriátrico) ── */
 .tipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+/* tarjeta base; borde café al hover */
 .tipo-card{border:2px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
 .tipo-card:hover{border-color:var(--teal-600);}
 .tipo-card.selected{border-color:currentColor;}
+/* seleccionado: cada tipo toma su propio color para coincidir con avatares y badges */
 .tipo-card.sel-pediatrico{border-color:var(--blue-800);background:var(--blue-50);}
 .tipo-card.sel-adulto{border-color:var(--coral-800);background:var(--coral-50);}
 .tipo-card.sel-geriatrico{border-color:var(--purple-800);background:var(--purple-50);}
 .tipo-card-icon{font-size:22px;margin-bottom:4px;}
 .tipo-card-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+/* color del label solo cuando la tarjeta está seleccionada */
 .tipo-card.sel-pediatrico .tipo-card-label{color:var(--blue-800);}
 .tipo-card.sel-adulto .tipo-card-label{color:var(--coral-800);}
 .tipo-card.sel-geriatrico .tipo-card-label{color:var(--purple-800);}
-/* Autocomplete */
+
+/* ── Autocompletado (búsqueda de alumno) ── */
+/* contenedor relativo para posicionar la lista debajo del input */
 .ac-wrap{position:relative;}
+/* lista flotante; aparece con clase .open */
 .ac-list{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:220px;overflow-y:auto;}
 .ac-list.open{display:block;}
 .ac-item{padding:8px 12px;cursor:pointer;font-size:13px;}
+/* hover y foco por teclado con el mismo color */
 .ac-item:hover,.ac-item.focused{background:var(--teal-50);}
+/* cabecera de grupo (separador visual entre secciones de la lista) */
 .ac-group{padding:5px 10px 3px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);border-top:1px solid var(--border);}
 .ac-group:first-child{border-top:none;}
-/* Modal */
+
+/* ── Modal de detalle / asignación ── */
+/* fondo oscuro centrado; overlay independiente del panel (z-index:60) */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;z-index:60;}
 .modal-bg.open{display:flex;}
 .modal{background:#fff;border-radius:12px;max-width:480px;width:100%;padding:24px;}
 .modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
 .modal-head h3{font-size:17px;font-weight:600;line-height:1.3;}
+/* botones del modal alineados a la derecha con separador */
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;flex-wrap:wrap;}
+/* fila de detalle: etiqueta a la izquierda, valor a la derecha */
 .detail-row{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-top:1px solid var(--border);font-size:13px;}
 .detail-row:first-child{border-top:none;}
 .detail-row span:first-child{color:var(--text-secondary);flex-shrink:0;}
 .detail-row span:last-child{font-weight:500;text-align:right;}
+/* caja verde que muestra el alumno ya asignado */
 .asignado-box{display:flex;align-items:center;gap:10px;background:var(--green-50);border:1px solid var(--green-800);border-radius:var(--radius);padding:10px 12px;margin-top:10px;}
 .asignado-box svg{width:18px;height:18px;fill:none;stroke:var(--green-800);stroke-width:2;stroke-linecap:round;flex-shrink:0;}
 .asignado-box p{font-size:13px;color:var(--green-800);font-weight:600;}
 .asignado-box span{font-size:11px;color:var(--green-800);opacity:.8;}
-/* Modal asignar */
+/* modal de asignación es más estrecho que el de detalle */
 .modal-asignar{max-width:400px;}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
