@@ -142,6 +142,7 @@ td{padding:10px 12px;white-space:nowrap;vertical-align:middle;}
 .btn-icon:hover{background:var(--red-50);color:var(--red-600);}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -527,14 +528,73 @@ const TRATAMIENTOS=[
   {grupo:'Tomografías',codigo:'TX-005',nombre:'Tomografía 3D Senos Paranasales',costo:540},
 ];
 
-const KEY='clinica_pagos_v1';
-const KEY_P='clinica_pagos_papelera_v1';
-function loadPagos(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return[];}
-function savePagos(){localStorage.setItem(KEY,JSON.stringify(S.pagos));}
-function loadPapelera(){try{const r=localStorage.getItem(KEY_P);if(r)return JSON.parse(r);}catch(e){}return[];}
-function savePapelera(){localStorage.setItem(KEY_P,JSON.stringify(S.papelera));}
+/* ── SUPABASE ──────────────────────────────────────────────── */
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbPV = window.supabase.createClient(SB_URL, SB_KEY);
 
-const S={pagos:loadPagos(),papelera:loadPapelera(),selMode:false,sel:new Set(),editId:null,tab:'registros',selPapMode:false,selPap:new Set()};
+async function loadPagos(){
+  const {data,error}=await sbPV.from('pagos_visitas').select('*').order('timestamp',{ascending:false});
+  if(error){console.error('Error cargando pagos:',error);return[];}
+  return (data||[]).map(rowToPago);
+}
+async function savePagos(){/* via upsertPago */}
+async function loadPapelera(){
+  const {data,error}=await sbPV.from('pagos_visitas_papelera').select('*').order('timestamp',{ascending:false});
+  if(error){console.error('Error cargando papelera:',error);return[];}
+  return (data||[]).map(rowToPago);
+}
+async function savePapelera(){/* via upsertPapelera */}
+
+async function upsertPago(rec){
+  const row={
+    id:rec.id, timestamp:rec.timestamp, fecha:rec.fecha,
+    paciente:rec.paciente, clinica:rec.clinica, estudiante:rec.estudiante,
+    tratamientos:rec.tratamientos||[], descuento:Number(rec.descuento||0),
+    total:Number(rec.total||0), forma_pago:rec.formaPago||'',
+    registrado_por:rec.registradoPor||'', lugar_pago:rec.lugarPago||'',
+    observaciones:rec.observaciones||'', qr_pago:rec.qrPago||'',
+  };
+  const {error}=await sbPV.from('pagos_visitas').upsert(row,{onConflict:'id'});
+  if(error) console.error('Error guardando pago:',error);
+}
+async function deletePago(id){
+  const {error}=await sbPV.from('pagos_visitas').delete().eq('id',id);
+  if(error) console.error('Error eliminando pago:',error);
+}
+async function upsertPapelera(rec){
+  const row={
+    id:rec.id, timestamp:rec.timestamp, fecha:rec.fecha,
+    paciente:rec.paciente, clinica:rec.clinica, estudiante:rec.estudiante,
+    tratamientos:rec.tratamientos||[], descuento:Number(rec.descuento||0),
+    total:Number(rec.total||0), forma_pago:rec.formaPago||'',
+    registrado_por:rec.registradoPor||'', lugar_pago:rec.lugarPago||'',
+    observaciones:rec.observaciones||'', qr_pago:rec.qrPago||'',
+    eliminado_el:rec._eliminadoEl||'',
+  };
+  const {error}=await sbPV.from('pagos_visitas_papelera').upsert(row,{onConflict:'id'});
+  if(error) console.error('Error guardando papelera:',error);
+}
+async function deletePapelera(id){
+  const {error}=await sbPV.from('pagos_visitas_papelera').delete().eq('id',id);
+  if(error) console.error('Error eliminando papelera:',error);
+}
+
+function rowToPago(r){
+  return{id:r.id,timestamp:r.timestamp,fecha:r.fecha,paciente:r.paciente,
+    clinica:r.clinica,estudiante:r.estudiante,tratamientos:r.tratamientos||[],
+    descuento:r.descuento,total:r.total,formaPago:r.forma_pago,
+    registradoPor:r.registrado_por,lugarPago:r.lugar_pago,
+    observaciones:r.observaciones,qrPago:r.qr_pago,_eliminadoEl:r.eliminado_el};
+}
+
+const S={pagos:[],papelera:[],selMode:false,sel:new Set(),editId:null,tab:'registros',selPapMode:false,selPap:new Set()};
+
+async function inicializar(){
+  S.pagos=await loadPagos();
+  S.papelera=await loadPapelera();
+  renderAll();
+}
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -840,7 +900,7 @@ document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
 document.getElementById('btn-panel-cancel').addEventListener('click',closePanel);
 document.getElementById('panel-overlay').addEventListener('click',closePanel);
 
-document.getElementById('btn-panel-save').addEventListener('click',()=>{
+document.getElementById('btn-panel-save').addEventListener('click',async ()=>{
   const fd=new FormData(document.getElementById('form-pago'));
   const nuevaFormaPago=document.querySelector('[data-group="formaPago"] .selected')?.dataset.value||'';
   const anteriorRec=S.editId?S.pagos.find(x=>x.id===S.editId):null;
@@ -869,7 +929,9 @@ document.getElementById('btn-panel-save').addEventListener('click',()=>{
   };
   if(S.editId){const i=S.pagos.findIndex(x=>x.id===S.editId);if(i>-1)S.pagos[i]=rec;}
   else S.pagos.push(rec);
-  savePagos();renderAll();closePanel();
+  await upsertPago(rec);
+  S.pagos=await loadPagos();
+  renderAll();closePanel();
 });
 
 /* Click fila */
@@ -932,7 +994,8 @@ document.getElementById('btn-confirm-del').addEventListener('click',()=>{
   const eliminados=S.pagos.filter(p=>S.sel.has(p.id)).map(p=>({...p,_eliminadoEl:ahora}));
   S.papelera.push(...eliminados);
   S.pagos=S.pagos.filter(p=>!S.sel.has(p.id));
-  savePagos();savePapelera();
+  for(const p of eliminados) await upsertPapelera(p);
+  for(const id of [...S.sel]) await deletePago(id);
   document.getElementById('modal-confirm').classList.remove('open');
   salirSeleccion();renderAll();
 });
@@ -992,7 +1055,8 @@ function restaurar(id){
   delete rec._eliminadoEl;
   S.pagos.push(rec);
   S.papelera.splice(idx,1);
-  savePagos();savePapelera();
+  await upsertPago(rec);
+  await deletePapelera(id);
   renderPapelera();renderStats();
 }
 
@@ -1050,7 +1114,12 @@ document.getElementById('btn-restaurar-sel').addEventListener('click',()=>{
     const rec={...S.papelera[idx]};delete rec._eliminadoEl;
     S.pagos.push(rec);S.papelera.splice(idx,1);
   });
-  savePagos();savePapelera();
+  for(const id of [...S.selPap]){
+    const idx2=S.papelera.findIndex(p=>p.id===id);
+    if(idx2===-1)continue;
+    const rec2={...S.papelera[idx2]};delete rec2._eliminadoEl;
+    await upsertPago(rec2);await deletePapelera(id);
+  }
   salirSelPap();renderPapelera();renderStats();
 });
 document.getElementById('btn-del-pap-sel').addEventListener('click',()=>{
@@ -1071,7 +1140,7 @@ document.getElementById('btn-confirm-perm').addEventListener('click',()=>{
   }
   const ids=JSON.parse(document.getElementById('modal-perm').dataset.ids||'[]');
   S.papelera=S.papelera.filter(p=>!ids.includes(p.id));
-  savePapelera();
+  for(const id of ids) await deletePapelera(id);
   document.getElementById('modal-perm').classList.remove('open');
   salirSelPap();renderPapelera();
 });
@@ -1353,7 +1422,7 @@ setupAC('f-estudiante', 'ac-estudiante', getAlumnoNombres);
   });
 })();
 
-renderAll();
+inicializar();
 
 /* ── Materias dinámicas ── */
 function getMateriasList(){
@@ -1371,3 +1440,4 @@ function getMateriasList(){
 </script>
 </body>
 </html>
+
