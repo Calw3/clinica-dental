@@ -106,6 +106,8 @@ h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
 .confirm-modal{max-width:380px;}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -268,11 +270,17 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_alumnos_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{alumnos:[]};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbAl=window.supabase.createClient(SB_URL,SB_KEY);
+function rowToAlumno(r){return{id:r.id,idInstitucional:r.id_institucional,nombre:r.nombre,semestre:r.semestre,generacion:r.generacion,correo:r.correo,correoInstitucional:r.correo_institucional,telefono:r.telefono,foto:r.foto};}
+async function loadData(){const{data,error}=await sbAl.from('alumnos').select('*').order('nombre');if(error){console.error(error);return{alumnos:[]};}return{alumnos:(data||[]).map(rowToAlumno)};}
+async function saveData(){}
+async function upsertAlumno(rec){const row={id:rec.id,id_institucional:rec.idInstitucional||'',nombre:rec.nombre,semestre:rec.semestre||'',generacion:rec.generacion||'',correo:rec.correo||'',correo_institucional:rec.correoInstitucional||'',telefono:rec.telefono||'',foto:rec.foto||''};const{error}=await sbAl.from('alumnos').upsert(row,{onConflict:'id'});if(error)console.error(error);}
+async function deleteAlumnos(ids){const{error}=await sbAl.from('alumnos').delete().in('id',ids);if(error)console.error(error);}
 
-const S={data:loadData(),selMode:false,sel:new Set(),editId:null,verId:null};
+const S={data:{alumnos:[]},selMode:false,sel:new Set(),editId:null,verId:null};
+async function inicializar(){S.data=await loadData();renderAll();}
 
 function uid(){return'AL-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase();}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -371,7 +379,7 @@ document.getElementById('inp-foto').addEventListener('change',e=>{
 });
 
 /* Guardar */
-document.getElementById('btn-save-panel').addEventListener('click',()=>{
+document.getElementById('btn-save-panel').addEventListener('click',async ()=>{
   const nombre=document.getElementById('f-nombre').value.trim();
   const semestre=document.getElementById('f-semestre').value;
   if(!nombre){document.getElementById('f-nombre').focus();return;}
@@ -389,7 +397,7 @@ document.getElementById('btn-save-panel').addEventListener('click',()=>{
   };
   if(S.editId){const i=S.data.alumnos.findIndex(x=>x.id===S.editId);if(i>-1)S.data.alumnos[i]=rec;}
   else S.data.alumnos.push(rec);
-  saveData();renderAll();closePanel();
+  await upsertAlumno(rec);S.data=await loadData();renderAll();closePanel();
 });
 
 /* Ver alumno */
@@ -439,13 +447,12 @@ function abrirConfirm(ids){
 }
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
   const ids=JSON.parse(document.getElementById('modal-confirm').dataset.ids||'[]');
-  S.data.alumnos=S.data.alumnos.filter(a=>!ids.includes(a.id));
-  saveData();document.getElementById('modal-confirm').classList.remove('open');
+  await deleteAlumnos(ids);S.data=await loadData();document.getElementById('modal-confirm').classList.remove('open');
   salirSel();renderAll();
 });
 
@@ -491,7 +498,8 @@ document.getElementById('btn-del-sel').addEventListener('click',()=>{
 document.getElementById('buscar').addEventListener('input',renderLista);
 document.getElementById('filtro-sem').addEventListener('change',renderLista);
 
-renderAll();
+inicializar();
 </script>
 </body>
 </html>
+
