@@ -1048,7 +1048,7 @@ function renderPapelera(){
   document.getElementById('th-check-pap').style.display=S.selPapMode?'table-cell':'none';
 }
 
-function restaurar(id){
+async function restaurar(id){
   const idx=S.papelera.findIndex(p=>p.id===id);
   if(idx===-1)return;
   const rec={...S.papelera[idx]};
