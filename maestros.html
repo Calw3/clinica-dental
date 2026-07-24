@@ -556,8 +556,8 @@ document.getElementById('btn-save-panel').addEventListener('click',async ()=>{
   };
   if(S.editId){const i=S.data.maestros.findIndex(x=>x.id===S.editId);if(i>-1)S.data.maestros[i]=rec;}
   else S.data.maestros.push(rec);
-  await upsertMaestro(rec);S.data=await loadData();renderAll();
-  await populateMaterias('f-clinica');closePanel();
+  saveData();renderAll();
+populateMaterias('f-clinica');closePanel();
 });
 
 /* Ver maestro */
@@ -626,7 +626,7 @@ document.getElementById('btn-confirm-del').addEventListener('click',async ()=>{
   S.data.maestros=S.data.maestros.filter(m=>!ids.includes(m.id));
   await deleteMaestros(ids);S.data=await loadData();document.getElementById('modal-confirm').classList.remove('open');
   salirSel();renderAll();
-await populateMaterias('f-clinica');
+populateMaterias('f-clinica');
 });
 
 /* Selección */
@@ -673,13 +673,13 @@ document.getElementById('filtro-horario').addEventListener('change',renderLista)
 
 buildHorarioTable();
 renderAll();
-await populateMaterias('f-clinica');
+populateMaterias('f-clinica');
 
 /* ── Materias dinámicas desde catálogo ── */
-async function populateMaterias(selectId, currentVal){
+function populateMaterias(selectId, currentVal){
   const sel=document.getElementById(selectId);if(!sel)return;
   try{
-    const{data:_mats}=await sbMae.from('materias').select('nombre,tipo');const d=_mats?JSON.stringify({materias:_mats}):null;
+    const d=localStorage.getItem('clinica_materias_v1');
     if(d){
       const parsed=JSON.parse(d);
       const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
