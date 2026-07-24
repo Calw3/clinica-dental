@@ -127,6 +127,7 @@ h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
 .confirm-modal{max-width:360px;}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -346,14 +347,36 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_justificantes_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{justificantes:[],folioSeq:1,recetas:[],recetaSeq:1};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbJUS=window.supabase.createClient(SB_URL,SB_KEY);
+let _pacientesJUS=[],_alumnosJUS=[];
+async function cargarCatalogosJUS(){
+  const[pacRes,aluRes]=await Promise.all([
+    sbJUS.from('expedientes').select('nombre').order('nombre'),
+    sbJUS.from('alumnos').select('nombre').order('nombre')
+  ]);
+  _pacientesJUS=(pacRes.data||[]).map(r=>r.nombre).filter(Boolean);
+  _alumnosJUS=(aluRes.data||[]).map(r=>r.nombre).filter(Boolean);
+}
+function getPacientes(){return _pacientesJUS;}
+function getAlumnos(){return _alumnosJUS;}
+async function loadData(){
+  const{data,error}=await sbJUS.from('justificantes').select('*').order('created_at',{ascending:false});
+  if(error){console.error(error);return{justificantes:[],folioSeq:1,recetas:[],recetaSeq:1};}
+  const justs=(data||[]).filter(r=>r.tipo==='justificante');
+  const recs=(data||[]).filter(r=>r.tipo==='receta');
+  return{justificantes:justs,folioSeq:justs.length+1,recetas:recs,recetaSeq:recs.length+1};
+}
+async function saveData(){
+  const todos=[...S.data.justificantes,...S.data.recetas];
+  for(const r of todos){ await sbJUS.from('justificantes').upsert(r,{onConflict:'id'}); }
+}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function fmtFecha(s){if(!s)return'—';const[y,m,d]=s.split('-');const ms=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return`${parseInt(d)} de ${ms[parseInt(m)-1]} de ${y}`;}
 function todayISO(){const d=new Date();const p=v=>String(v).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 
-const S={data:loadData(),tab:'just',editId:null,editType:null,verId:null,verType:null,delId:null,delType:null,jFirmaDirty:false,rFirmaDirty:false};
+const S={data:{justificantes:[],folioSeq:1,recetas:[],recetaSeq:1},tab:'just',editId:null,editType:null,verId:null,verType:null,delId:null,delType:null,jFirmaDirty:false,rFirmaDirty:false};
 /* ensure arrays exist (compat with old data) */
 if(!S.data.recetas)S.data.recetas=[];
 if(!S.data.recetaSeq)S.data.recetaSeq=1;
@@ -393,9 +416,9 @@ function setupAC(inputId,listId,getItems,onSelect){
     else if(e.key==='Escape'){list.classList.remove('open');}
   });
 }
-function getPacientes(){try{const d=localStorage.getItem('clinica_dental_data_v1');if(d){const p=JSON.parse(d);return(p.expedientes||[]).map(e=>e.nombre).filter(Boolean).sort();}}catch(e){}return[];}
-function getAlumnos(){try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}return[];}
-function getMaestros(){try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}return[];}
+
+
+function getMaestros(){try{const d=null;if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}return[];}
 setupAC('f-paciente','ac-paciente',getPacientes);
 setupAC('f-alumno','ac-alumno',getAlumnos);
 setupAC('f-maestro','ac-maestro',getMaestros);
