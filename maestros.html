@@ -554,10 +554,24 @@ document.getElementById('btn-save-panel').addEventListener('click',async ()=>{
     correo:document.getElementById('f-correo').value.trim(),
     foto,
   };
+  const btnSave = document.getElementById('btn-save-panel');
+  btnSave.disabled = true;
+  btnSave.textContent = 'Guardando...';
   if(S.editId){const i=S.data.maestros.findIndex(x=>x.id===S.editId);if(i>-1)S.data.maestros[i]=rec;}
   else S.data.maestros.push(rec);
-  await upsertMaestro(rec);S.data=await loadData();renderAll();
-  await populateMaterias('f-clinica');closePanel();
+  try {
+    await upsertMaestro(rec);
+    S.data=await loadData();
+    renderAll();
+    closePanel();
+    try { await populateMaterias('f-clinica'); } catch(pe){ console.error('populateMaterias error:', pe); }
+  } catch(err) {
+    console.error('Error al guardar maestro:', err);
+    alert('Error al guardar: ' + err.message);
+  } finally {
+    const btn = document.getElementById('btn-save-panel');
+    if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
+  }
 });
 
 /* Ver maestro */
