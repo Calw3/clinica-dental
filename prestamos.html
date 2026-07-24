@@ -128,6 +128,7 @@ h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
 .comment-box{background:var(--surface-1);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text-primary);line-height:1.5;margin-top:8px;border:1px solid var(--border);}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -377,15 +378,48 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_prestamos_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{equipos:[],prestamos:[]};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbPR=window.supabase.createClient(SB_URL,SB_KEY);
+
+function rowToEquipo(r){return{id:r.id,nombre:r.nombre,serie:r.serie||'',desc:r.descripcion||'',cantidad:r.cantidad||1,foto:r.foto||''};}
+function rowToPrestamo(r){return{id:r.id,equipoId:r.equipo_id,equipoNombre:r.equipo_nombre,responsable:r.responsable,tipoResp:r.tipo_resp,fechaSalida:r.fecha_salida,comentarioSalida:r.comentario_salida,fotoSalida:r.foto_salida,fechaDevolucion:r.fecha_devolucion,comentarioDevolucion:r.comentario_devolucion,fotoDevolucion:r.foto_devolucion,estado:r.estado};}
+
+async function loadData(){
+  const [eRes,pRes]=await Promise.all([
+    sbPR.from('equipos').select('*').order('nombre'),
+    sbPR.from('prestamos').select('*').order('created_at',{ascending:false})
+  ]);
+  if(eRes.error)console.error('equipos:',eRes.error);
+  if(pRes.error)console.error('prestamos:',pRes.error);
+  return{equipos:(eRes.data||[]).map(rowToEquipo),prestamos:(pRes.data||[]).map(rowToPrestamo)};
+}
+async function saveData(){}
+
+async function upsertEquipo(rec){
+  const row={id:rec.id,nombre:rec.nombre,serie:rec.serie||'',descripcion:rec.desc||'',cantidad:rec.cantidad||1,foto:rec.foto||''};
+  const{error}=await sbPR.from('equipos').upsert(row,{onConflict:'id'});
+  if(error)throw error;
+}
+async function deleteEquipo(id){
+  const{error}=await sbPR.from('equipos').delete().eq('id',id);
+  if(error)throw error;
+}
+async function upsertPrestamo(rec){
+  const row={id:rec.id,equipo_id:rec.equipoId,equipo_nombre:rec.equipoNombre,responsable:rec.responsable,tipo_resp:rec.tipoResp,fecha_salida:rec.fechaSalida,comentario_salida:rec.comentarioSalida||'',foto_salida:rec.fotoSalida||'',fecha_devolucion:rec.fechaDevolucion||'',comentario_devolucion:rec.comentarioDevolucion||'',foto_devolucion:rec.fotoDevolucion||'',estado:rec.estado};
+  const{error}=await sbPR.from('prestamos').upsert(row,{onConflict:'id'});
+  if(error)throw error;
+}
+async function deletePrestamo(id){
+  const{error}=await sbPR.from('prestamos').delete().eq('id',id);
+  if(error)throw error;
+}
 function uid(){return 'PR-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,4).toUpperCase();}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function fmtDT(s){if(!s)return'—';const d=new Date(s);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});}
 function nowDT(){const n=new Date();const p=v=>String(v).padStart(2,'0');return`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`;}
 
-const S={data:loadData(),tab:'prestamos',verPId:null,verEId:null,editPId:null,editEId:null,tipoResp:'alumno'};
+const S={data:{equipos:[],prestamos:[]},tab:'prestamos',verPId:null,verEId:null,editPId:null,editEId:null,tipoResp:'alumno'};
 
 /* ─── Foto helpers ─── */
 function bindFoto(inputId,imgId,phId,clearId){
@@ -456,8 +490,8 @@ function setupAC(inputId,listId,getItems){
   });
 }
 function getEquipoNombres(){return S.data.equipos.map(e=>e.nombre);}
-function getAlumnoNombres(){try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}return[];}
-function getMaestroNombres(){try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}return[];}
+async function getAlumnoNombres(){try{const{data}=await sbPR.from('alumnos').select('nombre').order('nombre');return(data||[]).map(a=>a.nombre).filter(Boolean);}catch(e){}return[];}
+async function getMaestroNombres(){try{const{data}=await sbPR.from('maestros').select('nombre').order('nombre');return(data||[]).map(m=>m.nombre).filter(Boolean);}catch(e){}return[];}
 function getNombresResp(){return S.tipoResp==='alumno'?getAlumnoNombres():getMaestroNombres();}
 setupAC('pp-equipo','ac-pp-equipo',getEquipoNombres);
 setupAC('pp-responsable','ac-pp-responsable',getNombresResp);
@@ -631,7 +665,7 @@ document.getElementById('pp-save').addEventListener('click',()=>{
   };
   if(S.editPId){const i=S.data.prestamos.findIndex(x=>x.id===S.editPId);if(i>-1)S.data.prestamos[i]=rec;}
   else S.data.prestamos.push(rec);
-  saveData();renderAll();closePanelP();
+  try{await upsertPrestamo(rec);S.data=await loadData();renderAll();closePanelP();}catch(err){alert('Error al guardar préstamo: '+err.message);}
 });
 
 /* ─── Panel equipo ─── */
@@ -675,7 +709,7 @@ document.getElementById('pe-save').addEventListener('click',()=>{
   };
   if(S.editEId){const i=S.data.equipos.findIndex(x=>x.id===S.editEId);if(i>-1)S.data.equipos[i]=rec;}
   else S.data.equipos.push(rec);
-  saveData();renderAll();closePanelE();
+  try{await upsertEquipo(rec);S.data=await loadData();renderAll();closePanelE();}catch(err){alert('Error al guardar equipo: '+err.message);}
 });
 
 /* ─── Modal devolver ─── */
@@ -824,7 +858,11 @@ document.getElementById('buscar-p').addEventListener('input',renderPrestamos);
 document.getElementById('filtro-estado').addEventListener('change',renderPrestamos);
 document.getElementById('buscar-e').addEventListener('input',renderEquipos);
 
-renderAll();
+async function inicializar(){S.data=await loadData();renderAll();}
+inicializar();
+
+sbPR.channel('equipos-rt').on('postgres_changes',{event:'*',schema:'public',table:'equipos'},async()=>{S.data=await loadData();renderAll();}).subscribe();
+sbPR.channel('prestamos-rt').on('postgres_changes',{event:'*',schema:'public',table:'prestamos'},async()=>{S.data=await loadData();renderAll();}).subscribe();
 </script>
 </body>
 </html>
