@@ -918,7 +918,18 @@ function imprimirRec(id){
 }
 
 document.getElementById('buscar').addEventListener('input',renderLista);
-renderAll();
+
+async function inicializar(){
+  await cargarCatalogosJUS();
+  S.data = await loadData();
+  renderAll();
+}
+inicializar();
+
+// Realtime
+sbJUS.channel('jus-rt').on('postgres_changes',{event:'*',schema:'public',table:'justificantes'},async()=>{
+  S.data=await loadData();renderAll();
+}).subscribe();
 
 // Deep-link desde expediente
 (function(){
