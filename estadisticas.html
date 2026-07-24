@@ -66,6 +66,7 @@ h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
 .no-data{font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center;}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:40px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -87,7 +88,25 @@ function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function todayISO(){const d=new Date();const p=v=>String(v).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 function mesISO(){return todayISO().slice(0,7);}
 function fmtFecha(s){if(!s)return'—';const[y,m,d]=s.split('-');const ms=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${parseInt(d)} ${ms[parseInt(m)-1]} ${y}`;}
-function tryParse(key){try{const r=localStorage.getItem(key);return r?JSON.parse(r):null;}catch(e){return null;}}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbST=window.supabase.createClient(SB_URL,SB_KEY);
+async function cargarTodosLosDatos(){
+  const[expRes,aluRes,maeRes,pagRes,presRes]=await Promise.all([
+    sbST.from('expedientes').select('id,nombre,tipo_paciente,tipo_historia,sexo,edad'),
+    sbST.from('alumnos').select('id,nombre,semestre'),
+    sbST.from('maestros').select('id,nombre,puesto'),
+    sbST.from('pagos_visitas').select('*'),
+    sbST.from('prestamos').select('*')
+  ]);
+  return{
+    expedientes:expRes.data||[],
+    alumnos:aluRes.data||[],
+    maestros:maeRes.data||[],
+    pagos:pagRes.data||[],
+    prestamos:presRes.data||[]
+  };
+}
 
 function icon(paths,strokeColor){
   return`<svg viewBox="0 0 24 24" style="stroke:${strokeColor}">${paths}</svg>`;
