@@ -145,6 +145,7 @@ h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
 .modal-sm{max-width:360px;}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -418,16 +419,32 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_ceye_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{registros:[],seq:1};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbCE=window.supabase.createClient(SB_URL,SB_KEY);
+let _maestrosCE=[];
+async function cargarMaestrosCE(){
+  const{data}=await sbCE.from('maestros').select('nombre').order('nombre');
+  _maestrosCE=(data||[]).map(m=>m.nombre).filter(Boolean);
+}
+async function loadData(){
+  const{data,error}=await sbCE.from('ceye').select('*').order('created_at',{ascending:false});
+  if(error){console.error(error);return{registros:[],seq:1};}
+  const seq=data&&data.length>0?Math.max(...data.map(r=>r.seq||0))+1:1;
+  return{registros:data||[],seq};
+}
+async function saveData(){
+  for(const r of S.data.registros){
+    await sbCE.from('ceye').upsert(r,{onConflict:'id'});
+  }
+}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function uid(){const d=S.data;const n=String(d.seq||1).padStart(4,'0');d.seq=(d.seq||1)+1;return'CeYE-'+fmtDate(new Date()).replace(/\//g,'')+'-'+n;}
 function fmtDate(d){return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
 function fmtTime(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function fmtTS(iso){if(!iso)return'—';const d=new Date(iso);return`${fmtDate(d)} a las ${fmtTime(d)}`;}
 
-const S={data:loadData(),verId:null,esterilId:null,newId:null,newTS:null};
+const S={data:{registros:[],seq:1},verId:null,esterilId:null,newId:null,newTS:null};
 
 /* ─── Fotos ─── */
 function loadFoto(inp,imgId,lblId,clearId){
@@ -493,15 +510,15 @@ function setupAC(inputId,listId,getItems,onSelect){
 }
 
 function getMaestros(){
-  try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}
+  return _maestrosCE;
   return[];
 }
 function getAlumnos(){
-  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}
+  try{const d=null;if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}
   return[];
 }
 function getAlumnoCorreo(nombre){
-  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);const a=(p.alumnos||[]).find(x=>x.nombre===nombre);return a?a.correoInstitucional||a.correo||'':''}}catch(e){}
+  try{const d=null;if(d){const p=JSON.parse(d);const a=(p.alumnos||[]).find(x=>x.nombre===nombre);return a?a.correoInstitucional||a.correo||'':''}}catch(e){}
   return'';
 }
 
@@ -728,7 +745,7 @@ populateMaterias('f-clinica');
 function populateMaterias(selectId, currentVal){
   const sel=document.getElementById(selectId);if(!sel)return;
   try{
-    const d=localStorage.getItem('clinica_materias_v1');
+    const d=null;
     if(d){
       const parsed=JSON.parse(d);
       const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
