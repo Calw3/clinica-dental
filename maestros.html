@@ -123,6 +123,7 @@ h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
 .confirm-modal{max-width:380px;}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -395,15 +396,20 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_maestros_v1';
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbMae=window.supabase.createClient(SB_URL,SB_KEY);
+async function loadData(){const{data,error}=await sbMae.from('maestros').select('*').order('nombre');if(error){console.error(error);return{maestros:[]}}return{maestros:data||[]};}
+async function saveData(){}
+async function upsertMaestro(rec){const{error}=await sbMae.from('maestros').upsert(rec,{onConflict:'id'});if(error)console.error(error);}
+async function deleteMaestros(ids){const{error}=await sbMae.from('maestros').delete().in('id',ids);if(error)console.error(error);}
 const SLOTS=['7:00–8:30','8:30–10:00','10:00–11:30','11:30–13:00','13:00–14:30','14:30–16:00','16:00–17:30','17:30–19:00','19:00–20:30','20:30–22:00'];
 const DIAS=['L','M','X','J','V'];
 const DIAS_FULL=['Lunes','Martes','Miércoles','Jueves','Viernes'];
 
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{maestros:[]};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
 
-const S={data:loadData(),selMode:false,sel:new Set(),editId:null,verId:null,slots:{}};
+
+const S={data:{maestros:[]},selMode:false,sel:new Set(),editId:null,verId:null,slots:{}};
 
 function uid(){return'MA-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase();}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -529,7 +535,7 @@ document.getElementById('inp-foto').addEventListener('change',e=>{
 });
 
 /* Guardar */
-document.getElementById('btn-save-panel').addEventListener('click',()=>{
+document.getElementById('btn-save-panel').addEventListener('click',async ()=>{
   const nombre=document.getElementById('f-nombre').value.trim();
   const puesto=document.getElementById('f-puesto').value;
   if(!nombre){document.getElementById('f-nombre').focus();return;}
@@ -612,13 +618,13 @@ function abrirConfirm(ids){
 }
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
   const ids=JSON.parse(document.getElementById('modal-confirm').dataset.ids||'[]');
   S.data.maestros=S.data.maestros.filter(m=>!ids.includes(m.id));
-  saveData();document.getElementById('modal-confirm').classList.remove('open');
+  await deleteMaestros(ids);S.data=await loadData();document.getElementById('modal-confirm').classList.remove('open');
   salirSel();renderAll();
 populateMaterias('f-clinica');
 });
