@@ -108,6 +108,7 @@ h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
 .empty-state p:last-child{font-size:12px;margin-top:3px;}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -195,9 +196,14 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_asistencia_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{registros:[]};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbAs=window.supabase.createClient(SB_URL,SB_KEY);
+async function loadData(){const{data,error}=await sbAs.from('asistencia').select('*').order('timestamp',{ascending:false});if(error){console.error(error);return{registros:[]}}return{registros:data||[]};}
+async function saveData(){}
+async function upsertAsistencia(rec){const{error}=await sbAs.from('asistencia').upsert(rec,{onConflict:'id'});if(error)console.error(error);}
+async function deleteAsistencia(ids){const{error}=await sbAs.from('asistencia').delete().in('id',ids);if(error)console.error(error);}
+
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -208,7 +214,7 @@ function fmtHora(ts){const d=new Date(ts);return`${pad(d.getHours())}:${pad(d.ge
 function fmtFechaLarga(iso){const[y,m,d]=iso.split('-');const f=new Date(iso+'T12:00:00');return`${DIAS_S[f.getDay()]} ${parseInt(d)} de ${MESES[parseInt(m)-1]} de ${y}`;}
 function fmtFechaCorta(iso){const[y,m,d]=iso.split('-');return`${parseInt(d)}/${parseInt(m)}/${y}`;}
 
-const S={data:loadData(),tab:'kiosk'};
+const S={data:{registros:[]},tab:'kiosk'};
 
 /* ─── Reloj ─── */
 function tickReloj(){
@@ -237,7 +243,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 /* ─── Buscar maestro por ID institucional ─── */
 function getMaestro(idInstitucional){
   try{
-    const d=localStorage.getItem('clinica_maestros_v1');
+    const{data:_mData}=await sbAs.from('maestros').select('*');const d=_mData?JSON.stringify({maestros:_mData}):null;
     if(d){
       const p=JSON.parse(d);
       return (p.maestros||[]).find(m=>(m.idInstitucional||'').toUpperCase().trim()===(idInstitucional||'').toUpperCase().trim())||null;
@@ -285,7 +291,7 @@ function registrar(tipo){
     hora:`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
   };
   S.data.registros.push(rec);
-  saveData();
+  await upsertAsistencia(rec);
   renderHistorial();
 
   /* Mostrar confirmación */
