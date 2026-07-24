@@ -54,6 +54,7 @@ textarea{resize:vertical;min-height:60px}
 .hide{display:none!important}
 .badge{display:inline-block;background:var(--or50);color:var(--or800);border:1px solid var(--or);border-radius:20px;padding:1px 8px;font-size:10px;font-weight:700}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header>
@@ -258,15 +259,38 @@ textarea{resize:vertical;min-height:60px}
 
 <script>
 // ── Storage ─────────────────────────────────────────────────────────────────
-const KEY = 'clinica_consentimientos_v1';
-const load = () => { try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]} };
-const save = a  => localStorage.setItem(KEY, JSON.stringify(a));
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbCON=window.supabase.createClient(SB_URL,SB_KEY);
+async function cargarCatalogosDeCon(){
+  const[pacRes,aluRes,docRes]=await Promise.all([
+    sbCON.from('expedientes').select('id,nombre,id_paciente').order('nombre'),
+    sbCON.from('alumnos').select('id,nombre').order('nombre'),
+    sbCON.from('maestros').select('id,nombre').order('nombre')
+  ]);
+  _pacsCon=(pacRes.data||[]).map(r=>({id:r.id,nombre:r.nombre,idPaciente:r.id_paciente}));
+  _alusCon=(aluRes.data||[]).map(r=>r.nombre||'').filter(Boolean);
+  _docsCon=(docRes.data||[]).map(r=>r.nombre||'').filter(Boolean);
+}
+let _pacsCon=[],_alusCon=[],_docsCon=[];
+const getPacsObjs=()=>_pacsCon;
+const getAlus=()=>_alusCon;
+const getDocs=()=>_docsCon;
+
+async function loadCons(){
+  const{data,error}=await sbCON.from('consentimientos').select('*').order('created_at',{ascending:false});
+  if(error){console.error(error);return[];}
+  return data||[];
+}
+async function saveCons(arr){
+  for(const c of arr){ await sbCON.from('consentimientos').upsert(c,{onConflict:'id'}); }
+}
 
 // ── Catálogos ────────────────────────────────────────────────────────────────
-const getPacsObjs = () => { try{const d=localStorage.getItem('clinica_dental_data_v1'); if(!d)return[]; const obj=JSON.parse(d); return(obj.expedientes||[]).filter(Boolean);}catch(e){return[]} };
+
 const getPacs = () => getPacsObjs().map(p=>p.nombre||p.paciente||'').filter(Boolean);
-const getAlus = () => { try{const d=JSON.parse(localStorage.getItem('clinica_alumnos_v1')||'{}'); return(d.alumnos||[]).map(a=>a.nombre||'').filter(Boolean)}catch(e){return[]} };
-const getDocs = () => { try{const d=JSON.parse(localStorage.getItem('clinica_maestros_v1')||'{}'); return(d.maestros||[]).map(m=>m.nombre||'').filter(Boolean)}catch(e){return[]} };
+
+
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 function switchTab(t){
