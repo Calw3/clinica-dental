@@ -84,6 +84,7 @@
   .info-row span:last-child{font-weight:500;}
   .error-msg{text-align:center;padding:60px 20px;color:var(--text-secondary);}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -198,8 +199,16 @@
 const EXP_KEY='clinica_dental_data_v1';
 const PAGOS_KEY='clinica_pagos_v1';
 
-function loadExpData(){try{const r=localStorage.getItem(EXP_KEY);if(r)return JSON.parse(r);}catch(e){}return{expedientes:[]};}
-function saveExpData(d){localStorage.setItem(EXP_KEY,JSON.stringify(d));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbNEV=window.supabase.createClient(SB_URL,SB_KEY);
+async function loadExpData(){
+  const{data,error}=await sbNEV.from('expedientes').select('id,nombre,id_paciente,sexo,edad,tipo_paciente,padecimiento,habitos').order('nombre');
+  if(error){console.error(error);return{expedientes:[]};}
+  return{expedientes:(data||[]).map(r=>({id:r.id,nombre:r.nombre,idPaciente:r.id_paciente,sexo:r.sexo,edad:r.edad,tipoPaciente:r.tipo_paciente,padecimiento:r.padecimiento,habitos:r.habitos}))};
+}
+function saveExpData(d){/* solo lectura */}
+
 
 const params=new URLSearchParams(location.search);
 const expId=params.get('expId');
@@ -211,7 +220,7 @@ const expIdx=expData.expedientes.findIndex(x=>x.id===expId);
 const exp=expIdx>-1?expData.expedientes[expIdx]:null;
 
 let pagos=[];
-try{pagos=JSON.parse(localStorage.getItem(PAGOS_KEY)||'[]');}catch(e){}
+sbNEV.from('pagos_visitas').select('*').order('timestamp',{ascending:false}).then(r=>{pagos=r.data||[];});
 const pago=pagos.find(x=>x.id===pagoId)||null;
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
