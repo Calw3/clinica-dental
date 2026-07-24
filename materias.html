@@ -83,6 +83,7 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 .tipo-cb{background:#EAF3DE;color:#27500A;}
 .tipo-fu{background:#FAEEDA;color:#854F0B;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -165,7 +166,12 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_materias_v1';
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbMat=window.supabase.createClient(SB_URL,SB_KEY);
+async function loadMaterias(){const{data,error}=await sbMat.from('materias').select('*').order('nombre');if(error){console.error(error);return DEFAULTS.map((d,i)=>({id:'def'+i,...d}));}return data&&data.length>0?data:DEFAULTS.map((d,i)=>({id:'def'+i,...d}));}
+async function saveMaterias(arr){for(const r of arr){await sbMat.from('materias').upsert(r,{onConflict:'id'});}}
+async function deleteMateriaById(id){await sbMat.from('materias').delete().eq('id',id);}
 
 const DEFAULTS=[
   {nombre:'Clínica Integral I',tipo:'Clínica Integral'},
@@ -235,7 +241,7 @@ function loadData(){
   try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}
   return null;
 }
-function saveData(d){localStorage.setItem(KEY,JSON.stringify(d));}
+
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
 let S={data:null,editId:null,delId:null};
