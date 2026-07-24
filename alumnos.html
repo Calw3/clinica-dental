@@ -499,6 +499,15 @@ document.getElementById('buscar').addEventListener('input',renderLista);
 document.getElementById('filtro-sem').addEventListener('change',renderLista);
 
 inicializar();
+
+// Realtime — sincronización automática entre dispositivos
+sbAl.channel('alumnos-changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'alumnos' }, async () => {
+    S.data = await loadData();
+    renderAll();
+  })
+  .subscribe();
+
 </script>
 </body>
 </html>
