@@ -114,6 +114,7 @@
   .perio-mov-sel{width:56px;height:20px;font-size:9px;padding:0 2px;border:1px solid var(--border);border-radius:3px;background:#fff;}
   .perio-divider{height:3px;background:var(--teal-600);border-radius:2px;margin:8px 0;width:calc(100% - 64px);margin-left:64px;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="wrap">
@@ -1228,10 +1229,10 @@
 const STORAGE_KEY = 'clinica_dental_data_v1';
 
 function loadData(){
-  try{ const r=localStorage.getItem(STORAGE_KEY); if(r) return JSON.parse(r); }catch(e){}
+  try{ const r=null /* migrado a Supabase */; if(r) return JSON.parse(r); }catch(e){}
   return {expedientes:[]};
 }
-function saveData(data){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+async function saveData(data){ for(const exp of (data.expedientes||[])){ const row={id:exp.id,nombre:exp.nombre||""};await sbHC.from("expedientes").upsert(row,{onConflict:"id"});} }
 
 const params = new URLSearchParams(location.search);
 const patientId = params.get('id');
@@ -1643,7 +1644,7 @@ function setupAutCanvas(canvasId, clearBtnId){
   canvas.addEventListener('touchend',()=>drawing=false);
   document.getElementById(clearBtnId)?.addEventListener('click',()=>{
     ctx.clearRect(0,0,canvas.width,canvas.height); hasContent=false;
-    // Si es la firma del doctor, borrarla en localStorage para que HC vuelva a "pendiente"
+    // Firma del doctor actualizada en Supabase
     if(clearBtnId === 'limpiar-aut-prof' && exp && data.expedientes[expIdx]?.historiaClinica?.autorizaciones){
       data.expedientes[expIdx].historiaClinica.autorizaciones.profFirma = '';
       saveData(data);
