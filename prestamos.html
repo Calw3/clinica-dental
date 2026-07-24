@@ -490,9 +490,20 @@ function setupAC(inputId,listId,getItems){
   });
 }
 function getEquipoNombres(){return S.data.equipos.map(e=>e.nombre);}
-async function getAlumnoNombres(){try{const{data}=await sbPR.from('alumnos').select('nombre').order('nombre');return(data||[]).map(a=>a.nombre).filter(Boolean);}catch(e){}return[];}
-async function getMaestroNombres(){try{const{data}=await sbPR.from('maestros').select('nombre').order('nombre');return(data||[]).map(m=>m.nombre).filter(Boolean);}catch(e){}return[];}
-function getNombresResp(){return S.tipoResp==='alumno'?getAlumnoNombres():getMaestroNombres();}
+// Caché de nombres para autocomplete
+let _cacheAlumnos=[];
+let _cacheMaestros=[];
+async function cargarNombresResp(){
+  const[al,ma]=await Promise.all([
+    sbPR.from('alumnos').select('nombre').order('nombre'),
+    sbPR.from('maestros').select('nombre').order('nombre')
+  ]);
+  _cacheAlumnos=(al.data||[]).map(a=>a.nombre).filter(Boolean);
+  _cacheMaestros=(ma.data||[]).map(m=>m.nombre).filter(Boolean);
+}
+function getAlumnoNombres(){return _cacheAlumnos;}
+function getMaestroNombres(){return _cacheMaestros;}
+function getNombresResp(){return S.tipoResp==='alumno'?_cacheAlumnos:_cacheMaestros;}
 setupAC('pp-equipo','ac-pp-equipo',getEquipoNombres);
 setupAC('pp-responsable','ac-pp-responsable',getNombresResp);
 
@@ -637,7 +648,7 @@ document.getElementById('btn-nuevo-prestamo').addEventListener('click',()=>openP
 document.getElementById('pp-cancel').addEventListener('click',closePanelP);
 document.getElementById('po-prestamo').addEventListener('click',closePanelP);
 
-document.getElementById('pp-save').addEventListener('click',()=>{
+document.getElementById('pp-save').addEventListener('click',async ()=>{
   const equipoNombre=document.getElementById('pp-equipo').value.trim();
   const responsable=document.getElementById('pp-responsable').value.trim();
   const fechaSalida=document.getElementById('pp-fechaSalida').value;
@@ -697,7 +708,7 @@ function closePanelE(){
 document.getElementById('btn-nuevo-equipo').addEventListener('click',()=>openPanelE());
 document.getElementById('pe-cancel').addEventListener('click',closePanelE);
 document.getElementById('po-equipo').addEventListener('click',closePanelE);
-document.getElementById('pe-save').addEventListener('click',()=>{
+document.getElementById('pe-save').addEventListener('click',async ()=>{
   const nombre=document.getElementById('pe-nombre').value.trim();
   if(!nombre){document.getElementById('pe-nombre').focus();return;}
   const rec={
@@ -858,7 +869,7 @@ document.getElementById('buscar-p').addEventListener('input',renderPrestamos);
 document.getElementById('filtro-estado').addEventListener('change',renderPrestamos);
 document.getElementById('buscar-e').addEventListener('input',renderEquipos);
 
-async function inicializar(){S.data=await loadData();renderAll();}
+async function inicializar(){await cargarNombresResp();S.data=await loadData();renderAll();}
 inicializar();
 
 sbPR.channel('equipos-rt').on('postgres_changes',{event:'*',schema:'public',table:'equipos'},async()=>{S.data=await loadData();renderAll();}).subscribe();
