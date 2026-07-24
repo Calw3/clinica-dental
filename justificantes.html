@@ -368,9 +368,14 @@ async function loadData(){
   if(error){console.error(error);return{justificantes:[],folioSeq:1,recetas:[],recetaSeq:1};}
   const mapRow=r=>({
     id:r.id, tipo:r.tipo, folio:r.folio, paciente:r.paciente,
-    fechaEmision:r.fecha_emision, fechaAtencion:r.fecha_atencion,
-    motivo:r.motivo, dias:r.dias, alumno:r.alumno, maestro:r.maestro,
-    firma:r.firma, datos:r.datos||{}
+    alumno:r.alumno, maestro:r.maestro, firma:r.firma,
+    fechaEmision:(r.datos||{}).fechaEmision||'',
+    fechaAtencion:(r.datos||{}).fechaAtencion||'',
+    diagnostico:(r.datos||{}).diagnostico||'',
+    dias:(r.datos||{}).dias||'',
+    indicaciones:(r.datos||{}).indicaciones||'',
+    medicamentos:(r.datos||{}).medicamentos||[],
+    datos:r.datos||{}
   });
   const justs=(data||[]).filter(r=>r.tipo==='justificante').map(mapRow);
   const recs=(data||[]).filter(r=>r.tipo==='receta').map(mapRow);
@@ -383,11 +388,18 @@ async function saveData(){
   for(const r of todos){
     const row={
       id:r.id, tipo:r.tipo||'justificante', folio:r.folio||'',
-      paciente:r.paciente||'', fecha_emision:r.fechaEmision||r.fecha_emision||'',
-      fecha_atencion:r.fechaAtencion||r.fecha_atencion||'',
-      motivo:r.motivo||'', dias:parseInt(r.dias)||0,
+      paciente:r.paciente||'',
       alumno:r.alumno||'', maestro:r.maestro||'',
-      firma:r.firma||'', datos:r.datos||{}
+      firma:r.firma||'',
+      datos:{
+        fechaEmision:r.fechaEmision||'',
+        fechaAtencion:r.fechaAtencion||'',
+        diagnostico:r.diagnostico||r.motivo||'',
+        dias:r.dias||'',
+        indicaciones:r.indicaciones||'',
+        medicamentos:r.medicamentos||[],
+        ...(r.datos||{})
+      }
     };
     await sbJUS.from('justificantes').upsert(row,{onConflict:'id'});
   }
