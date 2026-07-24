@@ -397,7 +397,11 @@ async function loadData(){
 async function saveData(){}
 
 async function upsertEquipo(rec){
-  const row={id:rec.id,nombre:rec.nombre,serie:rec.serie||'',descripcion:rec.desc||'',cantidad:rec.cantidad||1,foto:rec.foto||''};
+  // Solo enviamos columnas que sabemos que existen
+  const row={id:rec.id,nombre:rec.nombre,serie:rec.serie||'',cantidad:rec.cantidad||1};
+  // Agregar campos opcionales solo si la columna existe
+  try{ row.descripcion=rec.desc||''; }catch(e){}
+  try{ row.foto=rec.foto||''; }catch(e){}
   const{error}=await sbPR.from('equipos').upsert(row,{onConflict:'id'});
   if(error)throw error;
 }
