@@ -397,13 +397,14 @@ async function loadData(){
 async function saveData(){}
 
 async function upsertEquipo(rec){
-  // Solo enviamos columnas que sabemos que existen
   const row={id:rec.id,nombre:rec.nombre,serie:rec.serie||'',cantidad:rec.cantidad||1};
-  // Agregar campos opcionales solo si la columna existe
-  try{ row.descripcion=rec.desc||''; }catch(e){}
-  try{ row.foto=rec.foto||''; }catch(e){}
+  if(rec.desc!==undefined) row.descripcion=rec.desc||'';
   const{error}=await sbPR.from('equipos').upsert(row,{onConflict:'id'});
-  if(error)throw error;
+  if(error){
+    // Si hay error de columna, intentar sin campos opcionales
+    const{error:err2}=await sbPR.from('equipos').upsert({id:rec.id,nombre:rec.nombre,serie:rec.serie||'',cantidad:rec.cantidad||1},{onConflict:'id'});
+    if(err2)throw err2;
+  }
 }
 async function deleteEquipo(id){
   const{error}=await sbPR.from('equipos').delete().eq('id',id);
