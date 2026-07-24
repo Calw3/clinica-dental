@@ -556,8 +556,8 @@ document.getElementById('btn-save-panel').addEventListener('click',async ()=>{
   };
   if(S.editId){const i=S.data.maestros.findIndex(x=>x.id===S.editId);if(i>-1)S.data.maestros[i]=rec;}
   else S.data.maestros.push(rec);
-  saveData();renderAll();
-populateMaterias('f-clinica');closePanel();
+  await upsertMaestro(rec);S.data=await loadData();renderAll();
+  await populateMaterias('f-clinica');closePanel();
 });
 
 /* Ver maestro */
@@ -676,10 +676,10 @@ renderAll();
 populateMaterias('f-clinica');
 
 /* ── Materias dinámicas desde catálogo ── */
-function populateMaterias(selectId, currentVal){
+async function populateMaterias(selectId, currentVal){
   const sel=document.getElementById(selectId);if(!sel)return;
   try{
-    const d=localStorage.getItem('clinica_materias_v1');
+    const{data:_mats}=await sbMae.from('materias').select('nombre,tipo');const d=_mats&&_mats.length?JSON.stringify({materias:_mats}):null;
     if(d){
       const parsed=JSON.parse(d);
       const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
@@ -705,6 +705,22 @@ function populateMaterias(selectId, currentVal){
   }catch(e){}
   if(currentVal){Array.from(sel.options).forEach(o=>{if(o.value===currentVal)o.selected=true;});}
 }
+
+
+async function inicializar(){
+  S.data = await loadData();
+  renderAll();
+}
+
+inicializar();
+
+sbMae.channel('maestros-rt')
+  .on('postgres_changes', {event:'*', schema:'public', table:'maestros'}, async ()=>{
+    S.data = await loadData();
+    renderAll();
+  })
+  .subscribe();
+
 
 </script>
 </body>
