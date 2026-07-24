@@ -399,9 +399,35 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
 const sbMae=window.supabase.createClient(SB_URL,SB_KEY);
-async function loadData(){const{data,error}=await sbMae.from('maestros').select('*').order('nombre');if(error){console.error(error);return{maestros:[]}}return{maestros:data||[]};}
+async function loadData(){
+  const{data,error}=await sbMae.from('maestros').select('*').order('nombre');
+  if(error){console.error(error);return{maestros:[]};}
+  return{maestros:(data||[]).map(r=>({
+    id:r.id, idInstitucional:r.id_institucional,
+    nombre:r.nombre, puesto:r.puesto, clinica:r.clinica, turno:r.turno,
+    horario:r.horario||{}, telefono:r.telefono, correo:r.correo,
+    correoInstitucional:r.correo_institucional, foto:r.foto, materias:r.materias||[]
+  }))};
+}
 async function saveData(){}
-async function upsertMaestro(rec){const{error}=await sbMae.from('maestros').upsert(rec,{onConflict:'id'});if(error)console.error(error);}
+async function upsertMaestro(rec){
+  const row={
+    id:rec.id,
+    id_institucional:rec.idInstitucional||'',
+    nombre:rec.nombre||'',
+    puesto:rec.puesto||'',
+    clinica:rec.clinica||'',
+    turno:rec.turno||'',
+    horario:rec.horario||{},
+    telefono:rec.telefono||'',
+    correo:rec.correo||'',
+    correo_institucional:rec.correoInstitucional||'',
+    foto:rec.foto||'',
+    materias:rec.materias||[]
+  };
+  const{error}=await sbMae.from('maestros').upsert(row,{onConflict:'id'});
+  if(error)throw error;
+}
 async function deleteMaestros(ids){const{error}=await sbMae.from('maestros').delete().in('id',ids);if(error)console.error(error);}
 const SLOTS=['7:00–8:30','8:30–10:00','10:00–11:30','11:30–13:00','13:00–14:30','14:30–16:00','16:00–17:30','17:30–19:00','19:00–20:30','20:30–22:00'];
 const DIAS=['L','M','X','J','V'];
