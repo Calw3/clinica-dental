@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notas de Evolución · Clínica Dental Anáhuac</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+    --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+    --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+    --border:#E3E1D8;--radius:8px;
+    --red-50:#FCEBEB;--red-600:#A32D2D;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px;}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;cursor:pointer;font-family:inherit;}
+  .back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+  .eyebrow{font-size:11px;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;margin:0;}
+  h1{font-size:21px;font-weight:600;margin:4px 0 0;color:var(--teal-900);}
+
+  .patient-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:22px;}
+  .avatar{width:52px;height:52px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0;overflow:hidden;}
+  .avatar img{width:100%;height:100%;object-fit:cover;}
+  .patient-name{font-size:17px;font-weight:600;margin:0;}
+  .patient-meta{font-size:13px;color:var(--text-secondary);margin:3px 0 0;}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+  input[type="text"]{height:38px;border:1px solid var(--border);border-radius:var(--radius);padding:0 12px;font-size:14px;font-family:inherit;background:#fff;max-width:300px;flex:1;}
+  input:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+  .btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:38px;padding:0 18px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;}
+  .btn-primary:hover{background:var(--teal-800);}
+  .btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:38px;padding:0 16px;color:var(--text-secondary);font-size:14px;cursor:pointer;font-family:inherit;}
+  .btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+  .stat p{margin:0;}
+  .stat-label{font-size:12px;color:var(--text-secondary);}
+  .stat-value{font-size:24px;font-weight:600;margin-top:4px !important;color:var(--teal-900);}
+
+  .nota-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:border-color .15s;}
+  .nota-card:hover{border-color:var(--teal-600);}
+  .nota-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
+  .nota-fecha{font-size:15px;font-weight:600;color:var(--teal-900);}
+  .nota-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+  .nota-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--teal-50);color:var(--teal-800);white-space:nowrap;}
+  .nota-row{display:flex;gap:8px;font-size:13px;margin-top:6px;line-height:1.45;}
+  .nota-row strong{color:var(--text-secondary);font-weight:600;min-width:92px;flex-shrink:0;font-size:12px;}
+  .nota-row span{color:var(--text-primary);}
+  .trat-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;}
+  .trat-pill{font-size:11px;background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:3px 9px;color:var(--text-secondary);}
+  .nota-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+  .btn-mini{font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;font-family:inherit;}
+  .btn-mini:hover{border-color:var(--teal-600);color:var(--teal-800);}
+  .btn-mini.danger:hover{border-color:var(--red-600);color:var(--red-600);background:var(--red-50);}
+
+  .empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);background:var(--surface);border:1px solid var(--border);border-radius:12px;}
+  .empty-state p:first-child{margin:0 0 6px;font-weight:600;color:var(--text-primary);font-size:16px;}
+  .empty-state p:last-child{margin:0;font-size:13px;}
+  .footer-note{margin-top:32px;font-size:12px;color:var(--text-muted);text-align:center;}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(31,31,29,.45);align-items:center;justify-content:center;padding:24px;z-index:50;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:12px;max-width:440px;width:100%;padding:24px;}
+  .modal h3{margin:0 0 10px;font-size:17px;}
+  .modal p{font-size:14px;color:var(--text-secondary);margin:0 0 18px;line-height:1.5;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button type="button" class="back-btn" id="btn-volver">← Expediente</button>
+    <div>
+      <p class="eyebrow">Notas de evolución</p>
+      <h1>Clínica Dental Universitaria Anáhuac</h1>
+    </div>
+  </header>
+
+  <div id="ne-error" class="empty-state" style="display:none;">
+    <p>Paciente no encontrado</p>
+    <p>Regresa al expediente e intenta de nuevo.</p>
+  </div>
+
+  <div id="ne-body" style="display:none;">
+    <div class="patient-card" id="ficha-paciente"></div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="toolbar">
+      <input type="text" id="buscar" placeholder="Buscar por diagnóstico, clínica o estudiante...">
+      <button type="button" class="btn-primary" id="btn-nueva">+ Nueva nota</button>
+    </div>
+
+    <div id="lista"></div>
+  </div>
+
+  <p class="footer-note">Control interno · Clínica Dental Universitaria Anáhuac Xalapa</p>
+</div>
+
+<!-- Modal: sin visita registrada -->
+<div class="modal-overlay" id="modal-sin-visita">
+  <div class="modal">
+    <h3>Se requiere una visita registrada</h3>
+    <p>Para crear una nueva nota de evolución primero debe registrarse la visita del paciente en el módulo de Control de Pagos y Visitas.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="document.getElementById('modal-sin-visita').classList.remove('open')">Cancelar</button>
+      <button type="button" class="btn-primary" onclick="location.href='pagos-visitas.html'">Registrar visita</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: elegir visita -->
+<div class="modal-overlay" id="modal-elegir-visita">
+  <div class="modal">
+    <h3>Selecciona la visita</h3>
+    <p>Elige el registro de visita al que corresponde esta nota de evolución.</p>
+    <div class="field" style="margin-bottom:18px;">
+      <select id="sel-visita" style="width:100%;height:38px;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;"></select>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="document.getElementById('modal-elegir-visita').classList.remove('open')">Cancelar</button>
+      <button type="button" class="btn-primary" id="btn-crear-nota">Crear nota</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar eliminación -->
+<div class="modal-overlay" id="modal-eliminar">
+  <div class="modal">
+    <h3>Eliminar nota de evolución</h3>
+    <p>Esta acción no se puede deshacer. ¿Deseas eliminar esta nota del expediente?</p>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="document.getElementById('modal-eliminar').classList.remove('open')">Cancelar</button>
+      <button type="button" class="btn-primary" id="btn-confirmar-eliminar" style="background:var(--red-600);">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbNL=window.supabase.createClient(SB_URL,SB_KEY);
+
+const params=new URLSearchParams(location.search);
+const expId=params.get('id')||params.get('expId');
+
+let exp=null, notas=[], visitas=[], notaAEliminar=null;
+
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function fmtFecha(f){
+  if(!f)return'—';
+  const d=new Date(f+'T00:00:00');
+  return d.toLocaleDateString('es-MX',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+}
+function fmtFechaCorta(f){
+  if(!f)return'—';
+  const d=new Date(f+'T00:00:00');
+  return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+document.getElementById('btn-volver').addEventListener('click',()=>{
+  location.href='control-clinica-dental.html';
+});
+
+async function cargarDatos(){
+  const{data,error}=await sbNL.from('expedientes').select('*').eq('id',expId).single();
+  if(error||!data){
+    document.getElementById('ne-error').style.display='';
+    return false;
+  }
+  exp={
+    id:data.id,nombre:data.nombre,idPaciente:data.id_paciente,sexo:data.sexo,
+    edad:data.edad,tipoPaciente:data.tipo_paciente,
+    fotografiaPaciente:data.fotografia_paciente
+  };
+  notas=(data.notas_evolucion||[]).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+
+  const{data:pagosData}=await sbNL.from('pagos_visitas').select('*').order('timestamp',{ascending:false});
+  visitas=(pagosData||[]).filter(p=>p.paciente===exp.nombre);
+
+  return true;
+}
+
+function renderFicha(){
+  const avatar=exp.fotografiaPaciente?`<img src="${exp.fotografiaPaciente}">`:initials(exp.nombre);
+  const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipoPaciente].filter(Boolean).join(' · ');
+  document.getElementById('ficha-paciente').innerHTML=`
+    <div class="avatar">${avatar}</div>
+    <div>
+      <p class="patient-name">${esc(exp.nombre)}</p>
+      <p class="patient-meta">${esc(meta||'Sin datos capturados')} · ID: ${esc(exp.idPaciente||exp.id)}</p>
+    </div>`;
+}
+
+function renderStats(){
+  const total=notas.length;
+  const mes=new Date().toISOString().slice(0,7);
+  const esteMes=notas.filter(n=>(n.fecha||'').startsWith(mes)).length;
+  const ultima=notas.length>0?fmtFechaCorta(notas[0].fecha):'—';
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><p class="stat-label">Notas registradas</p><p class="stat-value">${total}</p></div>
+    <div class="stat"><p class="stat-label">Este mes</p><p class="stat-value">${esteMes}</p></div>
+    <div class="stat"><p class="stat-label">Última nota</p><p class="stat-value" style="font-size:15px;">${ultima}</p></div>`;
+}
+
+function renderLista(){
+  const term=(document.getElementById('buscar').value||'').toLowerCase();
+  const filtradas=notas.filter(n=>
+    !term ||
+    (n.diagnostico||'').toLowerCase().includes(term) ||
+    (n.clinica||'').toLowerCase().includes(term) ||
+    (n.estudiante||'').toLowerCase().includes(term) ||
+    (n.tratamientos||[]).some(t=>String(t).toLowerCase().includes(term))
+  );
+
+  const cont=document.getElementById('lista');
+  if(filtradas.length===0){
+    cont.innerHTML=`<div class="empty-state">
+      <p>${notas.length===0?'Sin notas de evolución':'Sin coincidencias'}</p>
+      <p>${notas.length===0?'Registra la primera nota de evolución del paciente.':'Ajusta la búsqueda para ver más resultados.'}</p>
+    </div>`;
+    return;
+  }
+
+  cont.innerHTML=filtradas.map(n=>{
+    const trats=(n.tratamientos||[]).filter(Boolean);
+    return `<div class="nota-card">
+      <div class="nota-head">
+        <div>
+          <div class="nota-fecha">${fmtFecha(n.fecha)}</div>
+          <div class="nota-sub">${esc(n.clinica||'Sin clínica')}${n.estudiante?' · '+esc(n.estudiante):''}</div>
+        </div>
+        ${n.prescribe?'<span class="nota-badge">Con receta</span>':''}
+      </div>
+      ${n.diagnostico?`<div class="nota-row"><strong>Diagnóstico</strong><span>${esc(n.diagnostico)}</span></div>`:''}
+      ${trats.length?`<div class="nota-row"><strong>Tratamientos</strong><div class="trat-pills">${trats.map(t=>`<span class="trat-pill">${esc(t)}</span>`).join('')}</div></div>`:''}
+      ${n.proximaCita?`<div class="nota-row"><strong>Próxima cita</strong><span>${fmtFechaCorta(n.proximaCita)}</span></div>`:''}
+      <div class="nota-actions">
+        <button type="button" class="btn-mini" onclick="abrirNota('${n.id}')">Ver / editar</button>
+        <button type="button" class="btn-mini danger" onclick="confirmarEliminar('${n.id}')">Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirNota(noteId){
+  location.href=`nota-evolucion.html?expId=${encodeURIComponent(expId)}&noteId=${encodeURIComponent(noteId)}`;
+}
+
+function confirmarEliminar(noteId){
+  notaAEliminar=noteId;
+  document.getElementById('modal-eliminar').classList.add('open');
+}
+
+document.getElementById('btn-confirmar-eliminar').addEventListener('click',async ()=>{
+  if(!notaAEliminar)return;
+  const nuevas=notas.filter(n=>n.id!==notaAEliminar);
+  const{error}=await sbNL.from('expedientes').update({notas_evolucion:nuevas}).eq('id',expId);
+  if(error){alert('Error al eliminar: '+error.message);return;}
+  notas=nuevas;
+  notaAEliminar=null;
+  document.getElementById('modal-eliminar').classList.remove('open');
+  renderStats();renderLista();
+});
+
+document.getElementById('btn-nueva').addEventListener('click',()=>{
+  // Visitas que aún no tienen nota
+  const conNota=new Set(notas.map(n=>n.pagoId).filter(Boolean));
+  const disponibles=visitas.filter(v=>!conNota.has(v.id));
+
+  if(disponibles.length===0){
+    document.getElementById('modal-sin-visita').classList.add('open');
+    return;
+  }
+
+  const sel=document.getElementById('sel-visita');
+  sel.innerHTML=disponibles.map(v=>{
+    const trats=(v.tratamientos||[]).filter(t=>t?.nombre).map(t=>t.nombre).join(', ');
+    return `<option value="${esc(v.id)}">${fmtFechaCorta(v.fecha)} — ${esc(v.clinica||'Sin clínica')}${trats?' · '+esc(trats.slice(0,40)):''}</option>`;
+  }).join('');
+  document.getElementById('modal-elegir-visita').classList.add('open');
+});
+
+document.getElementById('btn-crear-nota').addEventListener('click',()=>{
+  const pagoId=document.getElementById('sel-visita').value;
+  if(!pagoId)return;
+  location.href=`nota-evolucion.html?expId=${encodeURIComponent(expId)}&pagoId=${encodeURIComponent(pagoId)}`;
+});
+
+document.getElementById('buscar').addEventListener('input',renderLista);
+
+async function inicializar(){
+  const ok=await cargarDatos();
+  if(!ok)return;
+  document.getElementById('ne-body').style.display='';
+  renderFicha();
+  renderStats();
+  renderLista();
+}
+
+inicializar();
+</script>
+</body>
+</html>
