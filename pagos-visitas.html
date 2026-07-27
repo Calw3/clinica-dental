@@ -346,7 +346,10 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 
       <div class="field">
         <label>Registrado por</label>
-        <input type="text" name="registradoPor" id="f-registradoPor" placeholder="Escribe el nombre de quien registra">
+        <div class="ac-wrap">
+          <input type="text" name="registradoPor" id="f-registradoPor" placeholder="Escribe el nombre del maestro" autocomplete="off">
+          <div class="ac-list" id="ac-registradoPor"></div>
+        </div>
       </div>
 
       <div class="field">
@@ -592,6 +595,7 @@ function rowToPago(r){
 const S={pagos:[],papelera:[],selMode:false,sel:new Set(),editId:null,tab:'registros',selPapMode:false,selPap:new Set()};
 
 async function inicializar(){
+  await cargarCatalogosPV();
   S.pagos=await loadPagos();
   S.papelera=await loadPapelera();
   renderAll();
@@ -1306,21 +1310,25 @@ ${buildResumen(imagen,tI,'#0C447C')}
   win.document.close();
 }
 
-/* ── Autocomplete ── */
-function getExpedienteNombres(){
-  try{
-    const d=localStorage.getItem('clinica_dental_data_v1');
-    if(d){const p=JSON.parse(d);return(p.expedientes||[]).map(e=>e.nombre).filter(Boolean).sort();}
-  }catch(e){}
-  return[];
+/* ── Autocomplete con datos de Supabase ── */
+let _cachePacientes=[], _cacheAlumnos=[], _cacheMaestros=[], _cacheMaterias=[];
+
+async function cargarCatalogosPV(){
+  const[pacRes,aluRes,maeRes,matRes]=await Promise.all([
+    sbPV.from('expedientes').select('nombre').order('nombre'),
+    sbPV.from('alumnos').select('nombre').order('nombre'),
+    sbPV.from('maestros').select('nombre').order('nombre'),
+    sbPV.from('materias').select('nombre,tipo').order('nombre')
+  ]);
+  _cachePacientes=(pacRes.data||[]).map(r=>r.nombre).filter(Boolean);
+  _cacheAlumnos=(aluRes.data||[]).map(r=>r.nombre).filter(Boolean);
+  _cacheMaestros=(maeRes.data||[]).map(r=>r.nombre).filter(Boolean);
+  _cacheMaterias=(matRes.data||[]).map(r=>({nombre:r.nombre,grupo:r.tipo||'Otras'}));
 }
-function getAlumnoNombres(){
-  try{
-    const d=localStorage.getItem('clinica_alumnos_v1');
-    if(d){const p=JSON.parse(d);return(p.alumnos||p||[]).map(a=>a.nombre||a.nombreCompleto).filter(Boolean).sort();}
-  }catch(e){}
-  return[];
-}
+
+function getExpedienteNombres(){return _cachePacientes;}
+function getAlumnoNombres(){return _cacheAlumnos;}
+function getMaestroNombres(){return _cacheMaestros;}
 
 function setupAC(inputId, listId, getFn){
   const inp=document.getElementById(inputId);
@@ -1376,6 +1384,7 @@ function setupAC(inputId, listId, getFn){
 
 setupAC('f-paciente',   'ac-paciente',   getExpedienteNombres);
 setupAC('f-estudiante', 'ac-estudiante', getAlumnoNombres);
+setupAC('f-registradoPor', 'ac-registradoPor', getMaestroNombres);
 
 /* Autocomplete Materia/Clínica con grupos */
 (function(){
@@ -1427,15 +1436,7 @@ inicializar();
 
 /* ── Materias dinámicas ── */
 function getMateriasList(){
-  try{
-    const d=localStorage.getItem('clinica_materias_v1');
-    if(d){
-      const parsed=JSON.parse(d);
-      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
-      if(mats.length)return mats.map(m=>({nombre:m.nombre,grupo:m.tipo}));
-    }
-  }catch(e){}
-  return MATERIAS;
+  return _cacheMaterias.length>0 ? _cacheMaterias : MATERIAS;
 }
 
 </script>
