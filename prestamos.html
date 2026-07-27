@@ -887,6 +887,11 @@ inicializar();
 
 sbPR.channel('equipos-rt').on('postgres_changes',{event:'*',schema:'public',table:'equipos'},async()=>{S.data=await loadData();renderAll();}).subscribe();
 sbPR.channel('prestamos-rt').on('postgres_changes',{event:'*',schema:'public',table:'prestamos'},async()=>{S.data=await loadData();renderAll();}).subscribe();
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbPR.channel('prestamos_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ await cargarNombresResp(); }).subscribe();
+sbPR.channel('prestamos_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarNombresResp(); }).subscribe();
 </script>
 </body>
 </html>
