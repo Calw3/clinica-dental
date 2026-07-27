@@ -309,7 +309,7 @@ function renderLista(){
 
 function renderAll(){renderStats();renderLista();}
 
-function toggleActiva(id,e){
+async function toggleActiva(id,e){
   e.stopPropagation();
   const m=S.data.materias.find(x=>x.id===id);
   if(m){m.activa=m.activa===false?true:false;await sbMat.from('materias').upsert({id:m.id,nombre:m.nombre,tipo:m.tipo},{onConflict:'id'});await saveMaterias(S.data.materias);S.data=await loadData()||S.data;renderAll();}
