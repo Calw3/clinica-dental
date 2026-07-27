@@ -275,7 +275,7 @@ function getMaestro(idInstitucional){
 
 /* ─── Registrar ─── */
 let confirmTimer=null;
-function registrar(tipo){
+async function registrar(tipo){
   const idVal=document.getElementById('kiosk-id').value.trim();
   const errEl=document.getElementById('kiosk-error');
   const inp=document.getElementById('kiosk-id');
