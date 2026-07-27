@@ -305,6 +305,11 @@ async function inicializar(){
 }
 
 inicializar();
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbNL.channel('notas_evolucion_expedientes').on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{ const ok = await cargarDatos(); if(ok){ renderFicha(); renderStats(); renderLista(); } }).subscribe();
+sbNL.channel('notas_evolucion_pagos_visitas').on('postgres_changes',{event:'*',schema:'public',table:'pagos_visitas'},async()=>{ const ok = await cargarDatos(); if(ok){ renderFicha(); renderStats(); renderLista(); } }).subscribe();
 </script>
 </body>
 </html>
