@@ -235,7 +235,14 @@ textarea{resize:vertical;min-height:60px}
   <!-- LIST -->
   <div id="tab-list" class="hide">
     <div class="card">
-      <h2>Historial de Consentimientos</h2>
+      <div id="banner-paciente" style="display:none;background:var(--teal-50,#FDEEE2);border-left:3px solid var(--or,#C2570D);border-radius:6px;padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--gr,#5F5E5A);">Consentimientos del expediente</div>
+          <div id="banner-nombre" style="font-size:15px;font-weight:600;color:var(--or2,#8C3F09);margin-top:2px;"></div>
+        </div>
+        <button class="btn bout bsm" onclick="volverAlExpediente()">← Volver al expediente</button>
+      </div>
+      <h2 id="titulo-historial">Historial de Consentimientos</h2>
       <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
         <input id="fl-busq" placeholder="Buscar paciente, folio…" style="flex:1;min-width:160px" oninput="renderList()">
         <select id="fl-tipo" onchange="renderList()" style="width:190px">
@@ -262,6 +269,11 @@ textarea{resize:vertical;min-height:60px}
 const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
 const sbCON=window.supabase.createClient(SB_URL,SB_KEY);
+
+// Filtro por paciente cuando se llega desde el expediente
+const urlParams = new URLSearchParams(location.search);
+const pacienteFiltro = urlParams.get('paciente') || '';
+const expedienteId = urlParams.get('expId') || '';
 async function cargarCatalogosDeCon(){
   const[pacRes,aluRes,docRes]=await Promise.all([
     sbCON.from('expedientes').select('id,nombre,id_paciente').order('nombre'),
@@ -619,6 +631,8 @@ function renderList(){
   const busq=(document.getElementById('fl-busq').value||'').toLowerCase();
   const tipo=document.getElementById('fl-tipo').value;
   const arr=load().filter(c=>{
+    // Si venimos del expediente, mostrar solo los de ese paciente
+    if(pacienteFiltro && (c.paciente||'').toLowerCase() !== pacienteFiltro.toLowerCase()) return false;
     return(!tipo||c.tipo===tipo)&&
       (!busq||(c.paciente||'').toLowerCase().includes(busq)||(c.folio||'').toLowerCase().includes(busq)||(c.alumno||'').toLowerCase().includes(busq));
   });
@@ -999,10 +1013,29 @@ function imprimir(folio){
 document.getElementById('f-fecha').value=new Date().toISOString().slice(0,10);
 ['sp','sd','st','sa'].forEach(setupSig);
 
+function volverAlExpediente(){
+  location.href = 'control-clinica-dental.html';
+}
+
+function aplicarFiltroPaciente(){
+  if(!pacienteFiltro) return;
+  // Mostrar banner
+  const banner = document.getElementById('banner-paciente');
+  banner.style.display = 'flex';
+  document.getElementById('banner-nombre').textContent = pacienteFiltro;
+  document.getElementById('titulo-historial').textContent = 'Consentimientos registrados';
+  // Precargar el nombre en el formulario de nuevo consentimiento
+  const inpPac = document.getElementById('f-pac');
+  if(inpPac) inpPac.value = pacienteFiltro;
+  // Abrir directamente el historial
+  switchTab('list');
+}
+
 async function inicializar(){
   await cargarCatalogosDeCon();
   _consCache = await loadCons();
   renderList();
+  aplicarFiltroPaciente();
 }
 inicializar();
 
