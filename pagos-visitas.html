@@ -775,8 +775,6 @@ function openPanel(id){
   const img=document.getElementById('prev-qr');
   img.style.display='none';img.removeAttribute('data-value');
   document.getElementById('ph-qr').style.display='flex';
-  document.getElementById('f-total-display').textContent='$0.00';
-  document.getElementById('f-total').value='0';
   clearTrats();
 
   if(id){
@@ -790,7 +788,6 @@ function openPanel(id){
     document.getElementById('f-estudiante').value=p.estudiante||'';
     document.getElementById('f-registradoPor').value=p.registradoPor||'';
     document.getElementById('f-observaciones').value=p.observaciones||'';
-    document.getElementById('f-descuento').value=p.descuento||0;
     /* Cargar tratamientos: nuevo formato array o compat A/B/C */
     const trats=p.tratamientos||[
       p.tratA?{nombre:p.tratA,cantidad:Number(p.cantA)||1}:null,
