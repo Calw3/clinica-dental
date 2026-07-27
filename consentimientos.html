@@ -274,6 +274,7 @@ const sbCON=window.supabase.createClient(SB_URL,SB_KEY);
 const urlParams = new URLSearchParams(location.search);
 const pacienteFiltro = urlParams.get('paciente') || '';
 const expedienteId = urlParams.get('expId') || '';
+const folioImprimir = urlParams.get('imprimir') || '';
 async function cargarCatalogosDeCon(){
   const[pacRes,aluRes,docRes]=await Promise.all([
     sbCON.from('expedientes').select('id,nombre,id_paciente').order('nombre'),
@@ -1036,6 +1037,10 @@ async function inicializar(){
   _consCache = await loadCons();
   renderList();
   aplicarFiltroPaciente();
+  // Impresión directa desde el expediente
+  if(folioImprimir){
+    setTimeout(()=>{ imprimir(folioImprimir); }, 400);
+  }
 }
 inicializar();
 
