@@ -414,7 +414,7 @@ function renderHistorial(){
 }
 
 /* ─── Imprimir día ─── */
-document.getElementById('btn-imprimir-dia').addEventListener('click',()=>{
+const _el_btn_imprimir_dia=document.getElementById('btn-imprimir-dia'); if(_el_btn_imprimir_dia) _el_btn_imprimir_dia.addEventListener('click',()=>{
   const fecha=document.getElementById('filtro-fecha').value||todayISO();
   const rows=S.data.registros.filter(r=>r.fecha===fecha).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
   const entradas=rows.filter(r=>r.tipo==='Entrada').length;
@@ -477,14 +477,16 @@ document.getElementById('btn-imprimir-dia').addEventListener('click',()=>{
   win.document.close();
 });
 
-document.getElementById('buscar').addEventListener('input',renderHistorial);
-document.getElementById('filtro-fecha').addEventListener('change',renderHistorial);
-document.getElementById('filtro-tipo').addEventListener('change',renderHistorial);
+const _el_buscar=document.getElementById('buscar'); if(_el_buscar) _el_buscar.addEventListener('input',renderHistorial);
+const _el_filtro_fecha=document.getElementById('filtro-fecha'); if(_el_filtro_fecha) _el_filtro_fecha.addEventListener('change',renderHistorial);
+const _el_filtro_tipo=document.getElementById('filtro-tipo'); if(_el_filtro_tipo) _el_filtro_tipo.addEventListener('change',renderHistorial);
 
 /* Init */
-document.getElementById('filtro-fecha').value=todayISO();
-document.getElementById('tab-kiosk').style.display='flex';
-document.getElementById('kiosk-id').focus();
+(function(){
+  const ff=document.getElementById('filtro-fecha'); if(ff) ff.value=todayISO();
+  const tk=document.getElementById('tab-kiosk'); if(tk) tk.style.display='flex';
+  const ki=document.getElementById('kiosk-id'); if(ki) ki.focus();
+})();
 
 async function inicializar(){
   S.data = await loadData();
