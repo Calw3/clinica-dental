@@ -458,6 +458,11 @@ document.getElementById('filtro-tipo').addEventListener('change',renderHistorial
 document.getElementById('filtro-fecha').value=todayISO();
 document.getElementById('tab-kiosk').style.display='flex';
 document.getElementById('kiosk-id').focus();
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbSS.channel('asistencia_ss_asistencia_ss').on('postgres_changes',{event:'*',schema:'public',table:'asistencia_ss'},async()=>{ S.data = await loadData(); renderStats(); renderHistorial(); }).subscribe();
+sbSS.channel('asistencia_ss_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ S.data = await loadData(); renderStats(); renderHistorial(); }).subscribe();
 </script>
 </body>
 </html>
