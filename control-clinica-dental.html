@@ -1259,6 +1259,10 @@ document.getElementById('form-pago').addEventListener('submit', async (e) => {
   document.getElementById('modal-pago').classList.remove('open');
   await cargarPagos();
 });
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbClient.channel('control_clinica_dental_expedientes').on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{ await cargarExpedientes(); }).subscribe();
 </script>
 </body>
 </html>
