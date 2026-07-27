@@ -373,14 +373,18 @@ document.getElementById('btn-confirm-del').addEventListener('click',async ()=>{
 });
 
 /* Restablecer */
-document.getElementById('btn-reset').addEventListener('click',async ()=>{
+const btnReset=document.getElementById('btn-reset');
+if(btnReset) btnReset.addEventListener('click',async ()=>{
   if(!confirm('¿Restablecer la lista a los valores predeterminados? Se perderán los cambios.'))return;
-  const d={materias:DEFAULTS.map((m,i)=>({id:String(i+1),nombre:m.nombre,tipo:m.tipo,activa:true})),seq:DEFAULTS.length+1};
+  const d={materias:DEFAULTS.map((m,i)=>({id:'mat-'+String(i+1).padStart(3,'0'),nombre:m.nombre,tipo:m.tipo,activa:true})),seq:DEFAULTS.length+1};
   await saveMaterias(d.materias);S.data=await loadData()||d;renderAll();
 });
 
-document.getElementById('buscar').addEventListener('input',renderLista);
-document.getElementById('filtro-tipo').addEventListener('change',renderLista);
+const inpBuscar=document.getElementById('buscar');
+if(inpBuscar) inpBuscar.addEventListener('input',renderLista);
+const selTipo=document.getElementById('filtro-tipo');
+if(selTipo) selTipo.addEventListener('change',renderLista);
+
 init();
 </script>
 </body>
