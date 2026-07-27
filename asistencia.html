@@ -199,9 +199,25 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
 const sbAs=window.supabase.createClient(SB_URL,SB_KEY);
-async function loadData(){const{data,error}=await sbAs.from('asistencia').select('*').order('timestamp',{ascending:false});if(error){console.error(error);return{registros:[]}}return{registros:data||[]};}
+async function loadData(){
+  const{data,error}=await sbAs.from('asistencia').select('*').order('timestamp',{ascending:false});
+  if(error){console.error(error);return{registros:[]};}
+  return{registros:(data||[]).map(r=>({
+    id:r.id, maestroId:r.maestro_id, idInstitucional:r.id_institucional,
+    nombre:r.nombre, puesto:r.puesto, tipo:r.tipo,
+    timestamp:r.timestamp, fecha:r.fecha, hora:r.hora
+  }))};
+}
 async function saveData(){}
-async function upsertAsistencia(rec){const{error}=await sbAs.from('asistencia').upsert(rec,{onConflict:'id'});if(error)console.error(error);}
+async function upsertAsistencia(rec){
+  const row={
+    id:rec.id, maestro_id:rec.maestroId||'', id_institucional:rec.idInstitucional||'',
+    nombre:rec.nombre||'', puesto:rec.puesto||'', tipo:rec.tipo||'',
+    timestamp:rec.timestamp||'', fecha:rec.fecha||'', hora:rec.hora||''
+  };
+  const{error}=await sbAs.from('asistencia').upsert(row,{onConflict:'id'});
+  if(error)throw error;
+}
 async function deleteAsistencia(ids){const{error}=await sbAs.from('asistencia').delete().in('id',ids);if(error)console.error(error);}
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -240,16 +256,21 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
 });
 
-/* ─── Buscar maestro por ID institucional ─── */
+/* ─── Catálogo de maestros ─── */
+let _maestrosCache = [];
+
+async function cargarMaestros(){
+  const{data,error}=await sbAs.from('maestros').select('*');
+  if(error){console.error('Error cargando maestros:',error);return;}
+  _maestrosCache=(data||[]).map(m=>({
+    id:m.id, idInstitucional:m.id_institucional, nombre:m.nombre,
+    puesto:m.puesto, clinica:m.clinica, turno:m.turno
+  }));
+}
+
 function getMaestro(idInstitucional){
-  try{
-    const{data:_mData}=await sbAs.from('maestros').select('*');const d=_mData?JSON.stringify({maestros:_mData}):null;
-    if(d){
-      const p=JSON.parse(d);
-      return (p.maestros||[]).find(m=>(m.idInstitucional||'').toUpperCase().trim()===(idInstitucional||'').toUpperCase().trim())||null;
-    }
-  }catch(e){}
-  return null;
+  const buscado=(idInstitucional||'').toUpperCase().trim();
+  return _maestrosCache.find(m=>(m.idInstitucional||'').toUpperCase().trim()===buscado)||null;
 }
 
 /* ─── Registrar ─── */
@@ -290,13 +311,18 @@ function registrar(tipo){
     fecha:todayISO(),
     hora:`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
   };
-  S.data.registros.push(rec);
-  await upsertAsistencia(rec);
-  renderHistorial();
-
-  /* Mostrar confirmación */
-  mostrarConfirm(rec);
-  inp.value='';
+  try{
+    await upsertAsistencia(rec);
+    S.data = await loadData();
+    renderStats();
+    renderHistorial();
+    mostrarConfirm(rec);
+    inp.value='';
+  }catch(err){
+    errEl.textContent = 'Error al registrar: ' + err.message;
+    inp.classList.add('error');
+    console.error(err);
+  }
 }
 
 function mostrarConfirm(rec){
@@ -459,12 +485,19 @@ document.getElementById('filtro-tipo').addEventListener('change',renderHistorial
 document.getElementById('filtro-fecha').value=todayISO();
 document.getElementById('tab-kiosk').style.display='flex';
 document.getElementById('kiosk-id').focus();
-renderHistorial();
+
+async function inicializar(){
+  S.data = await loadData();
+  await cargarMaestros();
+  renderStats();
+  renderHistorial();
+}
+inicializar();
 
 
 /* ── Realtime: sincronización automática entre dispositivos ── */
 sbAs.channel('asistencia_asistencia').on('postgres_changes',{event:'*',schema:'public',table:'asistencia'},async()=>{ S.data = await loadData(); renderStats(); renderHistorial(); }).subscribe();
-sbAs.channel('asistencia_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ S.data = await loadData(); renderStats(); renderHistorial(); }).subscribe();
+sbAs.channel('asistencia_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarMaestros(); }).subscribe();
 </script>
 </body>
 </html>
