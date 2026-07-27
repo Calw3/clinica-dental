@@ -1226,19 +1226,55 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const STORAGE_KEY = 'clinica_dental_data_v1';
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbHC=window.supabase.createClient(SB_URL,SB_KEY);
 
-function loadData(){
-  try{ const r=null /* migrado a Supabase */; if(r) return JSON.parse(r); }catch(e){}
-  return {expedientes:[]};
+async function cargarExpediente(id){
+  const{data,error}=await sbHC.from('expedientes').select('*').eq('id',id).single();
+  if(error||!data){console.error('No se encontró el expediente:',error);return null;}
+  return{
+    id:data.id, nombre:data.nombre, idPaciente:data.id_paciente,
+    sexo:data.sexo, edad:data.edad, fechaNacimiento:data.fecha_nacimiento,
+    lugarNacimiento:data.lugar_nacimiento, direccion:data.direccion,
+    telefono:data.telefono, correo:data.correo, escolaridad:data.escolaridad,
+    estadoCivil:data.estado_civil, profesion:data.profesion, ocupacion:data.ocupacion,
+    religion:data.religion, referido:data.referido, tipoPaciente:data.tipo_paciente,
+    tipoHistoria:data.tipo_historia, padecimiento:data.padecimiento, habitos:data.habitos,
+    ultimaVisita:data.ultima_visita, consentimientos:data.consentimientos,
+    datosRelevantes:data.datos_relevantes, emergenciaContacto:data.emergencia_contacto,
+    emergenciaTelefono:data.emergencia_telefono, alergia:data.alergia,
+    alergiaEspecifique:data.alergia_especifique, firma:data.firma,
+    fotografiaPaciente:data.fotografia_paciente,
+    historiaClinica:data.historia_clinica||{}
+  };
 }
-async function saveData(data){ for(const exp of (data.expedientes||[])){ const row={id:exp.id,nombre:exp.nombre||""};await sbHC.from("expedientes").upsert(row,{onConflict:"id"});} }
+
+async function guardarExpediente(expObj){
+  const row={
+    id:expObj.id, nombre:expObj.nombre||'', id_paciente:expObj.idPaciente||'',
+    sexo:expObj.sexo||'', edad:expObj.edad||'', fecha_nacimiento:expObj.fechaNacimiento||'',
+    lugar_nacimiento:expObj.lugarNacimiento||'', direccion:expObj.direccion||'',
+    telefono:expObj.telefono||'', correo:expObj.correo||'', escolaridad:expObj.escolaridad||'',
+    estado_civil:expObj.estadoCivil||'', profesion:expObj.profesion||'', ocupacion:expObj.ocupacion||'',
+    religion:expObj.religion||'', referido:expObj.referido||'', tipo_paciente:expObj.tipoPaciente||'',
+    tipo_historia:expObj.tipoHistoria||'', padecimiento:expObj.padecimiento||'', habitos:expObj.habitos||'',
+    ultima_visita:expObj.ultimaVisita||'', consentimientos:expObj.consentimientos||'',
+    datos_relevantes:expObj.datosRelevantes||'', emergencia_contacto:expObj.emergenciaContacto||'',
+    emergencia_telefono:expObj.emergenciaTelefono||'', alergia:expObj.alergia||'',
+    alergia_especifique:expObj.alergiaEspecifique||'', firma:expObj.firma||'',
+    fotografia_paciente:expObj.fotografiaPaciente||'',
+    historia_clinica:expObj.historiaClinica||{}
+  };
+  const{error}=await sbHC.from('expedientes').upsert(row,{onConflict:'id'});
+  if(error)throw error;
+}
 
 const params = new URLSearchParams(location.search);
 const patientId = params.get('id');
-const data = loadData();
-const expIdx = data.expedientes.findIndex(x=>x.id===patientId);
-const exp = expIdx>-1 ? data.expedientes[expIdx] : null;
+let data = {expedientes:[]};
+let expIdx = -1;
+let exp = null;
 // hc se declara aquí para que el listener de guardar (fuera del bloque else) pueda acceder a él
 let hc = {};
 
@@ -1671,6 +1707,10 @@ const autAlu  = setupAutCanvas('aut-alu-firma', 'limpiar-aut-alu');
 const autPac  = setupAutCanvas('aut-pac-firma', 'limpiar-aut-pac');
 
 /* ── Init ── */
+async function inicializarHC(){
+exp = await cargarExpediente(patientId);
+if(exp){ data.expedientes=[exp]; expIdx=0; }
+
 if(!exp){
   document.getElementById('hc-error').style.display='';
   document.getElementById('hc-body').style.display='none';
@@ -1906,6 +1946,7 @@ if(!exp){
 
   if(hc.fechaLlenado) document.getElementById('hc-badge-llenada').style.display='';
 }
+} /* fin inicializarHC */
 
 /* ── Canvas firma paciente (datos identificación) ── */
 const firmaCanvas = document.getElementById('id-firma-canvas');
@@ -1946,7 +1987,7 @@ function loadFirma(dataUrl){
 });
 
 /* ── Guardar ── */
-document.getElementById('btn-guardar-hc').addEventListener('click', ()=>{
+document.getElementById('btn-guardar-hc').addEventListener('click', async ()=>{
   if(!exp) return;
   const padecimiento = [...document.querySelectorAll('[name="hc-cond"]:checked')].map(c=>c.value);
   const heredofamiliar = [...document.querySelectorAll('[name="hf-cond"]:checked')].map(c=>c.value);
@@ -2088,10 +2129,18 @@ document.getElementById('btn-guardar-hc').addEventListener('click', ()=>{
     fechaLlenado: val('hc-fecha-llenado') || new Date().toISOString().slice(0,10),
     obsGenerales: val('hc-obs-generales'),
   };
-  saveData(data);
-  showToast('Historia clínica guardada ✓');
-  setTimeout(()=> location.href = `control-clinica-dental.html`, 800);
+  try{
+    await guardarExpediente(data.expedientes[expIdx]);
+    showToast('Historia clínica guardada ✓');
+    setTimeout(()=> location.href = `control-clinica-dental.html`, 800);
+  }catch(err){
+    showToast('Error al guardar: '+err.message);
+    console.error(err);
+  }
 });
+
+/* Iniciar carga */
+inicializarHC();
 
 </script>
 </body>
