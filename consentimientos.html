@@ -1005,6 +1005,13 @@ async function inicializar(){
   renderList();
 }
 inicializar();
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbCON.channel('consentimientos_consentimientos').on('postgres_changes',{event:'*',schema:'public',table:'consentimientos'},async()=>{ await cargarCatalogosDeCon(); _consCache = await loadCons(); renderList(); }).subscribe();
+sbCON.channel('consentimientos_expedientes').on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{ await cargarCatalogosDeCon(); _consCache = await loadCons(); renderList(); }).subscribe();
+sbCON.channel('consentimientos_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ await cargarCatalogosDeCon(); _consCache = await loadCons(); renderList(); }).subscribe();
+sbCON.channel('consentimientos_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarCatalogosDeCon(); _consCache = await loadCons(); renderList(); }).subscribe();
 </script>
 </body>
 </html>
