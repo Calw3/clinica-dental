@@ -384,10 +384,13 @@ async function loadData(){
   return{justificantes:justs,folioSeq,recetas:recs,recetaSeq};
 }
 async function saveData(){
-  const todos=[...S.data.justificantes,...S.data.recetas];
+  const todos=[
+    ...S.data.justificantes.map(j=>({...j,tipo:'justificante'})),
+    ...S.data.recetas.map(r=>({...r,tipo:'receta'}))
+  ];
   for(const r of todos){
     const row={
-      id:r.id, tipo:r.tipo||'justificante', folio:r.folio||'',
+      id:r.id, tipo:r.tipo, folio:r.folio||'',
       paciente:r.paciente||'',
       alumno:r.alumno||'', maestro:r.maestro||'',
       firma:r.firma||'',
