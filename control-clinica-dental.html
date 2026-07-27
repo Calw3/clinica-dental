@@ -331,6 +331,7 @@
       <button type="button" class="btn-secondary" id="eliminar-expediente-actual">Eliminar expediente</button>
       <button type="button" class="btn-secondary" id="editar-expediente-actual">Editar</button>
       <button type="button" class="btn-secondary" id="historia-clinica-actual" style="border-color:var(--teal-600);color:var(--teal-800);">📋 Historia Clínica</button>
+      <button type="button" class="btn-secondary" id="notas-evolucion-actual" style="border-color:var(--teal-600);color:var(--teal-800);">📝 Notas de Evolución</button>
       <button type="button" class="btn-primary" id="cerrar-ver-expediente">Cerrar</button>
     </div>
   </div>
@@ -958,6 +959,10 @@ document.getElementById('cerrar-ver-expediente').addEventListener('click', () =>
 document.getElementById('historia-clinica-actual').addEventListener('click', () => {
   const id = document.getElementById('eliminar-expediente-actual').dataset.id;
   if(id) location.href = 'historia-clinica.html?id=' + id;
+});
+document.getElementById('notas-evolucion-actual').addEventListener('click', () => {
+  const id = document.getElementById('eliminar-expediente-actual').dataset.id;
+  if(id) location.href = 'notas-evolucion.html?id=' + id;
 });
 document.getElementById('eliminar-expediente-actual').addEventListener('click', (e) => {
   const id = e.target.dataset.id;
