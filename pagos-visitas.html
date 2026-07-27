@@ -1410,6 +1410,14 @@ function getMateriasList(){
   return _cacheMaterias.length>0 ? _cacheMaterias : MATERIAS;
 }
 
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbPV.channel('pagos_visitas_pagos_visitas').on('postgres_changes',{event:'*',schema:'public',table:'pagos_visitas'},async()=>{ await cargarCatalogosPV(); S.pagos = await loadPagos(); S.papelera = await loadPapelera(); renderAll(); }).subscribe();
+sbPV.channel('pagos_visitas_expedientes').on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{ await cargarCatalogosPV(); S.pagos = await loadPagos(); S.papelera = await loadPapelera(); renderAll(); }).subscribe();
+sbPV.channel('pagos_visitas_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ await cargarCatalogosPV(); S.pagos = await loadPagos(); S.papelera = await loadPapelera(); renderAll(); }).subscribe();
+sbPV.channel('pagos_visitas_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarCatalogosPV(); S.pagos = await loadPagos(); S.papelera = await loadPapelera(); renderAll(); }).subscribe();
+sbPV.channel('pagos_visitas_materias').on('postgres_changes',{event:'*',schema:'public',table:'materias'},async()=>{ await cargarCatalogosPV(); S.pagos = await loadPagos(); S.papelera = await loadPapelera(); renderAll(); }).subscribe();
 </script>
 </body>
 </html>
