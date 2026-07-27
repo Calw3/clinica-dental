@@ -417,6 +417,14 @@ function renderAll(){
 }
 
 renderAll();
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbST.channel('estadisticas_expedientes').on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{ const d = await cargarTodosLosDatos(); Object.assign(datos, d); render(); }).subscribe();
+sbST.channel('estadisticas_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ const d = await cargarTodosLosDatos(); Object.assign(datos, d); render(); }).subscribe();
+sbST.channel('estadisticas_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ const d = await cargarTodosLosDatos(); Object.assign(datos, d); render(); }).subscribe();
+sbST.channel('estadisticas_pagos_visitas').on('postgres_changes',{event:'*',schema:'public',table:'pagos_visitas'},async()=>{ const d = await cargarTodosLosDatos(); Object.assign(datos, d); render(); }).subscribe();
+sbST.channel('estadisticas_prestamos').on('postgres_changes',{event:'*',schema:'public',table:'prestamos'},async()=>{ const d = await cargarTodosLosDatos(); Object.assign(datos, d); render(); }).subscribe();
 </script>
 </body>
 </html>
