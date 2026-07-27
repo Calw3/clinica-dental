@@ -383,6 +383,10 @@ async function loadData(){
   const recetaSeq=recs.length>0?Math.max(...recs.map(r=>parseInt(r.folio?.replace(/\D/g,''))||0))+1:1;
   return{justificantes:justs,folioSeq,recetas:recs,recetaSeq};
 }
+async function deleteRegistro(id){
+  const{error}=await sbJUS.from('justificantes').delete().eq('id',id);
+  if(error)console.error('Error al eliminar:',error);
+}
 async function saveData(){
   const todos=[
     ...S.data.justificantes.map(j=>({...j,tipo:'justificante'})),
@@ -783,9 +787,11 @@ document.getElementById('cerrar-confirm').addEventListener('click',()=>document.
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('btn-confirm-del').addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;}
-  if(S.delType==='just')S.data.justificantes=S.data.justificantes.filter(x=>x.id!==S.delId);
-  else S.data.recetas=S.data.recetas.filter(x=>x.id!==S.delId);
-  await saveData();S.data=await loadData();document.getElementById('modal-confirm').classList.remove('open');
+  await deleteRegistro(S.delId);
+  S.data=await loadData();
+  renderAll();
+  document.getElementById('modal-confirm').classList.remove('open');
+  document.getElementById('inp-confirm').value='';
 });
 
 /* ─── Imprimir justificante ─── */
