@@ -721,6 +721,11 @@ function populateMaterias(selectId, currentVal){
   if(currentVal){Array.from(sel.options).forEach(o=>{if(o.value===currentVal)o.selected=true;});}
 }
 
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbBP.channel('banco_pacientes_banco_pacientes').on('postgres_changes',{event:'*',schema:'public',table:'banco_pacientes'},async()=>{ S.data = await loadData(); renderAll(); }).subscribe();
+sbBP.channel('banco_pacientes_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ S.data = await loadData(); renderAll(); }).subscribe();
 </script>
 </body>
 </html>
