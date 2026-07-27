@@ -277,10 +277,56 @@ const getPacsObjs=()=>_pacsCon;
 const getAlus=()=>_alusCon;
 const getDocs=()=>_docsCon;
 
+let _consCache=[];
+
+function load(){ return _consCache; }
+
+async function save(arr){
+  _consCache=arr;
+  for(const c of arr){
+    const row={
+      id:c.folio, tipo:c.tipo||'', paciente:c.paciente||'',
+      alumno:c.alumno||'', doctor:c.docente||'', fecha:c.fecha||'',
+      firma:(c.sigs&&c.sigs.pac)||'',
+      datos:{
+        folio:c.folio, tutor:c.tutor||'', edad:c.edad||'',
+        telefono:c.telefono||'', domicilio:c.domicilio||'', cedula:c.cedula||'',
+        diagnostico:c.diagnostico||'', notas:c.notas||'',
+        benefPed:c.benefPed||'', compPed:c.compPed||'',
+        riesgos:c.riesgos||'', efectos:c.efectos||'',
+        alternativas:c.alternativas||'', motivo:c.motivo||'',
+        beneficio:c.beneficio||'', testigo:c.testigo||'',
+        actos:c.actos||[], sigs:c.sigs||{}
+      }
+    };
+    await sbCON.from('consentimientos').upsert(row,{onConflict:'id'});
+  }
+}
+
+async function eliminarDeSupabase(folio){
+  await sbCON.from('consentimientos').delete().eq('id',folio);
+}
+
+function rowToCons(r){
+  const d=r.datos||{};
+  return{
+    folio:r.id, tipo:r.tipo, paciente:r.paciente, alumno:r.alumno,
+    docente:r.doctor, fecha:r.fecha,
+    tutor:d.tutor||'', edad:d.edad||'', telefono:d.telefono||'',
+    domicilio:d.domicilio||'', cedula:d.cedula||'',
+    diagnostico:d.diagnostico||'', notas:d.notas||'',
+    benefPed:d.benefPed||'', compPed:d.compPed||'',
+    riesgos:d.riesgos||'', efectos:d.efectos||'',
+    alternativas:d.alternativas||'', motivo:d.motivo||'',
+    beneficio:d.beneficio||'', testigo:d.testigo||'',
+    actos:d.actos||[], sigs:d.sigs||{}
+  };
+}
+
 async function loadCons(){
   const{data,error}=await sbCON.from('consentimientos').select('*').order('created_at',{ascending:false});
   if(error){console.error(error);return[];}
-  return data||[];
+  return (data||[]).map(rowToCons);
 }
 async function saveCons(arr){
   for(const c of arr){ await sbCON.from('consentimientos').upsert(c,{onConflict:'id'}); }
@@ -507,7 +553,7 @@ function mostrarPreview(){
 }
 
 // ── Guardar ───────────────────────────────────────────────────────────────────
-function guardar(){
+async function guardar(){
   const tipo=document.getElementById('f-tipo').value;
   if(!tipo){alert('Seleccione el tipo de consentimiento.');return;}
   const pac=document.getElementById('f-pac').value.trim();
@@ -542,10 +588,16 @@ function guardar(){
     actos,
     sigs:{pac:getSig('sp'),doc:getSig('sd'),testigo:getSig('st'),alu:getSig('sa')}
   };
-  const arr=load(); arr.unshift(rec); save(arr);
-  alert('Consentimiento '+rec.folio+' guardado correctamente.');
-  resetForm();
-  switchTab('list');
+  const arr=load(); arr.unshift(rec);
+  try{
+    await save(arr);
+    alert('Consentimiento '+rec.folio+' guardado correctamente.');
+    resetForm();
+    switchTab('list');
+  }catch(err){
+    alert('Error al guardar: '+err.message);
+    console.error(err);
+  }
 }
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
@@ -585,9 +637,10 @@ function renderList(){
     </div>`).join('');
 }
 
-function eliminar(folio){
+async function eliminar(folio){
   if(!confirm('¿Eliminar consentimiento '+folio+'?'))return;
-  save(load().filter(c=>c.folio!==folio));
+  await eliminarDeSupabase(folio);
+  _consCache=_consCache.filter(c=>c.folio!==folio);
   renderList();
 }
 
@@ -945,6 +998,13 @@ function imprimir(folio){
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('f-fecha').value=new Date().toISOString().slice(0,10);
 ['sp','sd','st','sa'].forEach(setupSig);
+
+async function inicializar(){
+  await cargarCatalogosDeCon();
+  _consCache = await loadCons();
+  renderList();
+}
+inicializar();
 </script>
 </body>
 </html>
