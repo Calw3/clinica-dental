@@ -113,6 +113,9 @@
   .perio-tnum{width:56px;height:20px;background:var(--teal-50);border-radius:3px;font-size:9px;font-weight:700;color:var(--teal-800);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .perio-mov-sel{width:56px;height:20px;font-size:9px;padding:0 2px;border:1px solid var(--border);border-radius:3px;background:#fff;}
   .perio-divider{height:3px;background:var(--teal-600);border-radius:2px;margin:8px 0;width:calc(100% - 64px);margin-left:64px;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);text-decoration:none;border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;background:#fff;flex-shrink:0;cursor:pointer;font-family:inherit;}
+.back-btn:hover{border-color:var(--teal-600);color:var(--teal-800);}
+.back-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -120,9 +123,8 @@
   <div class="wrap">
   <header>
       <div style="display:flex;align-items:center;gap:12px;">
-        <button type="button" class="btn-secondary" id="btn-volver" style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>
-          Volver al expediente
+        <button type="button" class="back-btn" id="btn-volver">
+          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>Expediente
         </button>
         <div>
           <p class="eyebrow">Historia clínica del paciente</p>
