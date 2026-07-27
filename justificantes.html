@@ -694,6 +694,7 @@ document.getElementById('pj-save').addEventListener('click',async ()=>{
     diagnostico,dias:parseInt(dias)||1,
     alumno:document.getElementById('f-alumno').value.trim(),
     maestro,firma:jCanvas.getData(),
+    tipo:'justificante',
   };
   if(S.editId){const i=S.data.justificantes.findIndex(x=>x.id===S.editId);if(i>-1)S.data.justificantes[i]=rec;}
   else{S.data.justificantes.push(rec);S.data.folioSeq=(S.data.folioSeq||1)+1;}
@@ -716,6 +717,7 @@ document.getElementById('pr-save').addEventListener('click',async ()=>{
     fechaEmision:document.getElementById('r-fechaEmision').value||todayISO(),
     alumno:document.getElementById('r-alumno').value.trim(),
     maestro,
+    tipo:'receta',
     medicamentos:meds,
     indicaciones:document.getElementById('r-indicaciones').value.trim(),
     firma:rCanvas.getData(),
