@@ -961,6 +961,19 @@ function verExpediente(id){
   cargarResumenDocumentos(id, e.nombre);
 }
 
+const TIPO_CONSENT = {
+  anestesia:'Anestesia', blanqueamiento:'Blanqueamiento', cirugia:'Cirugía',
+  endodoncia:'Endodoncia', general:'General', uax:'UAX', operatoria:'Operatoria',
+  pediatria:'Pediatría', periodoncia:'Periodoncia', protesis:'Prótesis',
+  ortodoncia:'Ortodoncia', radiografia:'Radiografía', implantes:'Implantes'
+};
+
+function fmtFechaDoc(f){
+  if(!f) return '—';
+  const d = new Date(f + 'T00:00:00');
+  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+}
+
 async function cargarResumenDocumentos(id, nombre){
   const cont = document.getElementById('resumen-docs');
   if(!cont) return;
@@ -970,14 +983,41 @@ async function cargarResumenDocumentos(id, nombre){
     const notas = (rec.notasEvolucion || []).length;
     const tieneHC = rec.historiaClinica && Object.keys(rec.historiaClinica).length > 0;
 
-    const { data: cons } = await sbClient.from('consentimientos').select('id,tipo,fecha').eq('paciente', nombre);
-    const nCons = (cons || []).length;
+    const { data: cons } = await sbClient
+      .from('consentimientos')
+      .select('id,tipo,fecha,alumno,doctor')
+      .eq('paciente', nombre)
+      .order('created_at', { ascending: false });
 
-    cont.innerHTML = `
+    const lista = cons || [];
+
+    let html = `
       <div class="detail-row"><span>Historia clínica</span><span>${tieneHC ? '✓ Registrada' : 'Pendiente'}</span></div>
-      <div class="detail-row"><span>Notas de evolución</span><span>${notas} ${notas===1?'nota':'notas'}</span></div>
-      <div class="detail-row"><span>Consentimientos firmados</span><span>${nCons} ${nCons===1?'documento':'documentos'}</span></div>`;
+      <div class="detail-row"><span>Notas de evolución</span><span>${notas} ${notas===1?'nota':'notas'}</span></div>`;
+
+    html += `<div style="margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">Consentimientos firmados (${lista.length})</span>
+        <button type="button" class="btn-icon" onclick="location.href='consentimientos.html?expId=${encodeURIComponent(id)}&paciente=${encodeURIComponent(nombre)}'" style="width:auto;padding:4px 10px;font-size:11px;">+ Nuevo</button>
+      </div>`;
+
+    if(lista.length === 0){
+      html += `<p style="font-size:12px;color:var(--text-muted);margin:0;padding:12px;background:var(--surface-1);border-radius:6px;text-align:center;">Sin consentimientos registrados.</p>`;
+    } else {
+      html += lista.map(c => `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;background:var(--surface-1);border-radius:6px;margin-bottom:6px;">
+          <div style="min-width:0;">
+            <div style="font-size:13px;font-weight:600;">${escapeHtml(c.id)} <span style="font-weight:400;color:var(--text-secondary);">· ${escapeHtml(TIPO_CONSENT[c.tipo] || c.tipo || '')}</span></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${fmtFechaDoc(c.fecha)}${c.alumno ? ' · ' + escapeHtml(c.alumno) : ''}</div>
+          </div>
+          <button type="button" class="btn-icon" onclick="location.href='consentimientos.html?paciente=${encodeURIComponent(nombre)}&imprimir=${encodeURIComponent(c.id)}'" style="width:auto;padding:4px 10px;font-size:11px;white-space:nowrap;">🖨 Imprimir</button>
+        </div>`).join('');
+    }
+    html += `</div>`;
+
+    cont.innerHTML = html;
   }catch(err){
+    console.error(err);
     cont.innerHTML = '<p style="font-size:12px;color:var(--text-muted);margin:0;">No se pudo cargar el resumen.</p>';
   }
 }
