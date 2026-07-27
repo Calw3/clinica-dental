@@ -972,6 +972,12 @@ sbJUS.channel('jus-rt').on('postgres_changes',{event:'*',schema:'public',table:'
     }
   }
 })();
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbJUS.channel('justificantes_expedientes').on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{ await cargarCatalogosJUS(); }).subscribe();
+sbJUS.channel('justificantes_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ await cargarCatalogosJUS(); }).subscribe();
+sbJUS.channel('justificantes_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarCatalogosJUS(); }).subscribe();
 </script>
 </body>
 </html>
