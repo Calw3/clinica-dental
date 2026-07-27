@@ -460,6 +460,11 @@ document.getElementById('filtro-fecha').value=todayISO();
 document.getElementById('tab-kiosk').style.display='flex';
 document.getElementById('kiosk-id').focus();
 renderHistorial();
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbAs.channel('asistencia_asistencia').on('postgres_changes',{event:'*',schema:'public',table:'asistencia'},async()=>{ S.data = await loadData(); renderStats(); renderHistorial(); }).subscribe();
+sbAs.channel('asistencia_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ S.data = await loadData(); renderStats(); renderHistorial(); }).subscribe();
 </script>
 </body>
 </html>
