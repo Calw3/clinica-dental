@@ -742,7 +742,7 @@ function abrirModalDevolver(e,id){
 }
 document.getElementById('md-cerrar').addEventListener('click',()=>document.getElementById('modal-devolver').classList.remove('open'));
 document.getElementById('md-cancel').addEventListener('click',()=>document.getElementById('modal-devolver').classList.remove('open'));
-document.getElementById('md-confirmar').addEventListener('click',()=>{
+document.getElementById('md-confirmar').addEventListener('click',async ()=>{
   if(!getFotoVal('prev-md-foto')){
     const lbl=document.getElementById('lbl-md-foto');
     lbl.style.borderColor='var(--red-600)';
@@ -757,8 +757,9 @@ document.getElementById('md-confirmar').addEventListener('click',()=>{
     S.data.prestamos[i].fechaDevolucion=nowDT();
     S.data.prestamos[i].comentarioDevolucion=document.getElementById('md-comentario').value.trim();
     S.data.prestamos[i].fotoDevolucion=getFotoVal('prev-md-foto');
+    await upsertPrestamo(S.data.prestamos[i]);
   }
-  saveData();renderAll();
+  S.data=await loadData();renderAll();
   document.getElementById('modal-devolver').classList.remove('open');
 });
 
@@ -859,15 +860,22 @@ function abrirConfirmDirect(tipo,id){
 }
 document.getElementById('mc-cerrar').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('mc-cancel').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('mc-ok').addEventListener('click',()=>{
+document.getElementById('mc-ok').addEventListener('click',async ()=>{
   if(document.getElementById('mc-inp').value.trim()!=='ELIMINAR'){
     document.getElementById('mc-inp').style.borderColor='var(--red-600)';return;
   }
   const tipo=document.getElementById('modal-confirm').dataset.tipo;
   const id=document.getElementById('modal-confirm').dataset.id;
-  if(tipo==='prestamo')S.data.prestamos=S.data.prestamos.filter(x=>x.id!==id);
-  else S.data.equipos=S.data.equipos.filter(x=>x.id!==id);
-  saveData();renderAll();document.getElementById('modal-confirm').classList.remove('open');
+  try{
+    if(tipo==='prestamo') await deletePrestamo(id);
+    else await deleteEquipo(id);
+    S.data=await loadData();
+    renderAll();
+    document.getElementById('modal-confirm').classList.remove('open');
+    document.getElementById('mc-inp').value='';
+  }catch(err){
+    alert('Error al eliminar: '+err.message);
+  }
 });
 
 document.getElementById('buscar-p').addEventListener('input',renderPrestamos);
