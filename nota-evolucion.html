@@ -215,13 +215,28 @@ const expId=params.get('expId');
 const pagoId=params.get('pagoId');
 const noteId=params.get('noteId'); // si ya existe
 
-const expData=loadExpData();
-const expIdx=expData.expedientes.findIndex(x=>x.id===expId);
-const exp=expIdx>-1?expData.expedientes[expIdx]:null;
-
+let expData={expedientes:[]};
+let expIdx=-1;
+let exp=null;
 let pagos=[];
-sbNEV.from('pagos_visitas').select('*').order('timestamp',{ascending:false}).then(r=>{pagos=r.data||[];});
-const pago=pagos.find(x=>x.id===pagoId)||null;
+let pago=null;
+let notasExistentes=[];
+
+async function cargarExpedienteCompleto(id){
+  const{data,error}=await sbNEV.from('expedientes').select('*').eq('id',id).single();
+  if(error||!data)return null;
+  return{
+    id:data.id,nombre:data.nombre,idPaciente:data.id_paciente,sexo:data.sexo,
+    edad:data.edad,tipoPaciente:data.tipo_paciente,padecimiento:data.padecimiento,
+    habitos:data.habitos,fotografiaPaciente:data.fotografia_paciente,
+    notasEvolucion:data.notas_evolucion||[]
+  };
+}
+
+async function guardarNotas(expIdParam,notas){
+  const{error}=await sbNEV.from('expedientes').update({notas_evolucion:notas}).eq('id',expIdParam);
+  if(error)throw error;
+}
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
@@ -287,6 +302,34 @@ function val(id){return(document.getElementById(id)||{}).value||'';}
 function setVal(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
 
 /* ── Init ── */
+async function inicializarNE(){
+exp = await cargarExpedienteCompleto(expId);
+if(exp){ expData.expedientes=[exp]; expIdx=0; notasExistentes=exp.notasEvolucion||[]; }
+
+// Cargar visitas registradas del paciente
+if(exp){
+  const{data:pagosData}=await sbNEV.from('pagos_visitas').select('*').order('timestamp',{ascending:false});
+  pagos = (pagosData||[]).filter(p=>p.paciente===exp.nombre);
+  pago = pagoId ? (pagosData||[]).find(x=>x.id===pagoId) : null;
+}
+
+// Validación: para crear una nota NUEVA se requiere una visita registrada
+const esNotaNueva = !noteId && !notasExistentes.find(n=>n.pagoId===pagoId);
+if(exp && esNotaNueva && !pago){
+  document.getElementById('ne-body').style.display='none';
+  document.querySelector('.sticky-bar').style.display='none';
+  const err=document.getElementById('ne-error');
+  err.style.display='';
+  err.innerHTML=`
+    <p style="font-size:18px;font-weight:600;color:var(--text-primary);">Se requiere una visita registrada</p>
+    <p style="margin-top:8px;">Para crear una nueva nota de evolución primero debe registrarse la visita del paciente en el módulo de <strong>Control de Pagos y Visitas</strong>.</p>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="pagos-visitas.html" class="btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;padding:8px 16px;border-radius:var(--radius);">Registrar visita</a>
+      <button type="button" class="btn-secondary" onclick="location.href='control-clinica-dental.html'">Volver al expediente</button>
+    </div>`;
+  return;
+}
+
 if(!exp){
   document.getElementById('ne-error').style.display='';
   document.getElementById('ne-body').style.display='none';
@@ -337,6 +380,7 @@ if(!exp){
     document.getElementById('badge-saved').style.display='';
   }
 }
+} /* fin inicializarNE */
 
 /* ── Prescripción de medicamentos ── */
 let prescribe = false;
@@ -383,10 +427,10 @@ document.getElementById('btn-add-ne-med').addEventListener('click', ()=>addNeMed
 setPrescribe(false);
 
 /* ── Guardar ── */
-document.getElementById('btn-guardar-ne').addEventListener('click',()=>{
+document.getElementById('btn-guardar-ne').addEventListener('click',async ()=>{
   if(!exp)return;
   const tratSeleccionados=[...document.querySelectorAll('[name="ne-trat"]:checked')].map(c=>c.value);
-  const notas=expData.expedientes[expIdx].notasEvolucion||[];
+  const notas=[...notasExistentes];
   const existIdx=pagoId?notas.findIndex(n=>n.pagoId===pagoId):-1;
   const nota={
     id:existIdx>-1?notas[existIdx].id:('ne-'+Date.now().toString(36)),
@@ -412,11 +456,19 @@ document.getElementById('btn-guardar-ne').addEventListener('click',()=>{
   };
   if(existIdx>-1) notas[existIdx]=nota;
   else notas.push(nota);
-  expData.expedientes[expIdx].notasEvolucion=notas;
-  saveExpData(expData);
-  document.getElementById('badge-saved').style.display='';
-  showToast('Nota de evolución guardada ✓');
+  try{
+    await guardarNotas(expId, notas);
+    notasExistentes = notas;
+    document.getElementById('badge-saved').style.display='';
+    showToast('Nota de evolución guardada ✓');
+  }catch(err){
+    showToast('Error al guardar: '+err.message);
+    console.error(err);
+  }
 });
+
+/* Iniciar carga */
+inicializarNE();
 </script>
 </body>
 </html>
