@@ -386,6 +386,10 @@ const selTipo=document.getElementById('filtro-tipo');
 if(selTipo) selTipo.addEventListener('change',renderLista);
 
 init();
+
+
+/* ── Realtime: sincronización automática entre dispositivos ── */
+sbMat.channel('materias_materias').on('postgres_changes',{event:'*',schema:'public',table:'materias'},async()=>{ S.data = await loadData() || S.data; renderAll(); }).subscribe();
 </script>
 </body>
 </html>
