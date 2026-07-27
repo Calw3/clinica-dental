@@ -330,6 +330,7 @@
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="eliminar-expediente-actual">Eliminar expediente</button>
       <button type="button" class="btn-secondary" id="editar-expediente-actual">Editar</button>
+      <button type="button" class="btn-secondary" id="historia-clinica-actual" style="border-color:var(--teal-600);color:var(--teal-800);">📋 Historia Clínica</button>
       <button type="button" class="btn-primary" id="cerrar-ver-expediente">Cerrar</button>
     </div>
   </div>
@@ -954,6 +955,10 @@ function verExpediente(id){
 }
 document.getElementById('cerrar-modal-ver').addEventListener('click', () => document.getElementById('modal-ver-expediente').classList.remove('open'));
 document.getElementById('cerrar-ver-expediente').addEventListener('click', () => document.getElementById('modal-ver-expediente').classList.remove('open'));
+document.getElementById('historia-clinica-actual').addEventListener('click', () => {
+  const id = document.getElementById('eliminar-expediente-actual').dataset.id;
+  if(id) location.href = 'historia-clinica.html?id=' + id;
+});
 document.getElementById('eliminar-expediente-actual').addEventListener('click', (e) => {
   const id = e.target.dataset.id;
   document.getElementById('input-confirmar-eliminar').value = '';
