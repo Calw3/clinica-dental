@@ -423,19 +423,44 @@ const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
 const sbCE=window.supabase.createClient(SB_URL,SB_KEY);
 let _maestrosCE=[];
-async function cargarMaestrosCE(){
-  const{data}=await sbCE.from('maestros').select('nombre').order('nombre');
-  _maestrosCE=(data||[]).map(m=>m.nombre).filter(Boolean);
+let _alumnosCE=[];
+async function cargarCatalogosCE(){
+  const[maeRes,aluRes]=await Promise.all([
+    sbCE.from('maestros').select('nombre').order('nombre'),
+    sbCE.from('alumnos').select('nombre,correo,correo_institucional').order('nombre')
+  ]);
+  _maestrosCE=(maeRes.data||[]).map(m=>m.nombre).filter(Boolean);
+  _alumnosCE=(aluRes.data||[]).map(a=>({
+    nombre:a.nombre,
+    correo:a.correo_institucional||a.correo||''
+  })).filter(a=>a.nombre);
 }
 async function loadData(){
   const{data,error}=await sbCE.from('ceye').select('*').order('created_at',{ascending:false});
   if(error){console.error(error);return{registros:[],seq:1};}
   const seq=data&&data.length>0?Math.max(...data.map(r=>r.seq||0))+1:1;
-  return{registros:data||[],seq};
+  return{registros:(data||[]).map(r=>({
+    id:r.id, timestamp:r.timestamp, turno:r.turno, receptor:r.receptor,
+    clinica:r.clinica, alumno:r.alumno, correo:r.correo,
+    paquetes:r.paquetes, comentarios:r.comentarios, fotoInst:r.foto_inst,
+    estado:r.estado, esterilTimestamp:r.esteril_timestamp,
+    esterilFoto:r.esteril_foto, esterilComentarios:r.esteril_comentarios,
+    seq:r.seq
+  })),seq};
 }
 async function saveData(){
   for(const r of S.data.registros){
-    await sbCE.from('ceye').upsert(r,{onConflict:'id'});
+    const row={
+      id:r.id, timestamp:r.timestamp||'', turno:r.turno||'',
+      receptor:r.receptor||'', clinica:r.clinica||'', alumno:r.alumno||'',
+      correo:r.correo||'', paquetes:Number(r.paquetes)||1,
+      comentarios:r.comentarios||'', foto_inst:r.fotoInst||'',
+      estado:r.estado||'pendiente', esteril_timestamp:r.esterilTimestamp||null,
+      esteril_foto:r.esterilFoto||'', esteril_comentarios:r.esterilComentarios||'',
+      seq:r.seq||null
+    };
+    const{error}=await sbCE.from('ceye').upsert(row,{onConflict:'id'});
+    if(error)throw error;
   }
 }
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -511,15 +536,13 @@ function setupAC(inputId,listId,getItems,onSelect){
 
 function getMaestros(){
   return _maestrosCE;
-  return[];
 }
 function getAlumnos(){
-  try{const d=null;if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}
-  return[];
+  return _alumnosCE.map(a=>a.nombre);
 }
 function getAlumnoCorreo(nombre){
-  try{const d=null;if(d){const p=JSON.parse(d);const a=(p.alumnos||[]).find(x=>x.nombre===nombre);return a?a.correoInstitucional||a.correo||'':''}}catch(e){}
-  return'';
+  const a=_alumnosCE.find(x=>x.nombre===nombre);
+  return a?a.correo:'';
 }
 
 setupAC('f-receptor','ac-receptor',getMaestros);
@@ -552,12 +575,12 @@ function closePanel(){
   document.getElementById('panel-overlay').classList.remove('open');
   document.getElementById('panel').classList.remove('open');
 }
-document.getElementById('btn-nuevo').addEventListener('click',openPanel);
-document.getElementById('btn-cancel').addEventListener('click',closePanel);
-document.getElementById('panel-overlay').addEventListener('click',closePanel);
+const _e_btn_nuevo=document.getElementById('btn-nuevo'); if(_e_btn_nuevo) _e_btn_nuevo.addEventListener('click',openPanel);
+const _e_btn_cancel=document.getElementById('btn-cancel'); if(_e_btn_cancel) _e_btn_cancel.addEventListener('click',closePanel);
+const _e_panel_overlay=document.getElementById('panel-overlay'); if(_e_panel_overlay) _e_panel_overlay.addEventListener('click',closePanel);
 
 /* ─── Guardar ─── */
-document.getElementById('btn-save').addEventListener('click',()=>{
+const _e_btn_save=document.getElementById('btn-save'); if(_e_btn_save) _e_btn_save.addEventListener('click',async ()=>{
   const turno=document.getElementById('f-turno').value;
   const receptor=document.getElementById('f-receptor').value.trim();
   const clinica=document.getElementById('f-clinica').value;
@@ -591,7 +614,7 @@ document.getElementById('btn-save').addEventListener('click',()=>{
     esterilComentarios:'',
   };
   S.data.registros.unshift(rec);
-  saveData();renderAll();
+  try{ await saveData(); S.data = await loadData(); renderAll(); }catch(err){ alert("Error al guardar: "+err.message); }
 populateMaterias('f-clinica');closePanel();
 });
 
@@ -679,10 +702,10 @@ function verRegistro(id){
   document.getElementById('btn-ver-esteril').style.display=r.estado==='pendiente'?'':'none';
   document.getElementById('modal-ver').classList.add('open');
 }
-document.getElementById('cerrar-ver').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
-document.getElementById('btn-ver-cerrar').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
-document.getElementById('btn-ver-eliminar').addEventListener('click',()=>{document.getElementById('modal-ver').classList.remove('open');abrirEliminarDirect(S.verId);});
-document.getElementById('btn-ver-esteril').addEventListener('click',()=>{document.getElementById('modal-ver').classList.remove('open');abrirEsterilDirect(S.verId);});
+const _e_cerrar_ver=document.getElementById('cerrar-ver'); if(_e_cerrar_ver) _e_cerrar_ver.addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+const _e_btn_ver_cerrar=document.getElementById('btn-ver-cerrar'); if(_e_btn_ver_cerrar) _e_btn_ver_cerrar.addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+const _e_btn_ver_eliminar=document.getElementById('btn-ver-eliminar'); if(_e_btn_ver_eliminar) _e_btn_ver_eliminar.addEventListener('click',()=>{document.getElementById('modal-ver').classList.remove('open');abrirEliminarDirect(S.verId);});
+const _e_btn_ver_esteril=document.getElementById('btn-ver-esteril'); if(_e_btn_ver_esteril) _e_btn_ver_esteril.addEventListener('click',()=>{document.getElementById('modal-ver').classList.remove('open');abrirEsterilDirect(S.verId);});
 
 /* ─── Modal estéril ─── */
 function abrirEsteril(e,id){e.stopPropagation();abrirEsterilDirect(id);}
@@ -694,9 +717,9 @@ function abrirEsterilDirect(id){
   document.getElementById('me-comentarios').value='';
   document.getElementById('modal-esteril').classList.add('open');
 }
-document.getElementById('cerrar-me').addEventListener('click',()=>document.getElementById('modal-esteril').classList.remove('open'));
-document.getElementById('me-cancel').addEventListener('click',()=>document.getElementById('modal-esteril').classList.remove('open'));
-document.getElementById('me-confirmar').addEventListener('click',()=>{
+const _e_cerrar_me=document.getElementById('cerrar-me'); if(_e_cerrar_me) _e_cerrar_me.addEventListener('click',()=>document.getElementById('modal-esteril').classList.remove('open'));
+const _e_me_cancel=document.getElementById('me-cancel'); if(_e_me_cancel) _e_me_cancel.addEventListener('click',()=>document.getElementById('modal-esteril').classList.remove('open'));
+const _e_me_confirmar=document.getElementById('me-confirmar'); if(_e_me_confirmar) _e_me_confirmar.addEventListener('click',async ()=>{
   const foto=getFoto('prev-me-foto');
   if(!foto){
     const lbl=document.getElementById('lbl-me-foto');
@@ -711,7 +734,7 @@ document.getElementById('me-confirmar').addEventListener('click',()=>{
     S.data.registros[i].esterilFoto=foto;
     S.data.registros[i].esterilComentarios=document.getElementById('me-comentarios').value.trim();
   }
-  saveData();renderAll();
+  try{ await saveData(); S.data = await loadData(); renderAll(); }catch(err){ alert("Error al guardar: "+err.message); }
 populateMaterias('f-clinica');
   document.getElementById('modal-esteril').classList.remove('open');
 });
@@ -724,21 +747,31 @@ function abrirEliminarDirect(id){
   document.getElementById('modal-confirm').dataset.id=id;
   document.getElementById('modal-confirm').classList.add('open');
 }
-document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+const _e_cerrar_confirm=document.getElementById('cerrar-confirm'); if(_e_cerrar_confirm) _e_cerrar_confirm.addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+const _e_cancelar_confirm=document.getElementById('cancelar-confirm'); if(_e_cancelar_confirm) _e_cancelar_confirm.addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+const _e_btn_confirm_del=document.getElementById('btn-confirm-del'); if(_e_btn_confirm_del) _e_btn_confirm_del.addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
-  S.data.registros=S.data.registros.filter(x=>x.id!==document.getElementById('modal-confirm').dataset.id);
-  saveData();renderAll();
-populateMaterias('f-clinica');document.getElementById('modal-confirm').classList.remove('open');
+  const idDel = document.getElementById('modal-confirm').dataset.id;
+  try{
+    await sbCE.from('ceye').delete().eq('id', idDel);
+    S.data = await loadData();
+    renderAll();
+    document.getElementById('modal-confirm').classList.remove('open');
+    document.getElementById('inp-confirm').value='';
+  }catch(err){ alert("Error al eliminar: "+err.message); }
 });
 
-document.getElementById('buscar').addEventListener('input',renderLista);
-document.getElementById('filtro-estado').addEventListener('change',renderLista);
-document.getElementById('filtro-turno').addEventListener('change',renderLista);
-renderAll();
+const _e_buscar=document.getElementById('buscar'); if(_e_buscar) _e_buscar.addEventListener('input',renderLista);
+const _e_filtro_estado=document.getElementById('filtro-estado'); if(_e_filtro_estado) _e_filtro_estado.addEventListener('change',renderLista);
+const _e_filtro_turno=document.getElementById('filtro-turno'); if(_e_filtro_turno) _e_filtro_turno.addEventListener('change',renderLista);
+async function inicializar(){
+  await cargarCatalogosCE();
+  S.data = await loadData();
+  renderAll();
+}
+inicializar();
 populateMaterias('f-clinica');
 
 /* ── Materias dinámicas desde catálogo ── */
@@ -777,8 +810,9 @@ function populateMaterias(selectId, currentVal){
 
 
 /* ── Realtime: sincronización automática entre dispositivos ── */
-sbCE.channel('ceye_ceye').on('postgres_changes',{event:'*',schema:'public',table:'ceye'},async()=>{ await cargarMaestrosCE(); S.data = await loadData(); renderAll(); }).subscribe();
-sbCE.channel('ceye_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarMaestrosCE(); S.data = await loadData(); renderAll(); }).subscribe();
+sbCE.channel('ceye_ceye').on('postgres_changes',{event:'*',schema:'public',table:'ceye'},async()=>{ await cargarCatalogosCE(); S.data = await loadData(); renderAll(); }).subscribe();
+sbCE.channel('ceye_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarCatalogosCE(); }).subscribe();
+sbCE.channel('ceye_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ await cargarCatalogosCE(); }).subscribe();
 </script>
 </body>
 </html>
