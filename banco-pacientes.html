@@ -357,7 +357,11 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const sbBP=window.supabase.createClient(SB_URL,SB_KEY);
 async function loadData(){const{data,error}=await sbBP.from('banco_pacientes').select('*').order('nombre');if(error){console.error(error);return{pacientes:[]}}return{pacientes:(data||[]).map(r=>{return{id:r.id,nombre:r.nombre,tipo:r.tipo,telefono:r.telefono,correo:r.correo,tratamiento:r.tratamiento,especialidad:r.especialidad,alumno:r.alumno,fechaRegistro:r.fecha_registro}})};}
 async function saveData(){}
-async function upsertPaciente(rec){const row={id:rec.id,nombre:rec.nombre,tipo:rec.tipo,telefono:rec.telefono||'',correo:rec.correo||'',tratamiento:rec.tratamiento||'',especialidad:rec.especialidad||'',alumno:rec.alumno||'',fecha_registro:rec.fechaRegistro||''};const{error}=await sbBP.from('banco_pacientes').upsert(row,{onConflict:'id'});if(error)console.error(error);}
+async function deletePaciente(id){
+  const{error}=await sbBP.from('banco_pacientes').delete().eq('id',id);
+  if(error)throw error;
+}
+async function upsertPaciente(rec){const row={id:rec.id,nombre:rec.nombre,tipo:rec.tipo,telefono:rec.telefono||'',correo:rec.correo||'',tratamiento:rec.tratamiento||'',especialidad:rec.especialidad||'',alumno:rec.alumno||'',fecha_registro:rec.fechaRegistro||''};const{error}=await sbBP.from('banco_pacientes').upsert(row,{onConflict:'id'});if(error)throw error;}
 async function deletePacientes(ids){const{error}=await sbBP.from('banco_pacientes').delete().in('id',ids);if(error)console.error(error);}
 
 function uid(){return'BP-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,4).toUpperCase();}
@@ -474,9 +478,20 @@ function setupACEsp(inputId,listId){
   });
 }
 
+let _alumnosBP=[];
+let _materiasBP=[];
+
+async function cargarCatalogosBP(){
+  const[aluRes,matRes]=await Promise.all([
+    sbBP.from('alumnos').select('nombre').order('nombre'),
+    sbBP.from('materias').select('nombre,tipo').order('nombre')
+  ]);
+  _alumnosBP=(aluRes.data||[]).map(a=>a.nombre).filter(Boolean);
+  _materiasBP=(matRes.data||[]).map(m=>({nombre:m.nombre,tipo:m.tipo||'Otras'})).filter(m=>m.nombre);
+}
+
 function getAlumnos(){
-  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}
-  return[];
+  return _alumnosBP;
 }
 
 setupACEsp('f-especialidad','ac-especialidad');
@@ -563,12 +578,12 @@ function closePanel(){
   document.getElementById('panel-overlay').classList.remove('open');
   document.getElementById('panel').classList.remove('open');
 }
-document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
-document.getElementById('btn-cancel').addEventListener('click',closePanel);
-document.getElementById('panel-overlay').addEventListener('click',closePanel);
+const _b_btn_nuevo=document.getElementById('btn-nuevo'); if(_b_btn_nuevo) _b_btn_nuevo.addEventListener('click',()=>openPanel());
+const _b_btn_cancel=document.getElementById('btn-cancel'); if(_b_btn_cancel) _b_btn_cancel.addEventListener('click',closePanel);
+const _b_panel_overlay=document.getElementById('panel-overlay'); if(_b_panel_overlay) _b_panel_overlay.addEventListener('click',closePanel);
 
 /* ─── Guardar ─── */
-document.getElementById('btn-save').addEventListener('click',()=>{
+const _b_btn_save=document.getElementById('btn-save'); if(_b_btn_save) _b_btn_save.addEventListener('click',async ()=>{
   const nombre=document.getElementById('f-nombre').value.trim();
   const tipo=document.getElementById('f-tipo').value;
   const tratamiento=document.getElementById('f-tratamiento').value.trim();
@@ -591,10 +606,16 @@ document.getElementById('btn-save').addEventListener('click',()=>{
     alumno:document.getElementById('f-alumno').value.trim(),
     fechaRegistro:S.editId?(S.data.pacientes.find(x=>x.id===S.editId)||{}).fechaRegistro:new Date().toISOString(),
   };
-  if(S.editId){const i=S.data.pacientes.findIndex(x=>x.id===S.editId);if(i>-1)S.data.pacientes[i]=rec;}
-  else S.data.pacientes.push(rec);
-  saveData();renderAll();
-populateMaterias('f-especialidad');closePanel();
+  try{
+    await upsertPaciente(rec);
+    S.data = await loadData();
+    renderAll();
+    populateMaterias('f-especialidad');
+    closePanel();
+  }catch(err){
+    alert('Error al guardar: '+err.message);
+    console.error(err);
+  }
 });
 
 /* ─── Ver paciente ─── */
@@ -629,15 +650,15 @@ function verPaciente(id){
   document.getElementById('modal-ver').classList.add('open');
 }
 
-document.getElementById('cerrar-ver').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
-document.getElementById('btn-ver-cerrar').addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
-document.getElementById('btn-ver-editar').addEventListener('click',()=>{
+const _b_cerrar_ver=document.getElementById('cerrar-ver'); if(_b_cerrar_ver) _b_cerrar_ver.addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+const _b_btn_ver_cerrar=document.getElementById('btn-ver-cerrar'); if(_b_btn_ver_cerrar) _b_btn_ver_cerrar.addEventListener('click',()=>document.getElementById('modal-ver').classList.remove('open'));
+const _b_btn_ver_editar=document.getElementById('btn-ver-editar'); if(_b_btn_ver_editar) _b_btn_ver_editar.addEventListener('click',()=>{
   document.getElementById('modal-ver').classList.remove('open');openPanel(S.verId);
 });
-document.getElementById('btn-ver-eliminar').addEventListener('click',()=>{
+const _b_btn_ver_eliminar=document.getElementById('btn-ver-eliminar'); if(_b_btn_ver_eliminar) _b_btn_ver_eliminar.addEventListener('click',()=>{
   document.getElementById('modal-ver').classList.remove('open');abrirEliminarDirect(S.verId);
 });
-document.getElementById('btn-ver-asignar').addEventListener('click',()=>{
+const _b_btn_ver_asignar=document.getElementById('btn-ver-asignar'); if(_b_btn_ver_asignar) _b_btn_ver_asignar.addEventListener('click',()=>{
   document.getElementById('modal-ver').classList.remove('open');abrirAsignarDirect(S.verId);
 });
 
@@ -651,15 +672,20 @@ function abrirAsignarDirect(id){
   document.getElementById('modal-asignar').classList.add('open');
   setTimeout(()=>document.getElementById('ma-alumno').focus(),200);
 }
-document.getElementById('cerrar-ma').addEventListener('click',()=>document.getElementById('modal-asignar').classList.remove('open'));
-document.getElementById('ma-cancel').addEventListener('click',()=>document.getElementById('modal-asignar').classList.remove('open'));
-document.getElementById('ma-guardar').addEventListener('click',()=>{
+const _b_cerrar_ma=document.getElementById('cerrar-ma'); if(_b_cerrar_ma) _b_cerrar_ma.addEventListener('click',()=>document.getElementById('modal-asignar').classList.remove('open'));
+const _b_ma_cancel=document.getElementById('ma-cancel'); if(_b_ma_cancel) _b_ma_cancel.addEventListener('click',()=>document.getElementById('modal-asignar').classList.remove('open'));
+const _b_ma_guardar=document.getElementById('ma-guardar'); if(_b_ma_guardar) _b_ma_guardar.addEventListener('click',async ()=>{
   const alumno=document.getElementById('ma-alumno').value.trim();
   if(!alumno){document.getElementById('ma-alumno').focus();return;}
   const i=S.data.pacientes.findIndex(x=>x.id===S.asignarId);
-  if(i>-1)S.data.pacientes[i].alumno=alumno;
-  saveData();renderAll();
-populateMaterias('f-especialidad');
+  if(i>-1){
+    S.data.pacientes[i].alumno=alumno;
+    try{
+      await upsertPaciente(S.data.pacientes[i]);
+      S.data = await loadData();
+      renderAll();
+    }catch(err){ alert('Error al asignar: '+err.message); }
+  }
   document.getElementById('modal-asignar').classList.remove('open');
 });
 
@@ -671,28 +697,39 @@ function abrirEliminarDirect(id){
   document.getElementById('modal-confirm').dataset.id=id;
   document.getElementById('modal-confirm').classList.add('open');
 }
-document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',async ()=>{
+const _b_cerrar_confirm=document.getElementById('cerrar-confirm'); if(_b_cerrar_confirm) _b_cerrar_confirm.addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+const _b_cancelar_confirm=document.getElementById('cancelar-confirm'); if(_b_cancelar_confirm) _b_cancelar_confirm.addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
+const _b_btn_confirm_del=document.getElementById('btn-confirm-del'); if(_b_btn_confirm_del) _b_btn_confirm_del.addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
-  S.data.pacientes=S.data.pacientes.filter(x=>x.id!==document.getElementById('modal-confirm').dataset.id);
-  saveData();renderAll();
-populateMaterias('f-especialidad');document.getElementById('modal-confirm').classList.remove('open');
+  const idDel = document.getElementById('modal-confirm').dataset.id;
+  try{
+    await deletePaciente(idDel);
+    S.data = await loadData();
+    renderAll();
+    document.getElementById('modal-confirm').classList.remove('open');
+    document.getElementById('inp-confirm').value='';
+  }catch(err){ alert('Error al eliminar: '+err.message); }
 });
 
-document.getElementById('buscar').addEventListener('input',renderLista);
-document.getElementById('filtro-tipo').addEventListener('change',renderLista);
-document.getElementById('filtro-estado').addEventListener('change',renderLista);
-renderAll();
+const _b_buscar=document.getElementById('buscar'); if(_b_buscar) _b_buscar.addEventListener('input',renderLista);
+const _b_filtro_tipo=document.getElementById('filtro-tipo'); if(_b_filtro_tipo) _b_filtro_tipo.addEventListener('change',renderLista);
+const _b_filtro_estado=document.getElementById('filtro-estado'); if(_b_filtro_estado) _b_filtro_estado.addEventListener('change',renderLista);
+async function inicializar(){
+  await cargarCatalogosBP();
+  S.data = await loadData();
+  renderAll();
+  populateMaterias('f-especialidad');
+}
+inicializar();
 populateMaterias('f-especialidad');
 
 /* ── Materias dinámicas desde catálogo ── */
 function populateMaterias(selectId, currentVal){
   const sel=document.getElementById(selectId);if(!sel)return;
   try{
-    const d=localStorage.getItem('clinica_materias_v1');
+    const d = _materiasBP.length>0 ? JSON.stringify({materias:_materiasBP}) : null;
     if(d){
       const parsed=JSON.parse(d);
       const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
@@ -725,7 +762,8 @@ function populateMaterias(selectId, currentVal){
 
 /* ── Realtime: sincronización automática entre dispositivos ── */
 sbBP.channel('banco_pacientes_banco_pacientes').on('postgres_changes',{event:'*',schema:'public',table:'banco_pacientes'},async()=>{ S.data = await loadData(); renderAll(); }).subscribe();
-sbBP.channel('banco_pacientes_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ S.data = await loadData(); renderAll(); }).subscribe();
+sbBP.channel('banco_pacientes_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ await cargarCatalogosBP(); }).subscribe();
+sbBP.channel('banco_pacientes_materias').on('postgres_changes',{event:'*',schema:'public',table:'materias'},async()=>{ await cargarCatalogosBP(); populateMaterias('f-especialidad'); }).subscribe();
 </script>
 </body>
 </html>
