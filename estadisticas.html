@@ -92,19 +92,33 @@ const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
 const sbST=window.supabase.createClient(SB_URL,SB_KEY);
 async function cargarTodosLosDatos(){
-  const[expRes,aluRes,maeRes,pagRes,presRes]=await Promise.all([
-    sbST.from('expedientes').select('id,nombre,tipo_paciente,tipo_historia,sexo,edad'),
-    sbST.from('alumnos').select('id,nombre,semestre'),
-    sbST.from('maestros').select('id,nombre,puesto'),
+  const[expRes,aluRes,maeRes,pagRes,presRes,eqRes,bancoRes,ceyeRes,justRes,consRes,asisRes,asisSSRes]=await Promise.all([
+    sbST.from('expedientes').select('*'),
+    sbST.from('alumnos').select('*'),
+    sbST.from('maestros').select('*'),
     sbST.from('pagos_visitas').select('*'),
-    sbST.from('prestamos').select('*')
+    sbST.from('prestamos').select('*'),
+    sbST.from('equipos').select('*'),
+    sbST.from('banco_pacientes').select('*'),
+    sbST.from('ceye').select('*'),
+    sbST.from('justificantes').select('*'),
+    sbST.from('consentimientos').select('*'),
+    sbST.from('asistencia').select('*'),
+    sbST.from('asistencia_ss').select('*')
   ]);
   return{
     expedientes:expRes.data||[],
     alumnos:aluRes.data||[],
     maestros:maeRes.data||[],
     pagos:pagRes.data||[],
-    prestamos:presRes.data||[]
+    prestamos:presRes.data||[],
+    equipos:eqRes.data||[],
+    banco:bancoRes.data||[],
+    ceye:ceyeRes.data||[],
+    justificantes:justRes.data||[],
+    consentimientos:consRes.data||[],
+    asistencia:asisRes.data||[],
+    asistenciaSS:asisSSRes.data||[]
   };
 }
 
@@ -128,29 +142,23 @@ function statRows(rows){
   return rows.map(([l,v,hoy])=>`<div class="stat-row"><span>${l}</span><div style="display:flex;align-items:center;gap:6px;"><strong>${v}</strong>${hoy?`<span class="hoy-badge">+${hoy} hoy</span>`:''}</div></div>`).join('');
 }
 
+let datos = {expedientes:[],alumnos:[],maestros:[],pagos:[],prestamos:[],equipos:[],banco:[],ceye:[],justificantes:[],consentimientos:[],asistencia:[],asistenciaSS:[]};
+
 function renderAll(){
-  const hoy=todayISO(),mes=mesISO();
+  const hoy=todayISO(), mes=mesISO();
   let html='';
 
-  /* ── Resumen global ── */
-  const pac=tryParse('clinica_dental_data_v1');
-  const alumnos=tryParse('clinica_alumnos_v1');
-  const maestros=tryParse('clinica_maestros_v1');
-  const just=tryParse('clinica_justificantes_v1');
-  const prest=tryParse('clinica_prestamos_v1');
-  const ceye=tryParse('clinica_ceye_v1');
-  const banco=tryParse('clinica_banco_pacientes_v1');
-  const asist=tryParse('clinica_asistencia_v1');
-  const cons=tryParse('clinica_consentimientos_v1');
+  const D = datos;
 
-  const totalPac=(pac?.expedientes||[]).length;
-  const totalAlumnos=(alumnos?.alumnos||[]).length;
-  const totalMaestros=(maestros?.maestros||[]).length;
-  const totalJust=(just?.justificantes||[]).length+(just?.recetas||[]).length;
-  const totalPrest=(prest?.prestamos||[]).length;
-  const totalCeye=(ceye?.registros||[]).length;
-  const totalBanco=(banco?.pacientes||[]).length;
-  const totalCons=(cons?.consentimientos||[]).length;
+  /* ══ RESUMEN GLOBAL ══ */
+  const totalPac = D.expedientes.length;
+  const totalAlumnos = D.alumnos.length;
+  const totalMaestros = D.maestros.length;
+  const totalJust = D.justificantes.length;
+  const totalPrest = D.prestamos.length;
+  const totalCeye = D.ceye.length;
+  const totalBanco = D.banco.length;
+  const totalCons = D.consentimientos.length;
 
   html+=`<p class="section-label">Resumen global</p>
   <div class="hero-grid">
@@ -188,227 +196,265 @@ function renderAll(){
     </div>
   </div>`;
 
+  /* ══════════════════════════════════════════════════════════
+     SECCIÓN 1 — CONTROL DE PAGOS Y VISITAS
+     ══════════════════════════════════════════════════════════ */
+  const pagos = D.pagos;
+  const pagosHoy = pagos.filter(p=>p.fecha===hoy);
+  const pagosMes = pagos.filter(p=>(p.fecha||'').startsWith(mes));
+
+  // Procedimientos realizados
+  const procConteo={};
+  pagos.forEach(p=>{
+    (p.tratamientos||[]).forEach(t=>{
+      if(!t?.nombre)return;
+      procConteo[t.nombre]=(procConteo[t.nombre]||0)+(Number(t.cantidad)||1);
+    });
+  });
+  const procTop=Object.entries(procConteo).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxProc=Math.max(...procTop.map(p=>p[1]),1);
+  const totalProcs=Object.values(procConteo).reduce((s,n)=>s+n,0);
+
+  // Visitas por clínica
+  const clinicaConteo={};
+  pagos.forEach(p=>{
+    const c=p.clinica||'Sin asignar';
+    clinicaConteo[c]=(clinicaConteo[c]||0)+1;
+  });
+  const clinicaTop=Object.entries(clinicaConteo).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxClinica=Math.max(...clinicaTop.map(c=>c[1]),1);
+
+  // Visitas por lugar de atención
+  const lugarConteo={};
+  pagos.forEach(p=>{
+    const l=p.lugar_pago||p.lugarPago||'Sin registrar';
+    lugarConteo[l]=(lugarConteo[l]||0)+1;
+  });
+  const lugarTop=Object.entries(lugarConteo).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxLugar=Math.max(...lugarTop.map(l=>l[1]),1);
+
+  // Pacientes más atendidos
+  const pacConteo={};
+  pagos.forEach(p=>{
+    const n=p.paciente||'Sin nombre';
+    pacConteo[n]=(pacConteo[n]||0)+1;
+  });
+  const pacTop=Object.entries(pacConteo).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxPac=Math.max(...pacTop.map(p=>p[1]),1);
+
+  // Tendencia últimos 7 días
+  const ultimos7=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const iso=d.toISOString().slice(0,10);
+    const label=d.toLocaleDateString('es-MX',{weekday:'short',day:'2-digit'});
+    ultimos7.push([label, pagos.filter(p=>p.fecha===iso).length]);
+  }
+  const max7=Math.max(...ultimos7.map(d=>d[1]),1);
+
+  const promedioProcs = pagos.length>0 ? (totalProcs/pagos.length).toFixed(1) : '0';
+
+  html+=`<p class="section-label">Control de pagos y visitas</p>
+  <div class="hero-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:16px;">
+    <div class="hero-card"><p class="hero-value">${pagos.length}</p><p class="hero-label">Visitas totales</p></div>
+    <div class="hero-card"><p class="hero-value">${pagosHoy.length}</p><p class="hero-label">Visitas hoy</p></div>
+    <div class="hero-card"><p class="hero-value">${pagosMes.length}</p><p class="hero-label">Visitas este mes</p></div>
+    <div class="hero-card"><p class="hero-value">${totalProcs}</p><p class="hero-label">Procedimientos</p></div>
+    <div class="hero-card"><p class="hero-value">${promedioProcs}</p><p class="hero-label">Proc. por visita</p></div>
+  </div>
+  <div class="mod-grid">
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Procedimientos más realizados</span></div>
+      ${barChart(procTop,maxProc)}
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Visitas por clínica / materia</span></div>
+      ${barChart(clinicaTop,maxClinica)}
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Tendencia últimos 7 días</span></div>
+      ${barChart(ultimos7,max7)}
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Pacientes más atendidos</span></div>
+      ${barChart(pacTop,maxPac)}
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Lugar de atención</span></div>
+      ${barChart(lugarTop,maxLugar)}
+    </div>
+  </div>`;
+
+  /* ══════════════════════════════════════════════════════════
+     SECCIÓN 2 — CONTROL POR ALUMNO
+     ══════════════════════════════════════════════════════════ */
+  const alumnos = D.alumnos;
+
+  // Construir mapa de actividad por alumno
+  const actividad = {};
+  const nombreAlumnos = alumnos.map(a=>a.nombre).filter(Boolean);
+  nombreAlumnos.forEach(n=>{
+    actividad[n] = { visitas:0, procedimientos:0, pacientes:new Set(), justificantes:0, consentimientos:0, ceye:0, prestamos:0, asistencias:0, semestre:'' };
+  });
+  alumnos.forEach(a=>{ if(a.nombre && actividad[a.nombre]) actividad[a.nombre].semestre = a.semestre || ''; });
+
+  const reg = (nombre) => {
+    if(!nombre) return null;
+    if(!actividad[nombre]) actividad[nombre] = { visitas:0, procedimientos:0, pacientes:new Set(), justificantes:0, consentimientos:0, ceye:0, prestamos:0, asistencias:0, semestre:'' };
+    return actividad[nombre];
+  };
+
+  pagos.forEach(p=>{
+    const a = reg(p.estudiante);
+    if(!a) return;
+    a.visitas++;
+    if(p.paciente) a.pacientes.add(p.paciente);
+    (p.tratamientos||[]).forEach(t=>{ if(t?.nombre) a.procedimientos += (Number(t.cantidad)||1); });
+  });
+  D.justificantes.forEach(j=>{ const a=reg(j.alumno); if(a) a.justificantes++; });
+  D.consentimientos.forEach(c=>{ const a=reg(c.alumno); if(a) a.consentimientos++; });
+  D.ceye.forEach(c=>{ const a=reg(c.alumno); if(a) a.ceye++; });
+  D.prestamos.forEach(p=>{ if((p.tipo_resp||p.tipoResp)==='alumno'){ const a=reg(p.responsable); if(a) a.prestamos++; } });
+  D.asistenciaSS.forEach(r=>{ const a=reg(r.nombre); if(a && r.tipo==='Entrada') a.asistencias++; });
+
+  const listaAlumnos = Object.entries(actividad).map(([nombre,d])=>({
+    nombre, semestre:d.semestre,
+    visitas:d.visitas, procedimientos:d.procedimientos,
+    pacientes:d.pacientes.size, justificantes:d.justificantes,
+    consentimientos:d.consentimientos, ceye:d.ceye,
+    prestamos:d.prestamos, asistencias:d.asistencias,
+    total: d.visitas + d.justificantes + d.consentimientos + d.ceye + d.prestamos
+  }));
+
+  const alumnosActivos = listaAlumnos.filter(a=>a.total>0).length;
+  const totalPacAtendidos = new Set(pagos.map(p=>p.paciente).filter(Boolean)).size;
+  const promVisitas = alumnosActivos>0 ? (pagos.length/alumnosActivos).toFixed(1) : '0';
+
+  const topVisitas = listaAlumnos.filter(a=>a.visitas>0).sort((a,b)=>b.visitas-a.visitas).slice(0,8).map(a=>[a.nombre,a.visitas]);
+  const maxVis = Math.max(...topVisitas.map(a=>a[1]),1);
+
+  const topProcs = listaAlumnos.filter(a=>a.procedimientos>0).sort((a,b)=>b.procedimientos-a.procedimientos).slice(0,8).map(a=>[a.nombre,a.procedimientos]);
+  const maxPr = Math.max(...topProcs.map(a=>a[1]),1);
+
+  const topPacientes = listaAlumnos.filter(a=>a.pacientes>0).sort((a,b)=>b.pacientes-a.pacientes).slice(0,8).map(a=>[a.nombre,a.pacientes]);
+  const maxPa = Math.max(...topPacientes.map(a=>a[1]),1);
+
+  // Por semestre
+  const semConteo={};
+  listaAlumnos.forEach(a=>{
+    const s = a.semestre ? (String(a.semestre).includes('Semestre') ? a.semestre : 'Semestre '+a.semestre) : 'Sin semestre';
+    semConteo[s]=(semConteo[s]||0)+1;
+  });
+  const semTop=Object.entries(semConteo).sort((a,b)=>a[0].localeCompare(b[0]));
+  const maxSem=Math.max(...semTop.map(s=>s[1]),1);
+
+  // Tabla comparativa
+  const tabla = listaAlumnos.filter(a=>a.total>0).sort((a,b)=>b.total-a.total).slice(0,15);
+  const filasTabla = tabla.length===0
+    ? `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">Sin actividad registrada.</td></tr>`
+    : tabla.map((a,i)=>`
+      <tr style="background:${i%2===0?'transparent':'var(--surface-1)'};">
+        <td style="padding:8px 10px;font-weight:600;font-size:13px;">${esc(a.nombre)}</td>
+        <td style="padding:8px 10px;text-align:center;font-size:13px;">${a.visitas}</td>
+        <td style="padding:8px 10px;text-align:center;font-size:13px;">${a.procedimientos}</td>
+        <td style="padding:8px 10px;text-align:center;font-size:13px;">${a.pacientes}</td>
+        <td style="padding:8px 10px;text-align:center;font-size:13px;">${a.consentimientos}</td>
+        <td style="padding:8px 10px;text-align:center;font-size:13px;">${a.ceye}</td>
+        <td style="padding:8px 10px;text-align:center;font-size:13px;">${a.asistencias}</td>
+      </tr>`).join('');
+
+  html+=`<p class="section-label">Control por alumno</p>
+  <div class="hero-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:16px;">
+    <div class="hero-card"><p class="hero-value">${totalAlumnos}</p><p class="hero-label">Alumnos registrados</p></div>
+    <div class="hero-card"><p class="hero-value">${alumnosActivos}</p><p class="hero-label">Con actividad clínica</p></div>
+    <div class="hero-card"><p class="hero-value">${totalPacAtendidos}</p><p class="hero-label">Pacientes atendidos</p></div>
+    <div class="hero-card"><p class="hero-value">${promVisitas}</p><p class="hero-label">Visitas por alumno</p></div>
+  </div>
+  <div class="mod-grid">
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Visitas atendidas por alumno</span></div>
+      ${barChart(topVisitas,maxVis)}
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Procedimientos por alumno</span></div>
+      ${barChart(topProcs,maxPr)}
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Pacientes distintos por alumno</span></div>
+      ${barChart(topPacientes,maxPa)}
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-title">Alumnos por semestre</span></div>
+      ${barChart(semTop,maxSem)}
+    </div>
+  </div>
+
+  <div class="mod-card" style="margin-top:14px;overflow-x:auto;">
+    <div class="mod-head"><span class="mod-title">Detalle comparativo por alumno</span></div>
+    <table style="width:100%;border-collapse:collapse;margin-top:10px;min-width:620px;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border);">
+          <th style="padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);">Alumno</th>
+          <th style="padding:8px 10px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);">Visitas</th>
+          <th style="padding:8px 10px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);">Proced.</th>
+          <th style="padding:8px 10px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);">Pacientes</th>
+          <th style="padding:8px 10px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);">Consent.</th>
+          <th style="padding:8px 10px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);">CeYE</th>
+          <th style="padding:8px 10px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);">Asist.</th>
+        </tr>
+      </thead>
+      <tbody>${filasTabla}</tbody>
+    </table>
+  </div>`;
+
+  /* ══ Detalle por módulo ══ */
   html+=`<p class="section-label">Detalle por módulo</p><div class="mod-grid">`;
 
-  /* ── Expedientes ── */
-  const exps=pac?.expedientes||[];
-  const expHoy=exps.filter(e=>e.fecha===hoy||e.fechaRegistro===hoy).length;
+  // Expedientes
   const tiposPac={};
-  exps.forEach(e=>{tiposPac[e.tipo||'Sin tipo']=(tiposPac[e.tipo||'Sin tipo']||0)+1;});
+  D.expedientes.forEach(e=>{ tiposPac[e.tipo_paciente||'Sin tipo']=(tiposPac[e.tipo_paciente||'Sin tipo']||0)+1; });
   const tiposTop=Object.entries(tiposPac).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const maxTipo=Math.max(...tiposTop.map(t=>t[1]),1);
   html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--coral-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>','#712B13')}</div>
-    <div><p class="mod-title">Expedientes clínicos</p><p class="mod-sub">Base de pacientes</p></div></div>
-    ${statRows([['Total pacientes',exps.length,expHoy||null],['Este mes',exps.filter(e=>(e.fecha||e.fechaRegistro||'').startsWith(mes)).length,null]])}
-    ${barChart(tiposTop,maxTipo)}
+    <div class="mod-head"><span class="mod-title">Expedientes</span></div>
+    ${statRows([['Total',D.expedientes.length]])}
+    ${barChart(tiposTop,Math.max(...tiposTop.map(t=>t[1]),1))}
   </div>`;
 
-  /* ── Alumnos ── */
-  const alus=alumnos?.alumnos||[];
-  const semestres={};
-  alus.forEach(a=>{semestres[a.semestre||'Sin sem']=(semestres[a.semestre||'Sin sem']||0)+1;});
-  const semsTop=Object.entries(semestres).sort((a,b)=>{const na=parseInt(a[0]),nb=parseInt(b[0]);return isNaN(na)||isNaN(nb)?a[0].localeCompare(b[0]):na-nb;}).slice(0,6);
-  const maxSem=Math.max(...semsTop.map(s=>s[1]),1);
+  // Préstamos
+  const prestActivos=D.prestamos.filter(p=>p.estado!=='Devuelto').length;
   html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--purple-50);">${icon('<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>','#3C3489')}</div>
-    <div><p class="mod-title">Alumnos</p><p class="mod-sub">Base de datos</p></div></div>
-    ${statRows([['Total alumnos',alus.length,null]])}
-    ${barChart(semsTop.map(([s,n])=>['Sem. '+s,n]),maxSem)}
+    <div class="mod-head"><span class="mod-title">Préstamos</span></div>
+    ${statRows([['Total',D.prestamos.length],['Activos',prestActivos],['Equipos en catálogo',D.equipos.length]])}
   </div>`;
 
-  /* ── Maestros ── */
-  const maes=maestros?.maestros||[];
-  const puestos={};
-  maes.forEach(m=>{puestos[m.puesto||'Sin puesto']=(puestos[m.puesto||'Sin puesto']||0)+1;});
-  const puestosTop=Object.entries(puestos).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const maxP=Math.max(...puestosTop.map(p=>p[1]),1);
+  // CeYE
+  const ceyePend=D.ceye.filter(c=>c.estado==='pendiente').length;
   html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--red-50);">${icon('<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>','#A32D2D')}</div>
-    <div><p class="mod-title">Maestros</p><p class="mod-sub">Personal docente</p></div></div>
-    ${statRows([['Total maestros',maes.length,null],['Matutino',maes.filter(m=>m.turno==='Matutino').length,null],['Vespertino',maes.filter(m=>m.turno==='Vespertino').length,null]])}
-    ${barChart(puestosTop.map(([p,n])=>[p.replace('DOCENTE DE ','').replace('DIRECTOR ','DIR. '),n]),maxP)}
+    <div class="mod-head"><span class="mod-title">CeYE</span></div>
+    ${statRows([['Total registros',D.ceye.length],['Pendientes',ceyePend],['Esterilizados',D.ceye.length-ceyePend]])}
   </div>`;
 
-  /* ── Banco pacientes ── */
-  const bPacs=banco?.pacientes||[];
-  const bHoy=bPacs.filter(p=>p.fechaRegistro===hoy).length;
-  const bEspera=bPacs.filter(p=>p.estado==='en_espera'||!p.alumnoAsignado).length;
-  const bAsig=bPacs.filter(p=>p.alumnoAsignado).length;
-  const tipos3={Pediátrico:0,Adulto:0,Geriátrico:0};
-  bPacs.forEach(p=>{if(tipos3[p.tipo]!==undefined)tipos3[p.tipo]++;});
+  // Asistencia
+  const asistHoy=D.asistencia.filter(r=>r.fecha===hoy).length;
+  const asistSSHoy=D.asistenciaSS.filter(r=>r.fecha===hoy).length;
   html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--blue-50);">${icon('<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M17 11h4M19 9v4"/>','#0C447C')}</div>
-    <div><p class="mod-title">Banco de Pacientes</p><p class="mod-sub">Lista de espera</p></div></div>
-    ${statRows([['Total',bPacs.length,bHoy||null],['En espera',bEspera,null],['Asignados',bAsig,null]])}
-    ${barChart(Object.entries(tipos3),Math.max(...Object.values(tipos3),1))}
+    <div class="mod-head"><span class="mod-title">Asistencia</span></div>
+    ${statRows([['Registros docentes',D.asistencia.length,asistHoy],['Registros servicio social',D.asistenciaSS.length,asistSSHoy]])}
   </div>`;
 
-  /* ── Justificantes & Recetas ── */
-  const justs=just?.justificantes||[];
-  const recs=just?.recetas||[];
-  const jHoy=justs.filter(j=>j.fechaEmision===hoy).length;
-  const rHoy=recs.filter(r=>r.fechaEmision===hoy).length;
+  // Documentos
+  const justSolo=D.justificantes.filter(j=>j.tipo==='justificante').length;
+  const recetas=D.justificantes.filter(j=>j.tipo==='receta').length;
   html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--green-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>','#27500A')}</div>
-    <div><p class="mod-title">Justificantes y Recetas</p><p class="mod-sub">Documentos emitidos</p></div></div>
-    ${statRows([['Justificantes total',justs.length,jHoy||null],['Justificantes este mes',justs.filter(j=>(j.fechaEmision||'').startsWith(mes)).length,null],['Recetas total',recs.length,rHoy||null],['Recetas este mes',recs.filter(r=>(r.fechaEmision||'').startsWith(mes)).length,null]])}
+    <div class="mod-head"><span class="mod-title">Documentos emitidos</span></div>
+    ${statRows([['Justificantes',justSolo],['Recetas',recetas],['Consentimientos',D.consentimientos.length]])}
   </div>`;
 
-  /* ── Consentimientos ── */
-  const consList=cons?.consentimientos||[];
-  const consHoy=consList.filter(c=>c.fecha===hoy).length;
+  // Banco de pacientes
+  const bancoAsignados=D.banco.filter(b=>b.alumno).length;
   html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--teal-50);">${icon('<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h2"/><path d="M15 16l1.5 1.5L19 14"/>','#8C3F09')}</div>
-    <div><p class="mod-title">Consentimientos</p><p class="mod-sub">Cartas informadas</p></div></div>
-    ${statRows([['Total',consList.length,consHoy||null],['Este mes',consList.filter(c=>(c.fecha||'').startsWith(mes)).length,null]])}
-  </div>`;
-
-  /* ── CeYE ── */
-  const ceyeRegs=ceye?.registros||[];
-  const ceyeHoy=ceyeRegs.filter(r=>new Date(r.timestamp).toISOString().slice(0,10)===hoy).length;
-  const ceyePend=ceyeRegs.filter(r=>r.estado==='pendiente').length;
-  const ceyeEst=ceyeRegs.filter(r=>r.estado==='esteril').length;
-  html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--amber-50);">${icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>','#854F0B')}</div>
-    <div><p class="mod-title">Registro CeYE</p><p class="mod-sub">Esterilización de instrumental</p></div></div>
-    ${statRows([['Total registros',ceyeRegs.length,ceyeHoy||null],['Pendientes',ceyePend,null],['Esterilizados',ceyeEst,null],['Matutino',ceyeRegs.filter(r=>r.turno==='Matutino').length,null],['Vespertino',ceyeRegs.filter(r=>r.turno==='Vespertino').length,null]])}
-  </div>`;
-
-  /* ── Préstamos ── */
-  const prests=prest?.prestamos||[];
-  const prestHoy=prests.filter(p=>p.fechaSalida===hoy).length;
-  const prestPend=prests.filter(p=>p.estado!=='devuelto').length;
-  html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--pink-50);">${icon('<path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2M6 17v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2"/>','#72243E')}</div>
-    <div><p class="mod-title">Préstamos de Equipos</p><p class="mod-sub">Control de salida y devolución</p></div></div>
-    ${statRows([['Total préstamos',prests.length,prestHoy||null],['Activos / pendientes',prestPend,null],['Devueltos',prests.filter(p=>p.estado==='devuelto').length,null]])}
-  </div>`;
-
-  /* ── Asistencia docentes ── */
-  const asistRegs=asist?.registros||[];
-  const asistHoy=asistRegs.filter(r=>r.fecha===hoy).length;
-  const entradasHoy=asistRegs.filter(r=>r.fecha===hoy&&r.tipo==='Entrada').length;
-  const salidasHoy=asistRegs.filter(r=>r.fecha===hoy&&r.tipo==='Salida').length;
-  html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--teal-50);">${icon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>','#8C3F09')}</div>
-    <div><p class="mod-title">Asistencia Docentes</p><p class="mod-sub">Registro de entrada y salida</p></div></div>
-    ${statRows([['Total registros',asistRegs.length,asistHoy||null],['Entradas hoy',entradasHoy,null],['Salidas hoy',salidasHoy,null]])}
-  </div>`;
-
-  html+=`</div>`;
-
-  /* ═══════════════════════════════════════════════
-     ANÁLISIS CLÍNICO
-  ═══════════════════════════════════════════════ */
-  html+=`<h2 style="margin:2rem 0 1rem;font-size:1.15rem;font-weight:700;color:var(--teal-800);border-bottom:2px solid var(--teal-600);padding-bottom:.4rem;">Análisis Clínico</h2>
-  <div class="mod-grid">`;
-
-  /* ── Atención por clínica ── */
-  const pagosRecs=pagos||[];
-  const clinMap={};
-  pagosRecs.forEach(p=>{const c=p.clinica||'Sin clínica';clinMap[c]=(clinMap[c]||0)+1;});
-  const clinTop=Object.entries(clinMap).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  const maxClin=Math.max(...clinTop.map(e=>e[1]),1);
-  html+=`<div class="mod-card" style="grid-column:span 2;">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--blue-50);">${icon('<path d="M3 21V9l9-6 9 6v12"/><path d="M9 21V12h6v9"/>','#0C447C')}</div>
-    <div><p class="mod-title">Atención por Clínica</p><p class="mod-sub">Visitas registradas en pagos</p></div></div>
-    ${clinTop.length?barChart(clinTop.map(([c,n])=>[c.length>25?c.slice(0,23)+'…':c,n]),maxClin):'<p style="color:#888;font-size:.85rem;">Sin registros aún</p>'}
-  </div>`;
-
-  /* ── Atención por mes ── */
-  const mesMapa={};
-  const now2=new Date();
-  for(let i=11;i>=0;i--){const d=new Date(now2.getFullYear(),now2.getMonth()-i,1);const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');mesMapa[key]=0;}
-  pagosRecs.forEach(p=>{if(p.fecha){const k=(p.fecha||'').slice(0,7);if(mesMapa[k]!==undefined)mesMapa[k]++;}});
-  const mesArr=Object.entries(mesMapa);
-  const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const mesLabels=mesArr.map(([k,v])=>{const[y,m]=k.split('-');return[MESES[parseInt(m)-1]+' '+y.slice(2),v];});
-  const maxMes=Math.max(...mesLabels.map(e=>e[1]),1);
-  html+=`<div class="mod-card" style="grid-column:span 2;">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--green-50);">${icon('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>','#27500A')}</div>
-    <div><p class="mod-title">Atención por Mes</p><p class="mod-sub">Últimos 12 meses</p></div></div>
-    ${barChart(mesLabels,maxMes)}
-  </div>`;
-
-  /* ── Tratamientos por estudiante ── */
-  const estudMap={};
-  pagosRecs.forEach(p=>{
-    const est=p.estudiante||'Sin asignar';
-    estudMap[est]=(estudMap[est]||0)+1;
-  });
-  const estudTop=Object.entries(estudMap).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  const maxEstud=Math.max(...estudTop.map(e=>e[1]),1);
-
-  /* tratamientos (conteo de líneas tratA/B/C con valor) por estudiante */
-  const tratMap={};
-  pagosRecs.forEach(p=>{
-    const est=p.estudiante||'Sin asignar';
-    let t=0;
-    if(p.tratA)t++;
-    if(p.tratB)t++;
-    if(p.tratC)t++;
-    tratMap[est]=(tratMap[est]||0)+t;
-  });
-  const tratTop=Object.entries(tratMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const maxTrat=Math.max(...tratTop.map(e=>e[1]),1);
-
-  html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--purple-50);">${icon('<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M19 8v8M22 12h-6"/>','#3C3489')}</div>
-    <div><p class="mod-title">Visitas por Estudiante</p><p class="mod-sub">Top 12 por registros</p></div></div>
-    ${estudTop.length?barChart(estudTop.map(([e,n])=>[e.split(' ').slice(-1)[0],n]),maxEstud):'<p style="color:#888;font-size:.85rem;">Sin registros aún</p>'}
-  </div>`;
-
-  html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--amber-50);">${icon('<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>','#854F0B')}</div>
-    <div><p class="mod-title">Tratamientos por Estudiante</p><p class="mod-sub">Top 10 por nº de tratamientos</p></div></div>
-    ${tratTop.length?barChart(tratTop.map(([e,n])=>[e.split(' ').slice(-1)[0],n]),maxTrat):'<p style="color:#888;font-size:.85rem;">Sin registros aún</p>'}
-  </div>`;
-
-  html+=`</div>`;
-
-  /* ═══════════════════════════════════════════════
-     PERFIL DE PACIENTES
-  ═══════════════════════════════════════════════ */
-  html+=`<h2 style="margin:2rem 0 1rem;font-size:1.15rem;font-weight:700;color:var(--teal-800);border-bottom:2px solid var(--teal-600);padding-bottom:.4rem;">Perfil de Pacientes</h2>
-  <div class="mod-grid">`;
-
-  const expedientes=dental?.expedientes||[];
-
-  /* ── Religión del paciente ── */
-  const relMap={};
-  expedientes.forEach(e=>{const r=e.religion||'No especificada';relMap[r]=(relMap[r]||0)+1;});
-  const relTop=Object.entries(relMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const maxRel=Math.max(...relTop.map(e=>e[1]),1);
-  html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--teal-50);">${icon('<circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/>','#8C3F09')}</div>
-    <div><p class="mod-title">Religión del Paciente</p><p class="mod-sub">Distribución de expedientes</p></div></div>
-    ${relTop.length?barChart(relTop,maxRel):'<p style="color:#888;font-size:.85rem;">Sin expedientes aún</p>'}
-  </div>`;
-
-  /* ── Tipo de paciente ── */
-  const tpMap={'externo':0,'comunidad Anáhuac':0,'estudiante':0};
-  expedientes.forEach(e=>{const t=e.tipoPaciente||'externo';if(tpMap[t]!==undefined)tpMap[t]++;else tpMap[t]=(tpMap[t]||0)+1;});
-  const tpArr=Object.entries(tpMap).filter(([,v])=>v>0);
-  const maxTp=Math.max(...tpArr.map(e=>e[1]),1);
-  const tpLabels={'externo':'Externo','comunidad Anáhuac':'Com. Anáhuac','estudiante':'Estudiante'};
-  html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--blue-50);">${icon('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','#0C447C')}</div>
-    <div><p class="mod-title">Tipo de Paciente</p><p class="mod-sub">Externo / Anáhuac / Estudiante</p></div></div>
-    ${tpArr.length?statRows(tpArr.map(([k,v])=>[tpLabels[k]||k,v,null]))+''+barChart(tpArr.map(([k,v])=>[tpLabels[k]||k,v]),maxTp):'<p style="color:#888;font-size:.85rem;">Sin expedientes aún</p>'}
-  </div>`;
-
-  /* ── Tipo de historia clínica ── */
-  const thMap={'adulto':0,'pediátrico':0};
-  expedientes.forEach(e=>{const t=(e.tipoHistoria||'adulto').toLowerCase();if(thMap[t]!==undefined)thMap[t]++;else thMap[t]=(thMap[t]||0)+1;});
-  const thArr=Object.entries(thMap);
-  const maxTh=Math.max(...thArr.map(e=>e[1]),1);
-  const thLabels={'adulto':'Adulto','pediátrico':'Pediátrico'};
-  html+=`<div class="mod-card">
-    <div class="mod-header"><div class="mod-icon" style="background:var(--pink-50);">${icon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>','#72243E')}</div>
-    <div><p class="mod-title">Tipo de Historia Clínica</p><p class="mod-sub">Adulto vs Pediátrico</p></div></div>
-    ${statRows(thArr.map(([k,v])=>[thLabels[k]||k,v,null]))}
-    ${barChart(thArr.map(([k,v])=>[thLabels[k]||k,v]),maxTh)}
+    <div class="mod-head"><span class="mod-title">Banco de pacientes</span></div>
+    ${statRows([['Total',D.banco.length],['Asignados',bancoAsignados],['Sin asignar',D.banco.length-bancoAsignados]])}
   </div>`;
 
   html+=`</div>`;
@@ -416,7 +462,15 @@ function renderAll(){
   document.getElementById('dashboard').innerHTML=html;
 }
 
-renderAll();
+async function inicializar(){
+  const d = await cargarTodosLosDatos();
+  Object.assign(datos, d);
+  renderAll();
+}
+inicializar();
+
+function render(){ renderAll(); }
+
 
 
 /* ── Realtime: sincronización automática entre dispositivos ── */
