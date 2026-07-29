@@ -1,94 +1,212 @@
-/**
- * auth.js — Configuración MSAL para Clínica Dental Anáhuac
- * Edita CLIENT_ID y TENANT_ID con los valores de tu registro en Azure.
- */
+/* ══════════════════════════════════════════════════════════════
+   auth.js — Módulo de autenticación con Supabase
+   Clínica Dental Universitaria Anáhuac Xalapa · 2026
+   ══════════════════════════════════════════════════════════════
+   
+   USO:
+   1. Incluir este archivo en TODAS las páginas del sistema
+      (excepto login.html):
+      <script src="auth.js"></script>
+   
+   2. Al final del <script> de cada página, llamar:
+      initAuth().then(user => { ... arrancar módulo ... });
+   
+   3. Roles disponibles: coordinador, maestro, alumno
+   
+   ══════════════════════════════════════════════════════════════ */
 
-const AZURE_CLIENT_ID = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'; // App (client) ID
-const AZURE_TENANT_ID = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'; // Directory (tenant) ID
+// ─── CONFIGURACIÓN DE SUPABASE ───────────────────────────────
+// Reemplaza estos valores con los de tu proyecto:
+// Dashboard de Supabase → Settings → API
+const SUPABASE_URL  = 'https://mkatcueeyxgetschqplm.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
 
-const msalConfig = {
-  auth: {
-    clientId: AZURE_CLIENT_ID,
-    authority: 'https://login.microsoftonline.com/' + AZURE_TENANT_ID,
-    redirectUri: window.location.origin + window.location.pathname,
-    postLogoutRedirectUri: window.location.origin + '/control-clinica-dental.html',
-  },
-  cache: {
-    cacheLocation: 'localStorage',
-    storeAuthStateInCookie: true,
-  },
-};
+// ─── CLIENTE SUPABASE (vía CDN, cargado en cada HTML) ────────
+// Se espera que el HTML cargue el CDN antes de este archivo:
+// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+let supabase;
 
-const loginRequest = {
-  scopes: ['openid', 'profile', 'email', 'User.Read'],
-};
-
-const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-/**
- * Intenta recuperar cuenta en caché; si no hay, lanza popup de login.
- * Devuelve { nombre, email, account }
- */
-async function getOrLoginAccount() {
-  await msalInstance.initialize();
-
-  // Manejar redirect de vuelta si aplica
-  try { await msalInstance.handleRedirectPromise(); } catch(e) {}
-
-  const accounts = msalInstance.getAllAccounts();
-  if (accounts.length > 0) {
-    const account = accounts[0];
-    return {
-      nombre: account.name || account.username,
-      email:  account.username,
-      account,
-    };
+function getSupabase() {
+  if (!supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
   }
-
-  // Sin sesión → popup de login
-  try {
-    const result = await msalInstance.loginPopup(loginRequest);
-    return {
-      nombre: result.account.name || result.account.username,
-      email:  result.account.username,
-      account: result.account,
-    };
-  } catch(e) {
-    return null;
-  }
+  return supabase;
 }
 
-/** Cierra sesión de Azure */
-async function azureLogout(account) {
-  await msalInstance.initialize();
-  await msalInstance.logoutPopup({ account });
+// ─── FUNCIONES PRINCIPALES ───────────────────────────────────
+
+/**
+ * Iniciar sesión con correo y contraseña.
+ * @returns {object} { user, session } o lanza error
+ */
+async function loginWithEmail(email, password) {
+  const sb = getSupabase();
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
 }
 
 /**
- * Determina el rol del usuario comparando su email/nombre con
- * los registros de coordinadores y maestros en localStorage.
- * Roles: 'coordinador' | 'maestro' | 'alumno'
+ * Registrar cuenta nueva con correo y contraseña.
+ * Después de registrarse, el usuario debe confirmar su correo
+ * (Supabase envía un email automáticamente).
+ * @returns {object} { user, session }
  */
-function getRol(email, nombre) {
-  const emailL  = (email  || '').toLowerCase().trim();
-  const nombreL = (nombre || '').toLowerCase().trim();
+async function signUpWithEmail(email, password, metadata = {}) {
+  const sb = getSupabase();
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+    options: { data: metadata }  // nombre, etc.
+  });
+  if (error) throw error;
+  return data;
+}
 
-  // Coordinadores (lista manual de emails)
+/**
+ * Cerrar sesión.
+ */
+async function logout() {
+  const sb = getSupabase();
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
+}
+
+/**
+ * Obtener la sesión actual (null si no hay).
+ */
+async function getSession() {
+  const sb = getSupabase();
+  const { data: { session } } = await sb.auth.getSession();
+  return session;
+}
+
+/**
+ * Obtener el perfil del usuario actual desde la tabla `profiles`.
+ * Incluye: id, email, nombre, rol, created_at
+ */
+async function getProfile(userId) {
+  const sb = getSupabase();
+  const { data, error } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Obtener el rol del usuario actual.
+ * @returns {string} 'coordinador' | 'maestro' | 'alumno'
+ */
+async function getUserRole(userId) {
+  const profile = await getProfile(userId);
+  return profile?.rol || 'alumno';
+}
+
+// ─── GUARD: proteger páginas ─────────────────────────────────
+
+/**
+ * Llamar al inicio de cada página protegida.
+ * Si no hay sesión, redirige a login.html.
+ * Si hay sesión, devuelve { user, profile }.
+ * 
+ * @param {string[]} [allowedRoles] — roles permitidos (vacío = todos)
+ * @returns {{ user, profile }}
+ */
+async function initAuth(allowedRoles = []) {
+  const session = await getSession();
+
+  if (!session) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const user = session.user;
+  let profile;
+
   try {
-    const coords = JSON.parse(localStorage.getItem('clinica_coordinadores_v1') || '[]');
-    if (coords.some(c => c.email?.toLowerCase() === emailL || c.nombre?.toLowerCase() === nombreL))
-      return 'coordinador';
-  } catch(e) {}
+    profile = await getProfile(user.id);
+  } catch (e) {
+    // Si no tiene perfil aún, crear uno básico
+    profile = { id: user.id, email: user.email, rol: 'alumno', nombre: '' };
+  }
 
-  // Maestros
-  try {
-    const d = JSON.parse(localStorage.getItem('clinica_maestros_v1') || '{}');
-    const maestros = d.maestros || [];
-    if (maestros.some(m =>
-      (m.email || '').toLowerCase() === emailL ||
-      (m.nombre || '').toLowerCase() === nombreL
-    )) return 'maestro';
-  } catch(e) {}
+  // Verificar rol si se especificaron roles permitidos
+  if (allowedRoles.length > 0 && !allowedRoles.includes(profile.rol)) {
+    alert('No tienes permisos para acceder a este módulo.');
+    window.location.href = 'index.html';
+    return;
+  }
 
-  return 'alumno';
+  // Inyectar barra de usuario si existe el contenedor
+  renderUserBar(profile);
+
+  return { user, profile };
+}
+
+// ─── UI: barra de usuario ────────────────────────────────────
+
+/**
+ * Muestra el nombre del usuario y botón de cerrar sesión
+ * en el header de cada página. Busca un elemento con
+ * id="auth-bar" o lo inyecta al final del <header>.
+ */
+function renderUserBar(profile) {
+  let bar = document.getElementById('auth-bar');
+  
+  if (!bar) {
+    // Intentar inyectar dentro del header existente
+    const header = document.querySelector('header');
+    if (!header) return;
+    
+    bar = document.createElement('div');
+    bar.id = 'auth-bar';
+    header.appendChild(bar);
+  }
+
+  const rolBadge = {
+    coordinador: { bg: 'var(--teal-50, #FDEEE2)',  color: 'var(--teal-800, #8C3F09)',  label: 'Coordinador' },
+    maestro:     { bg: 'var(--blue-50, #E6F1FB)',   color: 'var(--blue-800, #0C447C)',  label: 'Maestro' },
+    alumno:      { bg: 'var(--green-50, #EAF3DE)',  color: 'var(--green-800, #27500A)', label: 'Alumno' },
+  };
+
+  const r = rolBadge[profile.rol] || rolBadge.alumno;
+  const nombre = profile.nombre || profile.email;
+
+  bar.style.cssText = `
+    display:flex; align-items:center; gap:10px; margin-left:auto;
+    font-size:13px; color:var(--text-secondary, #5F5E5A);
+  `;
+
+  bar.innerHTML = `
+    <span style="
+      font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px;
+      background:${r.bg}; color:${r.color}; text-transform:uppercase; letter-spacing:.03em;
+    ">${r.label}</span>
+    <span style="font-weight:500;">${nombre}</span>
+    <button onclick="logout()" style="
+      background:none; border:1px solid var(--border, #E3E1D8); border-radius:6px;
+      padding:4px 10px; font-size:12px; cursor:pointer; color:var(--text-secondary, #5F5E5A);
+      font-family:inherit;
+    ">Cerrar sesión</button>
+  `;
+}
+
+// ─── UTILIDADES DE ROL ───────────────────────────────────────
+
+/**
+ * Ocultar elementos según el rol.
+ * Uso: en el HTML, agregar data-role="coordinador" o 
+ *      data-role="coordinador,maestro" a cualquier elemento.
+ * Los elementos cuyo rol no coincida se ocultan.
+ */
+function applyRoleVisibility(userRole) {
+  document.querySelectorAll('[data-role]').forEach(el => {
+    const allowed = el.dataset.role.split(',').map(r => r.trim());
+    if (!allowed.includes(userRole)) {
+      el.style.display = 'none';
+    }
+  });
 }

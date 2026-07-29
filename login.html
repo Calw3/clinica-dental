@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar Sesión · Clínica Dental Anáhuac</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --teal-50:#FDEEE2; --teal-100:#F9D5B8; --teal-600:#C2570D; --teal-800:#8C3F09; --teal-900:#5C2906;
+  --red-50:#FCEBEB; --red-600:#A32D2D;
+  --green-50:#EAF3DE; --green-800:#27500A;
+  --bg:#F7F6F2; --surface:#FFFFFF; --surface-1:#F1F0EA;
+  --text-primary:#1F1F1D; --text-secondary:#5F5E5A; --text-muted:#888780;
+  --border:#E3E1D8; --radius:10px;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg); color:var(--text-primary); min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.login-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  width:100%; max-width:420px; padding:40px 36px; margin:20px;
+  box-shadow:0 4px 24px rgba(0,0,0,.06);
+}
+
+.login-header { text-align:center; margin-bottom:32px; }
+.login-header img { width:64px; height:64px; object-fit:contain; border-radius:10px; margin-bottom:16px; }
+.login-header .eyebrow {
+  font-size:11px; color:var(--text-muted); letter-spacing:.06em;
+  text-transform:uppercase; margin-bottom:4px;
+}
+.login-header h1 { font-size:20px; font-weight:600; color:var(--teal-900); }
+
+.field { margin-bottom:18px; }
+.field label {
+  display:block; font-size:11px; font-weight:700; color:var(--text-secondary);
+  text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;
+}
+.field input {
+  width:100%; height:42px; border:1px solid var(--border); border-radius:var(--radius);
+  padding:0 14px; font-size:14px; font-family:inherit;
+  background:#fff; color:var(--text-primary); transition:border-color .15s, box-shadow .15s;
+}
+.field input:focus {
+  outline:none; border-color:var(--teal-600);
+  box-shadow:0 0 0 3px var(--teal-50);
+}
+.field input::placeholder { color:var(--text-muted); }
+
+.btn-login {
+  width:100%; height:44px; background:var(--teal-600); color:#fff;
+  border:none; border-radius:var(--radius); font-size:14px; font-weight:600;
+  font-family:inherit; cursor:pointer; transition:background .15s;
+  margin-top:8px;
+}
+.btn-login:hover { background:var(--teal-800); }
+.btn-login:disabled { opacity:.6; cursor:not-allowed; }
+
+.toggle-mode {
+  text-align:center; margin-top:20px; font-size:13px; color:var(--text-secondary);
+}
+.toggle-mode a {
+  color:var(--teal-600); font-weight:600; cursor:pointer; text-decoration:none;
+}
+.toggle-mode a:hover { text-decoration:underline; }
+
+.alert {
+  padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px;
+  display:none; line-height:1.4;
+}
+.alert-error { background:var(--red-50); color:var(--red-600); border:1px solid rgba(163,45,45,.15); }
+.alert-success { background:var(--green-50); color:var(--green-800); border:1px solid rgba(39,80,10,.15); }
+
+.extra-fields { display:none; }
+
+.password-toggle {
+  position:relative;
+}
+.password-toggle input { padding-right:44px; }
+.password-toggle button {
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; color:var(--text-muted);
+  font-size:12px; font-family:inherit; padding:4px 6px;
+}
+.password-toggle button:hover { color:var(--text-primary); }
+
+footer {
+  position:fixed; bottom:16px; left:0; right:0;
+  text-align:center; font-size:11px; color:var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-header">
+    <img src="images.jpeg" alt="Logo Anáhuac"
+         onerror="this.style.display='none'">
+    <p class="eyebrow">Sistema de gestión clínica</p>
+    <h1 id="form-title">Iniciar sesión</h1>
+  </div>
+
+  <div id="alert" class="alert alert-error"></div>
+
+  <form id="auth-form" autocomplete="on">
+    <!-- Campo nombre (solo en registro) -->
+    <div class="field extra-fields" id="name-field">
+      <label for="inp-nombre">Nombre completo</label>
+      <input type="text" id="inp-nombre" placeholder="Ej. Juan García López" autocomplete="name">
+    </div>
+
+    <div class="field">
+      <label for="inp-email">Correo electrónico</label>
+      <input type="email" id="inp-email" placeholder="tucorreo@anahuac.mx"
+             autocomplete="email" required>
+    </div>
+
+    <div class="field">
+      <label for="inp-password">Contraseña</label>
+      <div class="password-toggle">
+        <input type="password" id="inp-password" placeholder="Mínimo 6 caracteres"
+               autocomplete="current-password" required minlength="6">
+        <button type="button" onclick="togglePassword()">Mostrar</button>
+      </div>
+    </div>
+
+    <!-- Confirmar contraseña (solo en registro) -->
+    <div class="field extra-fields" id="confirm-field">
+      <label for="inp-confirm">Confirmar contraseña</label>
+      <div class="password-toggle">
+        <input type="password" id="inp-confirm" placeholder="Repite tu contraseña"
+               autocomplete="new-password" minlength="6">
+        <button type="button" onclick="toggleConfirm()">Mostrar</button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-login" id="btn-submit">Iniciar sesión</button>
+  </form>
+
+  <div class="toggle-mode">
+    <span id="toggle-text">¿No tienes cuenta?</span>
+    <a id="toggle-link" onclick="toggleMode()">Crear cuenta</a>
+  </div>
+</div>
+
+<footer>Clínica Dental Universitaria Anáhuac Xalapa · 2026</footer>
+
+<script src="auth.js"></script>
+<script>
+  // ─── Estado ────────────────────────────────────────────────
+  let isLogin = true;
+
+  // ─── Elementos ─────────────────────────────────────────────
+  const form      = document.getElementById('auth-form');
+  const alert     = document.getElementById('alert');
+  const btnSubmit = document.getElementById('btn-submit');
+  const title     = document.getElementById('form-title');
+  const toggleTxt = document.getElementById('toggle-text');
+  const toggleLnk = document.getElementById('toggle-link');
+  const extras    = document.querySelectorAll('.extra-fields');
+  const inpNombre = document.getElementById('inp-nombre');
+  const inpEmail  = document.getElementById('inp-email');
+  const inpPass   = document.getElementById('inp-password');
+  const inpConf   = document.getElementById('inp-confirm');
+
+  // ─── Si ya tiene sesión, ir directo al sistema ─────────────
+  (async () => {
+    try {
+      const session = await getSession();
+      if (session) window.location.href = 'index.html';
+    } catch(e) { /* no session, stay on login */ }
+  })();
+
+  // ─── Alternar login / registro ─────────────────────────────
+  function toggleMode() {
+    isLogin = !isLogin;
+    hideAlert();
+
+    if (isLogin) {
+      title.textContent     = 'Iniciar sesión';
+      btnSubmit.textContent  = 'Iniciar sesión';
+      toggleTxt.textContent  = '¿No tienes cuenta?';
+      toggleLnk.textContent  = 'Crear cuenta';
+      extras.forEach(el => el.style.display = 'none');
+      inpPass.autocomplete = 'current-password';
+    } else {
+      title.textContent     = 'Crear cuenta';
+      btnSubmit.textContent  = 'Registrarme';
+      toggleTxt.textContent  = '¿Ya tienes cuenta?';
+      toggleLnk.textContent  = 'Iniciar sesión';
+      extras.forEach(el => el.style.display = 'block');
+      inpPass.autocomplete = 'new-password';
+    }
+  }
+
+  // ─── Submit ────────────────────────────────────────────────
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+
+    const email    = inpEmail.value.trim();
+    const password = inpPass.value;
+
+    if (!email || !password) {
+      showAlert('Completa todos los campos.', 'error');
+      return;
+    }
+
+    if (password.length < 6) {
+      showAlert('La contraseña debe tener al menos 6 caracteres.', 'error');
+      return;
+    }
+
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = isLogin ? 'Verificando...' : 'Creando cuenta...';
+
+    try {
+      if (isLogin) {
+        // ── LOGIN ──
+        await loginWithEmail(email, password);
+        window.location.href = 'index.html';
+
+      } else {
+        // ── REGISTRO ──
+        const nombre  = inpNombre.value.trim();
+        const confirm = inpConf.value;
+
+        if (!nombre) {
+          showAlert('Escribe tu nombre completo.', 'error');
+          resetBtn();
+          return;
+        }
+        if (password !== confirm) {
+          showAlert('Las contraseñas no coinciden.', 'error');
+          resetBtn();
+          return;
+        }
+
+        const { user } = await signUpWithEmail(email, password, { nombre });
+
+        if (user && !user.identities?.length) {
+          showAlert('Este correo ya está registrado. Intenta iniciar sesión.', 'error');
+          resetBtn();
+          return;
+        }
+
+        showAlert(
+          'Cuenta creada. Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.',
+          'success'
+        );
+        // Cambiar a modo login después del registro exitoso
+        setTimeout(() => toggleMode(), 3000);
+      }
+
+    } catch (err) {
+      const msg = translateError(err.message || 'Error desconocido');
+      showAlert(msg, 'error');
+    }
+
+    resetBtn();
+  });
+
+  // ─── Helpers ───────────────────────────────────────────────
+  function showAlert(msg, type) {
+    alert.textContent = msg;
+    alert.className = `alert alert-${type}`;
+    alert.style.display = 'block';
+  }
+
+  function hideAlert() {
+    alert.style.display = 'none';
+  }
+
+  function resetBtn() {
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = isLogin ? 'Iniciar sesión' : 'Registrarme';
+  }
+
+  function togglePassword() {
+    const inp = document.getElementById('inp-password');
+    const btn = inp.nextElementSibling;
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Ocultar'; }
+    else { inp.type = 'password'; btn.textContent = 'Mostrar'; }
+  }
+
+  function toggleConfirm() {
+    const inp = document.getElementById('inp-confirm');
+    const btn = inp.nextElementSibling;
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Ocultar'; }
+    else { inp.type = 'password'; btn.textContent = 'Mostrar'; }
+  }
+
+  function translateError(msg) {
+    const map = {
+      'Invalid login credentials': 'Correo o contraseña incorrectos.',
+      'Email not confirmed': 'Confirma tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.',
+      'User already registered': 'Este correo ya está registrado.',
+      'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
+      'Signup requires a valid password': 'Escribe una contraseña válida.',
+      'Unable to validate email address: invalid format': 'El formato del correo no es válido.',
+    };
+    return map[msg] || msg;
+  }
+</script>
+</body>
+</html>
