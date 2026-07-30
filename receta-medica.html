@@ -74,6 +74,8 @@
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>initAuth(['coordinador','maestro']);</script>
 </head>
 <body>
   <div class="wrap">
@@ -148,16 +150,8 @@
 
 <script>
 const EXP_KEY='clinica_dental_data_v1';
-const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
-const sbREC=window.supabase.createClient(SB_URL,SB_KEY);
-async function loadExpData(){
-  const{data,error}=await sbREC.from('expedientes').select('id,nombre,id_paciente,sexo,edad,tipo_paciente').order('nombre');
-  if(error){console.error(error);return{expedientes:[]};}
-  return{expedientes:(data||[]).map(r=>({id:r.id,nombre:r.nombre,idPaciente:r.id_paciente,sexo:r.sexo,edad:r.edad,tipoPaciente:r.tipo_paciente}))};
-}
-function saveExpData(d){/* solo lectura */}
-
+function loadExpData(){try{const r=localStorage.getItem(EXP_KEY);if(r)return JSON.parse(r);}catch(e){}return{expedientes:[]};}
+function saveExpData(d){localStorage.setItem(EXP_KEY,JSON.stringify(d));}
 
 const params=new URLSearchParams(location.search);
 const expId=params.get('expId');
