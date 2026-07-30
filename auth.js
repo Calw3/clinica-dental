@@ -105,6 +105,28 @@ async function getUserRole(userId) {
   return profile?.rol || 'alumno';
 }
 
+/**
+ * Enviar correo de restablecimiento de contraseña.
+ * El enlace del correo redirige a reset-password.html
+ */
+async function sendPasswordReset(email) {
+  const sb = getSupabase();
+  const redirectTo = window.location.origin +
+    window.location.pathname.replace(/[^/]*$/, '') + 'reset-password.html';
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) throw error;
+}
+
+/**
+ * Actualizar la contraseña del usuario actual (usado en reset-password.html
+ * después de que Supabase valida el enlace de recuperación).
+ */
+async function updatePassword(newPassword) {
+  const sb = getSupabase();
+  const { error } = await sb.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+}
+
 // ─── GUARD: proteger páginas ─────────────────────────────────
 
 /**
@@ -228,8 +250,9 @@ function refreshRoleVisibility() {
 // Así no necesitas modificar el <script> de cada módulo.
 
 (async function autoGuard() {
-  // No proteger login.html (evita loop de redirección)
+  // No proteger login.html ni reset-password.html (evita loop de redirección)
   if (window.location.pathname.endsWith('login.html')) return;
+  if (window.location.pathname.endsWith('reset-password.html')) return;
 
   // Ocultar la página hasta confirmar autenticación (evita flash)
   document.documentElement.style.visibility = 'hidden';
