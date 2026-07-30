@@ -55,6 +55,7 @@ textarea{resize:vertical;min-height:60px}
 .badge{display:inline-block;background:var(--or50);color:var(--or800);border:1px solid var(--or);border-radius:20px;padding:1px 8px;font-size:10px;font-weight:700}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 <header>
@@ -235,14 +236,7 @@ textarea{resize:vertical;min-height:60px}
   <!-- LIST -->
   <div id="tab-list" class="hide">
     <div class="card">
-      <div id="banner-paciente" style="display:none;background:var(--teal-50,#FDEEE2);border-left:3px solid var(--or,#C2570D);border-radius:6px;padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-        <div>
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--gr,#5F5E5A);">Consentimientos del expediente</div>
-          <div id="banner-nombre" style="font-size:15px;font-weight:600;color:var(--or2,#8C3F09);margin-top:2px;"></div>
-        </div>
-        <button class="btn bout bsm" onclick="volverAlExpediente()">← Volver al expediente</button>
-      </div>
-      <h2 id="titulo-historial">Historial de Consentimientos</h2>
+      <h2>Historial de Consentimientos</h2>
       <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
         <input id="fl-busq" placeholder="Buscar paciente, folio…" style="flex:1;min-width:160px" oninput="renderList()">
         <select id="fl-tipo" onchange="renderList()" style="width:190px">
@@ -266,90 +260,15 @@ textarea{resize:vertical;min-height:60px}
 
 <script>
 // ── Storage ─────────────────────────────────────────────────────────────────
-const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
-const sbCON=window.supabase.createClient(SB_URL,SB_KEY);
-
-// Filtro por paciente cuando se llega desde el expediente
-const urlParams = new URLSearchParams(location.search);
-const pacienteFiltro = urlParams.get('paciente') || '';
-const expedienteId = urlParams.get('expId') || '';
-const folioImprimir = urlParams.get('imprimir') || '';
-async function cargarCatalogosDeCon(){
-  const[pacRes,aluRes,docRes]=await Promise.all([
-    sbCON.from('expedientes').select('id,nombre,id_paciente').order('nombre'),
-    sbCON.from('alumnos').select('id,nombre').order('nombre'),
-    sbCON.from('maestros').select('id,nombre').order('nombre')
-  ]);
-  _pacsCon=(pacRes.data||[]).map(r=>({id:r.id,nombre:r.nombre,idPaciente:r.id_paciente}));
-  _alusCon=(aluRes.data||[]).map(r=>r.nombre||'').filter(Boolean);
-  _docsCon=(docRes.data||[]).map(r=>r.nombre||'').filter(Boolean);
-}
-let _pacsCon=[],_alusCon=[],_docsCon=[];
-const getPacsObjs=()=>_pacsCon;
-const getAlus=()=>_alusCon;
-const getDocs=()=>_docsCon;
-
-let _consCache=[];
-
-function load(){ return _consCache; }
-
-async function save(arr){
-  _consCache=arr;
-  for(const c of arr){
-    const row={
-      id:c.folio, tipo:c.tipo||'', paciente:c.paciente||'',
-      alumno:c.alumno||'', doctor:c.docente||'', fecha:c.fecha||'',
-      firma:(c.sigs&&c.sigs.pac)||'',
-      datos:{
-        folio:c.folio, tutor:c.tutor||'', edad:c.edad||'',
-        telefono:c.telefono||'', domicilio:c.domicilio||'', cedula:c.cedula||'',
-        diagnostico:c.diagnostico||'', notas:c.notas||'',
-        benefPed:c.benefPed||'', compPed:c.compPed||'',
-        riesgos:c.riesgos||'', efectos:c.efectos||'',
-        alternativas:c.alternativas||'', motivo:c.motivo||'',
-        beneficio:c.beneficio||'', testigo:c.testigo||'',
-        actos:c.actos||[], sigs:c.sigs||{}
-      }
-    };
-    await sbCON.from('consentimientos').upsert(row,{onConflict:'id'});
-  }
-}
-
-async function eliminarDeSupabase(folio){
-  await sbCON.from('consentimientos').delete().eq('id',folio);
-}
-
-function rowToCons(r){
-  const d=r.datos||{};
-  return{
-    folio:r.id, tipo:r.tipo, paciente:r.paciente, alumno:r.alumno,
-    docente:r.doctor, fecha:r.fecha,
-    tutor:d.tutor||'', edad:d.edad||'', telefono:d.telefono||'',
-    domicilio:d.domicilio||'', cedula:d.cedula||'',
-    diagnostico:d.diagnostico||'', notas:d.notas||'',
-    benefPed:d.benefPed||'', compPed:d.compPed||'',
-    riesgos:d.riesgos||'', efectos:d.efectos||'',
-    alternativas:d.alternativas||'', motivo:d.motivo||'',
-    beneficio:d.beneficio||'', testigo:d.testigo||'',
-    actos:d.actos||[], sigs:d.sigs||{}
-  };
-}
-
-async function loadCons(){
-  const{data,error}=await sbCON.from('consentimientos').select('*').order('created_at',{ascending:false});
-  if(error){console.error(error);return[];}
-  return (data||[]).map(rowToCons);
-}
-async function saveCons(arr){
-  for(const c of arr){ await sbCON.from('consentimientos').upsert(c,{onConflict:'id'}); }
-}
+const KEY = 'clinica_consentimientos_v1';
+const load = () => { try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]} };
+const save = a  => localStorage.setItem(KEY, JSON.stringify(a));
 
 // ── Catálogos ────────────────────────────────────────────────────────────────
-
+const getPacsObjs = () => { try{const d=localStorage.getItem('clinica_dental_data_v1'); if(!d)return[]; const obj=JSON.parse(d); return(obj.expedientes||[]).filter(Boolean);}catch(e){return[]} };
 const getPacs = () => getPacsObjs().map(p=>p.nombre||p.paciente||'').filter(Boolean);
-
-
+const getAlus = () => { try{const d=JSON.parse(localStorage.getItem('clinica_alumnos_v1')||'{}'); return(d.alumnos||[]).map(a=>a.nombre||'').filter(Boolean)}catch(e){return[]} };
+const getDocs = () => { try{const d=JSON.parse(localStorage.getItem('clinica_maestros_v1')||'{}'); return(d.maestros||[]).map(m=>m.nombre||'').filter(Boolean)}catch(e){return[]} };
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 function switchTab(t){
@@ -566,7 +485,7 @@ function mostrarPreview(){
 }
 
 // ── Guardar ───────────────────────────────────────────────────────────────────
-async function guardar(){
+function guardar(){
   const tipo=document.getElementById('f-tipo').value;
   if(!tipo){alert('Seleccione el tipo de consentimiento.');return;}
   const pac=document.getElementById('f-pac').value.trim();
@@ -601,16 +520,10 @@ async function guardar(){
     actos,
     sigs:{pac:getSig('sp'),doc:getSig('sd'),testigo:getSig('st'),alu:getSig('sa')}
   };
-  const arr=load(); arr.unshift(rec);
-  try{
-    await save(arr);
-    alert('Consentimiento '+rec.folio+' guardado correctamente.');
-    resetForm();
-    switchTab('list');
-  }catch(err){
-    alert('Error al guardar: '+err.message);
-    console.error(err);
-  }
+  const arr=load(); arr.unshift(rec); save(arr);
+  alert('Consentimiento '+rec.folio+' guardado correctamente.');
+  resetForm();
+  switchTab('list');
 }
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
@@ -632,8 +545,6 @@ function renderList(){
   const busq=(document.getElementById('fl-busq').value||'').toLowerCase();
   const tipo=document.getElementById('fl-tipo').value;
   const arr=load().filter(c=>{
-    // Si venimos del expediente, mostrar solo los de ese paciente
-    if(pacienteFiltro && (c.paciente||'').toLowerCase() !== pacienteFiltro.toLowerCase()) return false;
     return(!tipo||c.tipo===tipo)&&
       (!busq||(c.paciente||'').toLowerCase().includes(busq)||(c.folio||'').toLowerCase().includes(busq)||(c.alumno||'').toLowerCase().includes(busq));
   });
@@ -647,15 +558,15 @@ function renderList(){
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn bout bsm" onclick="imprimir('${c.folio}')">🖨 Imprimir</button>
-        <button class="btn bred bsm" onclick="eliminar('${c.folio}')">✕</button>
+        <button class="btn bred bsm" data-role="coordinador,maestro" onclick="eliminar('${c.folio}')">✕</button>
       </div>
     </div>`).join('');
+  if(window.refreshRoleVisibility)refreshRoleVisibility();
 }
 
-async function eliminar(folio){
+function eliminar(folio){
   if(!confirm('¿Eliminar consentimiento '+folio+'?'))return;
-  await eliminarDeSupabase(folio);
-  _consCache=_consCache.filter(c=>c.folio!==folio);
+  save(load().filter(c=>c.folio!==folio));
   renderList();
 }
 
@@ -986,7 +897,9 @@ function imprimir(folio){
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Times New Roman',Times,serif;color:#111;font-size:12px;padding:28px 32px}
     @media print{body{padding:0}@page{margin:1.8cm 1.5cm}}
-  </style></head><body>
+  </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+</head><body>
   <div style="text-align:center;margin-bottom:18px">
     <img src="${LOGO}" width="72" height="72" style="border-radius:6px;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto">
     <div style="font-size:18px;font-weight:900;color:#F05A22;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">
@@ -1013,43 +926,6 @@ function imprimir(folio){
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('f-fecha').value=new Date().toISOString().slice(0,10);
 ['sp','sd','st','sa'].forEach(setupSig);
-
-function volverAlExpediente(){
-  location.href = 'control-clinica-dental.html';
-}
-
-function aplicarFiltroPaciente(){
-  if(!pacienteFiltro) return;
-  // Mostrar banner
-  const banner = document.getElementById('banner-paciente');
-  banner.style.display = 'flex';
-  document.getElementById('banner-nombre').textContent = pacienteFiltro;
-  document.getElementById('titulo-historial').textContent = 'Consentimientos registrados';
-  // Precargar el nombre en el formulario de nuevo consentimiento
-  const inpPac = document.getElementById('f-pac');
-  if(inpPac) inpPac.value = pacienteFiltro;
-  // Abrir directamente el historial
-  switchTab('list');
-}
-
-async function inicializar(){
-  await cargarCatalogosDeCon();
-  _consCache = await loadCons();
-  renderList();
-  aplicarFiltroPaciente();
-  // Impresión directa desde el expediente
-  if(folioImprimir){
-    setTimeout(()=>{ imprimir(folioImprimir); }, 400);
-  }
-}
-inicializar();
-
-
-/* ── Realtime: sincronización automática entre dispositivos ── */
-sbCON.channel('consentimientos_consentimientos').on('postgres_changes',{event:'*',schema:'public',table:'consentimientos'},async()=>{ await cargarCatalogosDeCon(); _consCache = await loadCons(); renderList(); }).subscribe();
-sbCON.channel('consentimientos_expedientes').on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{ await cargarCatalogosDeCon(); _consCache = await loadCons(); renderList(); }).subscribe();
-sbCON.channel('consentimientos_alumnos').on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},async()=>{ await cargarCatalogosDeCon(); _consCache = await loadCons(); renderList(); }).subscribe();
-sbCON.channel('consentimientos_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarCatalogosDeCon(); _consCache = await loadCons(); renderList(); }).subscribe();
 </script>
 </body>
 </html>
