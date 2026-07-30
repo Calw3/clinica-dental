@@ -109,6 +109,8 @@ h1{font-size:20px;font-weight:600;color:var(--teal-900);margin-top:2px;}
 footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>initAuth(['coordinador','maestro']);</script>
 </head>
 <body>
   <div class="wrap">
@@ -196,30 +198,9 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
-const sbAs=window.supabase.createClient(SB_URL,SB_KEY);
-async function loadData(){
-  const{data,error}=await sbAs.from('asistencia').select('*').order('timestamp',{ascending:false});
-  if(error){console.error(error);return{registros:[]};}
-  return{registros:(data||[]).map(r=>({
-    id:r.id, maestroId:r.maestro_id, idInstitucional:r.id_institucional,
-    nombre:r.nombre, puesto:r.puesto, tipo:r.tipo,
-    timestamp:r.timestamp, fecha:r.fecha, hora:r.hora
-  }))};
-}
-async function saveData(){}
-async function upsertAsistencia(rec){
-  const row={
-    id:rec.id, maestro_id:rec.maestroId||'', id_institucional:rec.idInstitucional||'',
-    nombre:rec.nombre||'', puesto:rec.puesto||'', tipo:rec.tipo||'',
-    timestamp:rec.timestamp||'', fecha:rec.fecha||'', hora:rec.hora||''
-  };
-  const{error}=await sbAs.from('asistencia').upsert(row,{onConflict:'id'});
-  if(error)throw error;
-}
-async function deleteAsistencia(ids){const{error}=await sbAs.from('asistencia').delete().in('id',ids);if(error)console.error(error);}
-
+const KEY='clinica_asistencia_v1';
+function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{registros:[]};}
+function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -230,7 +211,7 @@ function fmtHora(ts){const d=new Date(ts);return`${pad(d.getHours())}:${pad(d.ge
 function fmtFechaLarga(iso){const[y,m,d]=iso.split('-');const f=new Date(iso+'T12:00:00');return`${DIAS_S[f.getDay()]} ${parseInt(d)} de ${MESES[parseInt(m)-1]} de ${y}`;}
 function fmtFechaCorta(iso){const[y,m,d]=iso.split('-');return`${parseInt(d)}/${parseInt(m)}/${y}`;}
 
-const S={data:{registros:[]},tab:'kiosk'};
+const S={data:loadData(),tab:'kiosk'};
 
 /* ─── Reloj ─── */
 function tickReloj(){
@@ -256,26 +237,21 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
 });
 
-/* ─── Catálogo de maestros ─── */
-let _maestrosCache = [];
-
-async function cargarMaestros(){
-  const{data,error}=await sbAs.from('maestros').select('*');
-  if(error){console.error('Error cargando maestros:',error);return;}
-  _maestrosCache=(data||[]).map(m=>({
-    id:m.id, idInstitucional:m.id_institucional, nombre:m.nombre,
-    puesto:m.puesto, clinica:m.clinica, turno:m.turno
-  }));
-}
-
+/* ─── Buscar maestro por ID institucional ─── */
 function getMaestro(idInstitucional){
-  const buscado=(idInstitucional||'').toUpperCase().trim();
-  return _maestrosCache.find(m=>(m.idInstitucional||'').toUpperCase().trim()===buscado)||null;
+  try{
+    const d=localStorage.getItem('clinica_maestros_v1');
+    if(d){
+      const p=JSON.parse(d);
+      return (p.maestros||[]).find(m=>(m.idInstitucional||'').toUpperCase().trim()===(idInstitucional||'').toUpperCase().trim())||null;
+    }
+  }catch(e){}
+  return null;
 }
 
 /* ─── Registrar ─── */
 let confirmTimer=null;
-async function registrar(tipo){
+function registrar(tipo){
   const idVal=document.getElementById('kiosk-id').value.trim();
   const errEl=document.getElementById('kiosk-error');
   const inp=document.getElementById('kiosk-id');
@@ -311,18 +287,13 @@ async function registrar(tipo){
     fecha:todayISO(),
     hora:`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
   };
-  try{
-    await upsertAsistencia(rec);
-    S.data = await loadData();
-    renderStats();
-    renderHistorial();
-    mostrarConfirm(rec);
-    inp.value='';
-  }catch(err){
-    errEl.textContent = 'Error al registrar: ' + err.message;
-    inp.classList.add('error');
-    console.error(err);
-  }
+  S.data.registros.push(rec);
+  saveData();
+  renderHistorial();
+
+  /* Mostrar confirmación */
+  mostrarConfirm(rec);
+  inp.value='';
 }
 
 function mostrarConfirm(rec){
@@ -414,7 +385,7 @@ function renderHistorial(){
 }
 
 /* ─── Imprimir día ─── */
-const _el_btn_imprimir_dia=document.getElementById('btn-imprimir-dia'); if(_el_btn_imprimir_dia) _el_btn_imprimir_dia.addEventListener('click',()=>{
+document.getElementById('btn-imprimir-dia').addEventListener('click',()=>{
   const fecha=document.getElementById('filtro-fecha').value||todayISO();
   const rows=S.data.registros.filter(r=>r.fecha===fecha).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
   const entradas=rows.filter(r=>r.tipo==='Entrada').length;
@@ -452,7 +423,9 @@ const _el_btn_imprimir_dia=document.getElementById('btn-imprimir-dia'); if(_el_b
   .sal{color:#8C3F09;font-weight:700;}
   .footer{margin-top:24px;border-top:1px solid #ddd;padding-top:8px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
   @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-</style></head><body>
+</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+</head><body>
 <div class="header">
   <div class="logo-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
   <div><p class="clinic-name">Clínica Dental Universitaria Anáhuac</p><p class="clinic-sub">Universidad Anáhuac Xalapa · Servicios de Salud Bucal</p></div>
@@ -477,29 +450,15 @@ const _el_btn_imprimir_dia=document.getElementById('btn-imprimir-dia'); if(_el_b
   win.document.close();
 });
 
-const _el_buscar=document.getElementById('buscar'); if(_el_buscar) _el_buscar.addEventListener('input',renderHistorial);
-const _el_filtro_fecha=document.getElementById('filtro-fecha'); if(_el_filtro_fecha) _el_filtro_fecha.addEventListener('change',renderHistorial);
-const _el_filtro_tipo=document.getElementById('filtro-tipo'); if(_el_filtro_tipo) _el_filtro_tipo.addEventListener('change',renderHistorial);
+document.getElementById('buscar').addEventListener('input',renderHistorial);
+document.getElementById('filtro-fecha').addEventListener('change',renderHistorial);
+document.getElementById('filtro-tipo').addEventListener('change',renderHistorial);
 
 /* Init */
-(function(){
-  const ff=document.getElementById('filtro-fecha'); if(ff) ff.value=todayISO();
-  const tk=document.getElementById('tab-kiosk'); if(tk) tk.style.display='flex';
-  const ki=document.getElementById('kiosk-id'); if(ki) ki.focus();
-})();
-
-async function inicializar(){
-  S.data = await loadData();
-  await cargarMaestros();
-  renderStats();
-  renderHistorial();
-}
-inicializar();
-
-
-/* ── Realtime: sincronización automática entre dispositivos ── */
-sbAs.channel('asistencia_asistencia').on('postgres_changes',{event:'*',schema:'public',table:'asistencia'},async()=>{ S.data = await loadData(); renderStats(); renderHistorial(); }).subscribe();
-sbAs.channel('asistencia_maestros').on('postgres_changes',{event:'*',schema:'public',table:'maestros'},async()=>{ await cargarMaestros(); }).subscribe();
+document.getElementById('filtro-fecha').value=todayISO();
+document.getElementById('tab-kiosk').style.display='flex';
+document.getElementById('kiosk-id').focus();
+renderHistorial();
 </script>
 </body>
 </html>
