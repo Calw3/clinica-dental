@@ -68,6 +68,12 @@ body {
 }
 .toggle-mode a:hover { text-decoration:underline; }
 
+.forgot-pass { text-align:right; margin-top:-10px; margin-bottom:18px; }
+.forgot-pass a {
+  font-size:12px; color:var(--text-secondary); cursor:pointer; text-decoration:none;
+}
+.forgot-pass a:hover { color:var(--teal-600); text-decoration:underline; }
+
 .alert {
   padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px;
   display:none; line-height:1.4;
@@ -126,6 +132,10 @@ footer {
                autocomplete="current-password" required minlength="6">
         <button type="button" onclick="togglePassword()">Mostrar</button>
       </div>
+    </div>
+
+    <div class="forgot-pass" id="forgot-pass-wrap">
+      <a id="forgot-link" onclick="handleForgotPassword()">¿Olvidaste tu contraseña?</a>
     </div>
 
     <!-- Confirmar contraseña (solo en registro) -->
@@ -187,6 +197,7 @@ footer {
       toggleLnk.textContent  = 'Crear cuenta';
       extras.forEach(el => el.style.display = 'none');
       inpPass.autocomplete = 'current-password';
+      document.getElementById('forgot-pass-wrap').style.display = 'block';
     } else {
       title.textContent     = 'Crear cuenta';
       btnSubmit.textContent  = 'Registrarme';
@@ -194,6 +205,7 @@ footer {
       toggleLnk.textContent  = 'Iniciar sesión';
       extras.forEach(el => el.style.display = 'block');
       inpPass.autocomplete = 'new-password';
+      document.getElementById('forgot-pass-wrap').style.display = 'none';
     }
   }
 
@@ -292,6 +304,34 @@ footer {
     const btn = inp.nextElementSibling;
     if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Ocultar'; }
     else { inp.type = 'password'; btn.textContent = 'Mostrar'; }
+  }
+
+  // ─── Olvidé mi contraseña ──────────────────────────────────
+  async function handleForgotPassword() {
+    hideAlert();
+    const email = inpEmail.value.trim();
+
+    if (!email) {
+      showAlert('Escribe tu correo electrónico arriba y luego haz clic en "¿Olvidaste tu contraseña?".', 'error');
+      inpEmail.focus();
+      return;
+    }
+
+    const link = document.getElementById('forgot-link');
+    const textoOriginal = link.textContent;
+    link.textContent = 'Enviando...';
+
+    try {
+      await sendPasswordReset(email);
+      showAlert(
+        'Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada (y spam).',
+        'success'
+      );
+    } catch (err) {
+      showAlert(translateError(err.message || 'No se pudo enviar el correo. Intenta de nuevo.'), 'error');
+    }
+
+    link.textContent = textoOriginal;
   }
 
   function translateError(msg) {
