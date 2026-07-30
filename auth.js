@@ -24,13 +24,13 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 // ─── CLIENTE SUPABASE (vía CDN, cargado en cada HTML) ────────
 // Se espera que el HTML cargue el CDN antes de este archivo:
 // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-let supabase;
+let sbClient;
 
 function getSupabase() {
-  if (!supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  if (!sbClient) {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
   }
-  return supabase;
+  return sbClient;
 }
 
 // ─── FUNCIONES PRINCIPALES ───────────────────────────────────
