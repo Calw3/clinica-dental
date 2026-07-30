@@ -210,3 +210,73 @@ function applyRoleVisibility(userRole) {
     }
   });
 }
+
+/**
+ * Llamar después de cualquier render dinámico (renderLista, etc.)
+ * para ocultar de nuevo los elementos [data-role] recién insertados
+ * al DOM, ya que innerHTML los vuelve a mostrar por defecto.
+ */
+function refreshRoleVisibility() {
+  if (window.currentUserRole) {
+    applyRoleVisibility(window.currentUserRole);
+  }
+}
+
+// ─── AUTO-GUARD: protección automática al cargar ─────────────
+// Si este script se carga en cualquier página que NO sea login.html,
+// verifica la sesión. Si no hay sesión, redirige a login.html.
+// Así no necesitas modificar el <script> de cada módulo.
+
+(async function autoGuard() {
+  // No proteger login.html (evita loop de redirección)
+  if (window.location.pathname.endsWith('login.html')) return;
+
+  // Ocultar la página hasta confirmar autenticación (evita flash)
+  document.documentElement.style.visibility = 'hidden';
+
+  try {
+    const session = await getSession();
+
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // Sesión válida: mostrar la página
+    document.documentElement.style.visibility = 'visible';
+
+    // Cargar perfil y mostrar barra de usuario + roles
+    try {
+      const profile = await getProfile(session.user.id);
+      window.currentUserRole = profile.rol;
+      // Esperar a que el DOM esté listo para inyectar la barra
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          renderUserBar(profile);
+          applyRoleVisibility(profile.rol);
+        });
+      } else {
+        renderUserBar(profile);
+        applyRoleVisibility(profile.rol);
+      }
+    } catch (e) {
+      // Sin perfil aún — mostrar como alumno
+      const fallback = { email: session.user.email, rol: 'alumno', nombre: '' };
+      window.currentUserRole = fallback.rol;
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          renderUserBar(fallback);
+          applyRoleVisibility(fallback.rol);
+        });
+      } else {
+        renderUserBar(fallback);
+        applyRoleVisibility(fallback.rol);
+      }
+    }
+
+  } catch (e) {
+    // Error de red / Supabase — redirigir a login por seguridad
+    window.location.href = 'login.html';
+  }
+})();
+
