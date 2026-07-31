@@ -168,7 +168,6 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_materias_v1';
 
 const DEFAULTS=[
   {nombre:'Clínica Integral I',tipo:'Clínica Integral'},
@@ -234,23 +233,35 @@ const TIPO_CSS={
 };
 const GRUPO_ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
 
-function loadData(){
-  try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}
-  return null;
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbMat=window.supabase.createClient(SB_URL,SB_KEY);
+
+function materiaRowToRec(r){ return{id:r.id,nombre:r.nombre||'',tipo:r.tipo||'',activa:r.activa!==false}; }
+function materiaRecToRow(rec){ return{id:rec.id,nombre:rec.nombre||'',tipo:rec.tipo||'',activa:rec.activa!==false}; }
+function uid(){return 'MT-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase();}
+
+async function loadData(){
+  const{data,error}=await sbMat.from('materias').select('*');
+  if(error){console.error('Error cargando materias:',error);return{materias:[]};}
+  return{materias:(data||[]).map(materiaRowToRec)};
 }
-function saveData(d){localStorage.setItem(KEY,JSON.stringify(d));}
+async function refreshData(){
+  S.data=await loadData();
+  renderAll();
+}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
-let S={data:null,editId:null,delId:null};
-function init(){
-  let d=loadData();
-  if(!d){
-    d={materias:DEFAULTS.map((m,i)=>({id:String(i+1),nombre:m.nombre,tipo:m.tipo,activa:true})),seq:DEFAULTS.length+1};
-    saveData(d);
-  }
-  S.data=d;
+let S={data:{materias:[]},editId:null,delId:null};
+async function init(){
+  S.data=await loadData();
+  renderAll();
 }
 init();
+
+sbMat.channel('materias-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'materias'},()=>{refreshData();})
+  .subscribe();
 
 function renderStats(){
   const total=S.data.materias.length;
@@ -304,10 +315,14 @@ function renderLista(){
 
 function renderAll(){renderStats();renderLista();}
 
-function toggleActiva(id,e){
+async function toggleActiva(id,e){
   e.stopPropagation();
   const m=S.data.materias.find(x=>x.id===id);
-  if(m){m.activa=m.activa===false?true:false;saveData(S.data);renderAll();}
+  if(!m)return;
+  const nuevoValor=m.activa===false?true:false;
+  const{error}=await sbMat.from('materias').update({activa:nuevoValor}).eq('id',id);
+  if(error){alert('No se pudo actualizar: '+error.message);return;}
+  await refreshData();
 }
 
 /* Panel */
@@ -336,19 +351,22 @@ document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
 document.getElementById('btn-cancel').addEventListener('click',closePanel);
 document.getElementById('panel-overlay').addEventListener('click',closePanel);
 
-document.getElementById('btn-save').addEventListener('click',()=>{
+document.getElementById('btn-save').addEventListener('click',async()=>{
   const nombre=document.getElementById('f-nombre').value.trim();
   const tipo=document.getElementById('f-tipo').value;
   if(!nombre){document.getElementById('f-nombre').focus();return;}
   if(!tipo){document.getElementById('f-tipo').focus();return;}
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true;
+  let error;
   if(S.editId){
-    const m=S.data.materias.find(x=>x.id===S.editId);
-    if(m){m.nombre=nombre;m.tipo=tipo;}
+    ({error}=await sbMat.from('materias').update({nombre,tipo}).eq('id',S.editId));
   } else {
-    S.data.materias.push({id:String(S.data.seq||1),nombre,tipo,activa:true});
-    S.data.seq=(S.data.seq||1)+1;
+    ({error}=await sbMat.from('materias').insert({id:uid(),nombre,tipo,activa:true}));
   }
-  saveData(S.data);renderAll();closePanel();
+  btn.disabled=false;
+  if(error){alert('No se pudo guardar la materia: '+error.message);return;}
+  await refreshData();closePanel();
 });
 
 /* Eliminar */
@@ -361,22 +379,35 @@ function abrirEliminar(id,e){
 }
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;}
-  S.data.materias=S.data.materias.filter(x=>x.id!==S.delId);
-  saveData(S.data);renderAll();document.getElementById('modal-confirm').classList.remove('open');
+  const btn=document.getElementById('btn-confirm-del');
+  btn.disabled=true;
+  const{error}=await sbMat.from('materias').delete().eq('id',S.delId);
+  btn.disabled=false;
+  if(error){alert('No se pudo eliminar: '+error.message);return;}
+  await refreshData();document.getElementById('modal-confirm').classList.remove('open');
 });
 
 /* Restablecer */
-document.getElementById('btn-reset').addEventListener('click',()=>{
-  if(!confirm('¿Restablecer la lista a los valores predeterminados? Se perderán los cambios.'))return;
-  const d={materias:DEFAULTS.map((m,i)=>({id:String(i+1),nombre:m.nombre,tipo:m.tipo,activa:true})),seq:DEFAULTS.length+1};
-  saveData(d);S.data=d;renderAll();
+document.getElementById('btn-reset').addEventListener('click',async()=>{
+  if(!confirm('¿Restablecer la lista a los valores predeterminados? Se perderán los cambios, incluyendo materias personalizadas que hayas agregado.'))return;
+  const btn=document.getElementById('btn-reset');
+  btn.disabled=true;
+  const idsActuales=S.data.materias.map(m=>m.id);
+  if(idsActuales.length){
+    const{error:errDel}=await sbMat.from('materias').delete().in('id',idsActuales);
+    if(errDel){btn.disabled=false;alert('No se pudo restablecer: '+errDel.message);return;}
+  }
+  const nuevas=DEFAULTS.map((m,i)=>({id:String(i+1),nombre:m.nombre,tipo:m.tipo,activa:true}));
+  const{error:errIns}=await sbMat.from('materias').insert(nuevas);
+  btn.disabled=false;
+  if(errIns){alert('No se pudo restablecer: '+errIns.message);return;}
+  await refreshData();
 });
 
 document.getElementById('buscar').addEventListener('input',renderLista);
 document.getElementById('filtro-tipo').addEventListener('change',renderLista);
-renderAll();
 </script>
 </body>
 </html>
