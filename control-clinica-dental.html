@@ -482,20 +482,69 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'clinica_dental_data_v1';
-
-function loadData(){
+/* ── Persistencia en Supabase (tabla expedientes) ── */
+function rowToRecExp(r){
+  return {
+    id:r.id, nombre:r.nombre||'', idPaciente:r.id_paciente||'', sexo:r.sexo||'', edad:r.edad||'',
+    fechaNacimiento:r.fecha_nacimiento||'', lugarNacimiento:r.lugar_nacimiento||'', direccion:r.direccion||'',
+    telefono:r.telefono||'', correo:r.correo||'', escolaridad:r.escolaridad||'', estadoCivil:r.estado_civil||'',
+    profesion:r.profesion||'', ocupacion:r.ocupacion||'', religion:r.religion||'', referido:r.referido||'',
+    tipoPaciente:r.tipo_paciente||'', tipoHistoria:r.tipo_historia||'', padecimiento:r.padecimiento||'',
+    habitos:r.habitos||'', ultimaVisita:r.ultima_visita||'', consentimientos:r.consentimientos||'',
+    datosRelevantes:r.datos_relevantes||'', emergenciaContacto:r.emergencia_contacto||'',
+    emergenciaTelefono:r.emergencia_telefono||'', alergia:r.alergia||'', alergiaEspecifique:r.alergia_especifique||'',
+    firma:r.firma||'', fotografiaPaciente:r.fotografia_paciente||'', fotografiaAnverso:r.fotografia_anverso||'',
+    fotografiaReverso:r.fotografia_reverso||'', historiaClinica:r.historia_clinica||null, notasEvolucion:r.notas_evolucion||[],
+  };
+}
+function recToRowExp(e){
+  return {
+    id:e.id, nombre:e.nombre||'', id_paciente:e.idPaciente||'', sexo:e.sexo||'', edad:e.edad||'',
+    fecha_nacimiento:e.fechaNacimiento||'', lugar_nacimiento:e.lugarNacimiento||'', direccion:e.direccion||'',
+    telefono:e.telefono||'', correo:e.correo||'', escolaridad:e.escolaridad||'', estado_civil:e.estadoCivil||'',
+    profesion:e.profesion||'', ocupacion:e.ocupacion||'', religion:e.religion||'', referido:e.referido||'',
+    tipo_paciente:e.tipoPaciente||'', tipo_historia:e.tipoHistoria||'', padecimiento:e.padecimiento||'',
+    habitos:e.habitos||'', ultima_visita:e.ultimaVisita||'', consentimientos:e.consentimientos||'',
+    datos_relevantes:e.datosRelevantes||'', emergencia_contacto:e.emergenciaContacto||'',
+    emergencia_telefono:e.emergenciaTelefono||'', alergia:e.alergia||'', alergia_especifique:e.alergiaEspecifique||'',
+    firma:e.firma||'', fotografia_paciente:e.fotografiaPaciente||'', fotografia_anverso:e.fotografiaAnverso||'',
+    fotografia_reverso:e.fotografiaReverso||'', historia_clinica:e.historiaClinica||{}, notas_evolucion:e.notasEvolucion||[],
+  };
+}
+async function loadData(){
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  return { expedientes: [] };
+    const {data,error} = await getSupabase().from('expedientes').select('*');
+    if(error) throw error;
+    return { expedientes: (data||[]).map(rowToRecExp) };
+  }catch(e){console.error('Error cargando expedientes:',e); return { expedientes: [] };}
 }
-function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE.data));
+async function saveData(){
+  try{
+    const sb = getSupabase();
+    if(STATE.data.expedientes.length){
+      const {error} = await sb.from('expedientes').upsert(STATE.data.expedientes.map(recToRowExp),{onConflict:'id'});
+      if(error) throw error;
+    }
+    const {data:existentes} = await sb.from('expedientes').select('id');
+    const idsActuales = new Set(STATE.data.expedientes.map(e=>e.id));
+    const aBorrar = (existentes||[]).filter(r=>!idsActuales.has(r.id)).map(r=>r.id);
+    if(aBorrar.length) await sb.from('expedientes').delete().in('id',aBorrar);
+  }catch(e){console.error('Error guardando expedientes:',e);}
 }
 
-const STATE = { data: loadData(), editingId: null };
+const STATE = { data: { expedientes: [] }, editingId: null };
+
+function suscribirRealtimeExpedientes(){
+  getSupabase().channel('expedientes_rt')
+    .on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{STATE.data=await loadData();renderAll();})
+    .subscribe();
+}
+
+async function initApp(){
+  STATE.data = await loadData();
+  renderAll();
+  suscribirRealtimeExpedientes();
+}
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -1105,7 +1154,7 @@ document.body.addEventListener('click', (e) => {
   saveData(); renderAll();
 });
 
-renderAll();
+initApp();
 </script>
 </body>
 </html>
