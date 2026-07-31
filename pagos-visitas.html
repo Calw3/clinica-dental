@@ -1425,6 +1425,7 @@ setupAC('f-estudiante', 'ac-estudiante', getAlumnoNombres);
   S.papelera=await loadPapelera();
   await cargarExpedienteNombresCache();
   await cargarAlumnoNombresCache();
+  await cargarMateriasCache();
   renderAll();
 })();
 
@@ -1440,18 +1441,19 @@ sbPagos.channel('expedientes-nombres-changes')
 sbPagos.channel('alumnos-nombres-changes')
   .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlumnoNombresCache();})
   .subscribe();
+sbPagos.channel('materias-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'materias'},()=>{cargarMateriasCache();})
+  .subscribe();
 
 /* ── Materias dinámicas ── */
+let materiasCache=[];
+async function cargarMateriasCache(){
+  const{data,error}=await sbPagos.from('materias').select('nombre,tipo,activa').order('nombre');
+  if(error){console.error('Error cargando materias:',error);return;}
+  materiasCache=(data||[]).filter(m=>m.activa!==false).map(m=>({nombre:m.nombre,grupo:m.tipo}));
+}
 function getMateriasList(){
-  try{
-    const d=localStorage.getItem('clinica_materias_v1');
-    if(d){
-      const parsed=JSON.parse(d);
-      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
-      if(mats.length)return mats.map(m=>({nombre:m.nombre,grupo:m.tipo}));
-    }
-  }catch(e){}
-  return MATERIAS;
+  return materiasCache.length?materiasCache:MATERIAS;
 }
 
 </script>
