@@ -1240,12 +1240,17 @@ ${buildResumen(imagen,tI,'#0C447C')}
 }
 
 /* ── Autocomplete ── */
-function getExpedienteNombres(){
+let CACHE_NOMBRES_PACIENTES = [];
+async function cargarNombresPacientes(){
   try{
-    const d=localStorage.getItem('clinica_dental_data_v1');
-    if(d){const p=JSON.parse(d);return(p.expedientes||[]).map(e=>e.nombre).filter(Boolean).sort();}
-  }catch(e){}
-  return[];
+    const sb = getSupabase();
+    const { data, error } = await sb.from('expedientes').select('nombre');
+    if(error){ console.error('Error cargando pacientes para autocompletar:', error); return; }
+    CACHE_NOMBRES_PACIENTES = (data||[]).map(e=>e.nombre).filter(Boolean).sort();
+  }catch(e){ console.error('Error cargando pacientes para autocompletar:', e); }
+}
+function getExpedienteNombres(){
+  return CACHE_NOMBRES_PACIENTES;
 }
 function getAlumnoNombres(){
   try{
@@ -1309,6 +1314,11 @@ function setupAC(inputId, listId, getFn){
 
 setupAC('f-paciente',   'ac-paciente',   getExpedienteNombres);
 setupAC('f-estudiante', 'ac-estudiante', getAlumnoNombres);
+
+cargarNombresPacientes();
+getSupabase().channel('pagos-visitas-expedientes')
+  .on('postgres_changes', { event:'*', schema:'public', table:'expedientes' }, cargarNombresPacientes)
+  .subscribe();
 
 /* Autocomplete Materia/Clínica con grupos */
 (function(){
