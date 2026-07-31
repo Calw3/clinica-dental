@@ -90,7 +90,61 @@ function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function todayISO(){const d=new Date();const p=v=>String(v).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 function mesISO(){return todayISO().slice(0,7);}
 function fmtFecha(s){if(!s)return'—';const[y,m,d]=s.split('-');const ms=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${parseInt(d)} ${ms[parseInt(m)-1]} ${y}`;}
-function tryParse(key){try{const r=localStorage.getItem(key);return r?JSON.parse(r):null;}catch(e){return null;}}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbStats=window.supabase.createClient(SB_URL,SB_KEY);
+
+let DATA={};
+async function cargarTodo(){
+  const[
+    {data:expRows,error:e1},{data:aluRows,error:e2},{data:maeRows,error:e3},{data:justRows,error:e4},
+    {data:presRows,error:e5},{data:ceyeRows,error:e6},{data:bancoRows,error:e7},{data:asistRows,error:e8},
+    {data:consRows,error:e9},{data:pagosRows,error:e10}
+  ]=await Promise.all([
+    sbStats.from('expedientes').select('*'),
+    sbStats.from('alumnos').select('*'),
+    sbStats.from('maestros').select('*'),
+    sbStats.from('justificantes').select('*'),
+    sbStats.from('prestamos').select('*'),
+    sbStats.from('ceye').select('*'),
+    sbStats.from('banco_pacientes').select('*'),
+    sbStats.from('asistencia').select('*'),
+    sbStats.from('consentimientos').select('*'),
+    sbStats.from('pagos_visitas').select('*'),
+  ]);
+  [e1,e2,e3,e4,e5,e6,e7,e8,e9,e10].forEach(e=>{if(e)console.error('Error cargando estadísticas:',e);});
+
+  const pac={expedientes:(expRows||[]).map(r=>({
+    ...r,
+    fecha:(r.created_at||'').slice(0,10),
+    fechaRegistro:(r.created_at||'').slice(0,10),
+    tipo:r.tipo_paciente||'',
+    tipoPaciente:r.tipo_paciente||'',
+    tipoHistoria:r.tipo_historia||'',
+    religion:r.religion||''
+  }))};
+  const alumnos={alumnos:aluRows||[]};
+  const maestros={maestros:maeRows||[]};
+  const justRowsArr=justRows||[];
+  const just={
+    justificantes:justRowsArr.filter(r=>r.tipo==='just').map(r=>({...r,fechaEmision:(r.datos||{}).fechaEmision||''})),
+    recetas:justRowsArr.filter(r=>r.tipo==='rec').map(r=>({...r,fechaEmision:(r.datos||{}).fechaEmision||''}))
+  };
+  const prest={prestamos:(presRows||[]).map(r=>({...r,fechaSalida:r.fecha_salida||'',estado:r.estado||''}))};
+  const ceye={registros:(ceyeRows||[]).map(r=>({...r,timestamp:r.timestamp||''}))};
+  const banco={pacientes:(bancoRows||[]).map(r=>({...r,fechaRegistro:(r.fecha_registro||'').slice(0,10),alumnoAsignado:r.alumno||''}))};
+  const asist={registros:asistRows||[]};
+  const cons={consentimientos:(consRows||[]).map(r=>({...r,folio:r.id}))};
+  const pagos=(pagosRows||[]).map(r=>({
+    ...r,
+    tratA:(r.tratamientos&&r.tratamientos[0])?r.tratamientos[0].nombre:'',
+    tratB:(r.tratamientos&&r.tratamientos[1])?r.tratamientos[1].nombre:'',
+    tratC:(r.tratamientos&&r.tratamientos[2])?r.tratamientos[2].nombre:''
+  }));
+  const dental=pac;
+
+  DATA={pac,alumnos,maestros,just,prest,ceye,banco,asist,cons,pagos,dental};
+}
 
 function icon(paths,strokeColor){
   return`<svg viewBox="0 0 24 24" style="stroke:${strokeColor}">${paths}</svg>`;
@@ -117,15 +171,7 @@ function renderAll(){
   let html='';
 
   /* ── Resumen global ── */
-  const pac=tryParse('clinica_dental_data_v1');
-  const alumnos=tryParse('clinica_alumnos_v1');
-  const maestros=tryParse('clinica_maestros_v1');
-  const just=tryParse('clinica_justificantes_v1');
-  const prest=tryParse('clinica_prestamos_v1');
-  const ceye=tryParse('clinica_ceye_v1');
-  const banco=tryParse('clinica_banco_pacientes_v1');
-  const asist=tryParse('clinica_asistencia_v1');
-  const cons=tryParse('clinica_consentimientos_v1');
+  const{pac,alumnos,maestros,just,prest,ceye,banco,asist,cons,pagos,dental}=DATA;
 
   const totalPac=(pac?.expedientes||[]).length;
   const totalAlumnos=(alumnos?.alumnos||[]).length;
@@ -262,11 +308,11 @@ function renderAll(){
   /* ── Préstamos ── */
   const prests=prest?.prestamos||[];
   const prestHoy=prests.filter(p=>p.fechaSalida===hoy).length;
-  const prestPend=prests.filter(p=>p.estado!=='devuelto').length;
+  const prestPend=prests.filter(p=>p.estado!=='Devuelto').length;
   html+=`<div class="mod-card">
     <div class="mod-header"><div class="mod-icon" style="background:var(--pink-50);">${icon('<path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2M6 17v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2"/>','#72243E')}</div>
     <div><p class="mod-title">Préstamos de Equipos</p><p class="mod-sub">Control de salida y devolución</p></div></div>
-    ${statRows([['Total préstamos',prests.length,prestHoy||null],['Activos / pendientes',prestPend,null],['Devueltos',prests.filter(p=>p.estado==='devuelto').length,null]])}
+    ${statRows([['Total préstamos',prests.length,prestHoy||null],['Activos / pendientes',prestPend,null],['Devueltos',prests.filter(p=>p.estado==='Devuelto').length,null]])}
   </div>`;
 
   /* ── Asistencia docentes ── */
@@ -400,7 +446,20 @@ function renderAll(){
   document.getElementById('dashboard').innerHTML=html;
 }
 
-renderAll();
+(async()=>{
+  await cargarTodo();
+  renderAll();
+})();
+
+const TABLAS_STATS=['expedientes','alumnos','maestros','justificantes','prestamos','ceye','banco_pacientes','asistencia','consentimientos','pagos_visitas'];
+TABLAS_STATS.forEach(t=>{
+  sbStats.channel('stats-'+t+'-changes')
+    .on('postgres_changes',{event:'*',schema:'public',table:t},async()=>{
+      await cargarTodo();
+      renderAll();
+    })
+    .subscribe();
+});
 </script>
 </body>
 </html>
