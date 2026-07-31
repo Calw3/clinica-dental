@@ -398,15 +398,40 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_maestros_v1';
 const SLOTS=['7:00–8:30','8:30–10:00','10:00–11:30','11:30–13:00','13:00–14:30','14:30–16:00','16:00–17:30','17:30–19:00','19:00–20:30','20:30–22:00'];
 const DIAS=['L','M','X','J','V'];
 const DIAS_FULL=['Lunes','Martes','Miércoles','Jueves','Viernes'];
 
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{maestros:[]};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbMae=window.supabase.createClient(SB_URL,SB_KEY);
 
-const S={data:loadData(),selMode:false,sel:new Set(),editId:null,verId:null,slots:{}};
+/* ── Mapeo camelCase (frontend) ↔ snake_case (Supabase) ── */
+function maestroRowToRec(r){
+  return{
+    id:r.id, idInstitucional:r.id_institucional||'', nombre:r.nombre||'', puesto:r.puesto||'',
+    clinica:r.clinica||'', turno:r.turno||'', horario:r.horario||{}, foto:r.foto||'',
+    telefono:r.telefono||'', correo:r.correo||'', correoInstitucional:r.correo_institucional||''
+  };
+}
+function maestroRecToRow(rec){
+  return{
+    id:rec.id, id_institucional:rec.idInstitucional||'', nombre:rec.nombre||'', puesto:rec.puesto||'',
+    clinica:rec.clinica||'', turno:rec.turno||'', horario:rec.horario||{}, foto:rec.foto||'',
+    telefono:rec.telefono||'', correo:rec.correo||'', correo_institucional:rec.correoInstitucional||''
+  };
+}
+async function loadData(){
+  const{data,error}=await sbMae.from('maestros').select('*').order('nombre');
+  if(error){console.error('Error cargando maestros:',error);return{maestros:[]};}
+  return{maestros:(data||[]).map(maestroRowToRec)};
+}
+async function refreshData(){
+  S.data=await loadData();
+  renderAll();
+}
+
+const S={data:{maestros:[]},selMode:false,sel:new Set(),editId:null,verId:null,slots:{}};
 
 function uid(){return'MA-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase();}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -532,7 +557,7 @@ document.getElementById('inp-foto').addEventListener('change',e=>{
 });
 
 /* Guardar */
-document.getElementById('btn-save-panel').addEventListener('click',()=>{
+document.getElementById('btn-save-panel').addEventListener('click',async()=>{
   const nombre=document.getElementById('f-nombre').value.trim();
   const puesto=document.getElementById('f-puesto').value;
   if(!nombre){document.getElementById('f-nombre').focus();return;}
@@ -551,10 +576,19 @@ document.getElementById('btn-save-panel').addEventListener('click',()=>{
     correo:document.getElementById('f-correo').value.trim(),
     foto,
   };
-  if(S.editId){const i=S.data.maestros.findIndex(x=>x.id===S.editId);if(i>-1)S.data.maestros[i]=rec;}
-  else S.data.maestros.push(rec);
-  saveData();renderAll();
-populateMaterias('f-clinica');closePanel();
+  const btn=document.getElementById('btn-save-panel');
+  btn.disabled=true;
+  const row=maestroRecToRow(rec);
+  let error;
+  if(S.editId){
+    ({error}=await sbMae.from('maestros').update(row).eq('id',S.editId));
+  } else {
+    ({error}=await sbMae.from('maestros').insert(row));
+  }
+  btn.disabled=false;
+  if(error){alert('No se pudo guardar el maestro: '+error.message);return;}
+  await refreshData();
+  populateMaterias('f-clinica');closePanel();
 });
 
 /* Ver maestro */
@@ -615,15 +649,19 @@ function abrirConfirm(ids){
 }
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
   const ids=JSON.parse(document.getElementById('modal-confirm').dataset.ids||'[]');
-  S.data.maestros=S.data.maestros.filter(m=>!ids.includes(m.id));
-  saveData();document.getElementById('modal-confirm').classList.remove('open');
-  salirSel();renderAll();
-populateMaterias('f-clinica');
+  const btn=document.getElementById('btn-confirm-del');
+  btn.disabled=true;
+  const{error}=await sbMae.from('maestros').delete().in('id',ids);
+  btn.disabled=false;
+  if(error){alert('No se pudo eliminar: '+error.message);return;}
+  document.getElementById('modal-confirm').classList.remove('open');
+  salirSel();await refreshData();
+  populateMaterias('f-clinica');
 });
 
 /* Selección */
@@ -669,8 +707,15 @@ document.getElementById('filtro-puesto').addEventListener('change',renderLista);
 document.getElementById('filtro-horario').addEventListener('change',renderLista);
 
 buildHorarioTable();
-renderAll();
-populateMaterias('f-clinica');
+(async()=>{
+  S.data=await loadData();
+  renderAll();
+  populateMaterias('f-clinica');
+})();
+
+sbMae.channel('maestros-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'maestros'},()=>{refreshData();})
+  .subscribe();
 
 /* ── Materias dinámicas desde catálogo ── */
 function populateMaterias(selectId, currentVal){
