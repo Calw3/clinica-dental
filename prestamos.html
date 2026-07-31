@@ -379,15 +379,56 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_prestamos_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{equipos:[],prestamos:[]};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbPrest=window.supabase.createClient(SB_URL,SB_KEY);
+
+/* ── Mapeo camelCase (frontend) ↔ snake_case (Supabase) ── */
+function equipoRowToRec(r){
+  return{id:r.id,nombre:r.nombre||'',serie:r.serie||'',desc:r.descripcion||'',cantidad:r.cantidad||1,foto:r.foto||''};
+}
+function equipoRecToRow(rec){
+  return{id:rec.id,nombre:rec.nombre||'',serie:rec.serie||'',descripcion:rec.desc||'',cantidad:Number(rec.cantidad)||1,foto:rec.foto||''};
+}
+function prestamoRowToRec(r){
+  return{
+    id:r.id, equipoId:r.equipo_id||'', equipoNombre:r.equipo_nombre||'', responsable:r.responsable||'',
+    tipoResp:r.tipo_resp||'alumno', fechaSalida:r.fecha_salida||'', comentarioSalida:r.comentario_salida||'',
+    fotoSalida:r.foto_salida||'', fechaDevolucion:r.fecha_devolucion||'', comentarioDevolucion:r.comentario_devolucion||'',
+    fotoDevolucion:r.foto_devolucion||'', estado:r.estado||'Prestado'
+  };
+}
+function prestamoRecToRow(rec){
+  return{
+    id:rec.id, equipo_id:rec.equipoId||'', equipo_nombre:rec.equipoNombre||'', responsable:rec.responsable||'',
+    tipo_resp:rec.tipoResp||'alumno', fecha_salida:rec.fechaSalida||'', comentario_salida:rec.comentarioSalida||'',
+    foto_salida:rec.fotoSalida||'', fecha_devolucion:rec.fechaDevolucion||'', comentario_devolucion:rec.comentarioDevolucion||'',
+    foto_devolucion:rec.fotoDevolucion||'', estado:rec.estado||'Prestado'
+  };
+}
+
+async function loadData(){
+  const[{data:eqData,error:eqErr},{data:prData,error:prErr}]=await Promise.all([
+    sbPrest.from('equipos').select('*').order('nombre'),
+    sbPrest.from('prestamos').select('*').order('fecha_salida',{ascending:false})
+  ]);
+  if(eqErr)console.error('Error cargando equipos:',eqErr);
+  if(prErr)console.error('Error cargando préstamos:',prErr);
+  return{
+    equipos:(eqData||[]).map(equipoRowToRec),
+    prestamos:(prData||[]).map(prestamoRowToRec)
+  };
+}
+async function refreshData(){
+  S.data=await loadData();
+  renderAll();
+}
 function uid(){return 'PR-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,4).toUpperCase();}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function fmtDT(s){if(!s)return'—';const d=new Date(s);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});}
 function nowDT(){const n=new Date();const p=v=>String(v).padStart(2,'0');return`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`;}
 
-const S={data:loadData(),tab:'prestamos',verPId:null,verEId:null,editPId:null,editEId:null,tipoResp:'alumno'};
+const S={data:{equipos:[],prestamos:[]},tab:'prestamos',verPId:null,verEId:null,editPId:null,editEId:null,tipoResp:'alumno'};
 
 /* ─── Foto helpers ─── */
 function bindFoto(inputId,imgId,phId,clearId){
@@ -605,7 +646,7 @@ document.getElementById('btn-nuevo-prestamo').addEventListener('click',()=>openP
 document.getElementById('pp-cancel').addEventListener('click',closePanelP);
 document.getElementById('po-prestamo').addEventListener('click',closePanelP);
 
-document.getElementById('pp-save').addEventListener('click',()=>{
+document.getElementById('pp-save').addEventListener('click',async()=>{
   const equipoNombre=document.getElementById('pp-equipo').value.trim();
   const responsable=document.getElementById('pp-responsable').value.trim();
   const fechaSalida=document.getElementById('pp-fechaSalida').value;
@@ -631,9 +672,18 @@ document.getElementById('pp-save').addEventListener('click',()=>{
     fotoDevolucion:getFotoVal('prev-foto-devolucion'),
     estado:fechaDevolucion?'Devuelto':'Prestado',
   };
-  if(S.editPId){const i=S.data.prestamos.findIndex(x=>x.id===S.editPId);if(i>-1)S.data.prestamos[i]=rec;}
-  else S.data.prestamos.push(rec);
-  saveData();renderAll();closePanelP();
+  const btn=document.getElementById('pp-save');
+  btn.disabled=true;
+  const row=prestamoRecToRow(rec);
+  let error;
+  if(S.editPId){
+    ({error}=await sbPrest.from('prestamos').update(row).eq('id',S.editPId));
+  } else {
+    ({error}=await sbPrest.from('prestamos').insert(row));
+  }
+  btn.disabled=false;
+  if(error){alert('No se pudo guardar el préstamo: '+error.message);return;}
+  await refreshData();closePanelP();
 });
 
 /* ─── Panel equipo ─── */
@@ -665,7 +715,7 @@ function closePanelE(){
 document.getElementById('btn-nuevo-equipo').addEventListener('click',()=>openPanelE());
 document.getElementById('pe-cancel').addEventListener('click',closePanelE);
 document.getElementById('po-equipo').addEventListener('click',closePanelE);
-document.getElementById('pe-save').addEventListener('click',()=>{
+document.getElementById('pe-save').addEventListener('click',async()=>{
   const nombre=document.getElementById('pe-nombre').value.trim();
   if(!nombre){document.getElementById('pe-nombre').focus();return;}
   const rec={
@@ -675,9 +725,18 @@ document.getElementById('pe-save').addEventListener('click',()=>{
     desc:document.getElementById('pe-desc').value.trim(),
     cantidad:parseInt(document.getElementById('pe-cantidad').value)||1,
   };
-  if(S.editEId){const i=S.data.equipos.findIndex(x=>x.id===S.editEId);if(i>-1)S.data.equipos[i]=rec;}
-  else S.data.equipos.push(rec);
-  saveData();renderAll();closePanelE();
+  const btn=document.getElementById('pe-save');
+  btn.disabled=true;
+  const row=equipoRecToRow(rec);
+  let error;
+  if(S.editEId){
+    ({error}=await sbPrest.from('equipos').update(row).eq('id',S.editEId));
+  } else {
+    ({error}=await sbPrest.from('equipos').insert(row));
+  }
+  btn.disabled=false;
+  if(error){alert('No se pudo guardar el equipo: '+error.message);return;}
+  await refreshData();closePanelE();
 });
 
 /* ─── Modal devolver ─── */
@@ -694,7 +753,7 @@ function abrirModalDevolver(e,id){
 }
 document.getElementById('md-cerrar').addEventListener('click',()=>document.getElementById('modal-devolver').classList.remove('open'));
 document.getElementById('md-cancel').addEventListener('click',()=>document.getElementById('modal-devolver').classList.remove('open'));
-document.getElementById('md-confirmar').addEventListener('click',()=>{
+document.getElementById('md-confirmar').addEventListener('click',async()=>{
   if(!getFotoVal('prev-md-foto')){
     const lbl=document.getElementById('lbl-md-foto');
     lbl.style.borderColor='var(--red-600)';
@@ -703,14 +762,18 @@ document.getElementById('md-confirmar').addEventListener('click',()=>{
     document.getElementById('ph-md-foto').querySelector('svg').style.stroke='var(--red-600)';
     return;
   }
-  const i=S.data.prestamos.findIndex(x=>x.id===S.verPId);
-  if(i>-1){
-    S.data.prestamos[i].estado='Devuelto';
-    S.data.prestamos[i].fechaDevolucion=nowDT();
-    S.data.prestamos[i].comentarioDevolucion=document.getElementById('md-comentario').value.trim();
-    S.data.prestamos[i].fotoDevolucion=getFotoVal('prev-md-foto');
-  }
-  saveData();renderAll();
+  const row={
+    estado:'Devuelto',
+    fecha_devolucion:nowDT(),
+    comentario_devolucion:document.getElementById('md-comentario').value.trim(),
+    foto_devolucion:getFotoVal('prev-md-foto')
+  };
+  const btn=document.getElementById('md-confirmar');
+  btn.disabled=true;
+  const{error}=await sbPrest.from('prestamos').update(row).eq('id',S.verPId);
+  btn.disabled=false;
+  if(error){alert('No se pudo registrar la devolución: '+error.message);return;}
+  await refreshData();
   document.getElementById('modal-devolver').classList.remove('open');
 });
 
@@ -811,22 +874,37 @@ function abrirConfirmDirect(tipo,id){
 }
 document.getElementById('mc-cerrar').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('mc-cancel').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('mc-ok').addEventListener('click',()=>{
+document.getElementById('mc-ok').addEventListener('click',async()=>{
   if(document.getElementById('mc-inp').value.trim()!=='ELIMINAR'){
     document.getElementById('mc-inp').style.borderColor='var(--red-600)';return;
   }
   const tipo=document.getElementById('modal-confirm').dataset.tipo;
   const id=document.getElementById('modal-confirm').dataset.id;
-  if(tipo==='prestamo')S.data.prestamos=S.data.prestamos.filter(x=>x.id!==id);
-  else S.data.equipos=S.data.equipos.filter(x=>x.id!==id);
-  saveData();renderAll();document.getElementById('modal-confirm').classList.remove('open');
+  const btn=document.getElementById('mc-ok');
+  btn.disabled=true;
+  const tabla=tipo==='prestamo'?'prestamos':'equipos';
+  const{error}=await sbPrest.from(tabla).delete().eq('id',id);
+  btn.disabled=false;
+  if(error){alert('No se pudo eliminar: '+error.message);return;}
+  await refreshData();
+  document.getElementById('modal-confirm').classList.remove('open');
 });
 
 document.getElementById('buscar-p').addEventListener('input',renderPrestamos);
 document.getElementById('filtro-estado').addEventListener('change',renderPrestamos);
 document.getElementById('buscar-e').addEventListener('input',renderEquipos);
 
-renderAll();
+(async()=>{
+  S.data=await loadData();
+  renderAll();
+})();
+
+sbPrest.channel('equipos-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'equipos'},()=>{refreshData();})
+  .subscribe();
+sbPrest.channel('prestamos-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'prestamos'},()=>{refreshData();})
+  .subscribe();
 </script>
 </body>
 </html>
