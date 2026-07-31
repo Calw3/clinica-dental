@@ -903,9 +903,18 @@ async function verExpediente(id){
         </div>`;
     }
 
-    // ── Justificantes y Recetas (clinica_justificantes_v1) ──
-    let jData = {justificantes:[],recetas:[]};
-    try{ jData = JSON.parse(localStorage.getItem('clinica_justificantes_v1')||'{}'); jData.justificantes=jData.justificantes||[]; jData.recetas=jData.recetas||[]; }catch(e2){}
+    // ── Justificantes y Recetas ──
+    const{data:jRows,error:errJ}=await sbExp.from('justificantes').select('*').eq('paciente',e.nombre);
+    if(errJ)console.error('Error cargando justificantes/recetas:',errJ);
+    const jData={justificantes:[],recetas:[]};
+    (jRows||[]).forEach(r=>{
+      const dt=r.datos||{};
+      if(r.tipo==='just'){
+        jData.justificantes.push({id:r.id,folio:r.folio||'',paciente:r.paciente||'',alumno:r.alumno||'',maestro:r.maestro||'',firma:r.firma||'',fechaAtencion:dt.fechaAtencion||'',fechaEmision:dt.fechaEmision||'',diagnostico:dt.diagnostico||'',dias:dt.dias||1});
+      } else {
+        jData.recetas.push({id:r.id,folio:r.folio||'',paciente:r.paciente||'',alumno:r.alumno||'',maestro:r.maestro||'',firma:r.firma||'',fechaAtencion:dt.fechaAtencion||'',fechaEmision:dt.fechaEmision||'',medicamentos:dt.medicamentos||[],indicaciones:dt.indicaciones||''});
+      }
+    });
     const docsP = [
       ...jData.justificantes.filter(j=>(j.paciente||'').toLowerCase().trim()===nombrePac).map(j=>({...j,_tipo:'just'})),
       ...jData.recetas.filter(r=>(r.paciente||'').toLowerCase().trim()===nombrePac).map(r=>({...r,_tipo:'rec'})),
@@ -1082,9 +1091,16 @@ document.getElementById('modal-ver-expediente').addEventListener('click', (e) =>
   }
   const btnPrintJust = e.target.closest('.btn-print-just');
   if(btnPrintJust){
-    const jData = JSON.parse(localStorage.getItem('clinica_justificantes_v1')||'{}');
-    if(btnPrintJust.dataset.tipo === 'just') printJustificante(jData.justificantes?.find(x=>x.id===btnPrintJust.dataset.id));
-    else printRecetaJust(jData.recetas?.find(x=>x.id===btnPrintJust.dataset.id));
+    (async()=>{
+      const{data:row,error}=await sbExp.from('justificantes').select('*').eq('id',btnPrintJust.dataset.id).single();
+      if(error||!row){alert('No se pudo cargar el documento.');return;}
+      const dt=row.datos||{};
+      if(row.tipo==='just'){
+        printJustificante({id:row.id,folio:row.folio||'',paciente:row.paciente||'',alumno:row.alumno||'',maestro:row.maestro||'',firma:row.firma||'',fechaAtencion:dt.fechaAtencion||'',fechaEmision:dt.fechaEmision||'',diagnostico:dt.diagnostico||'',dias:dt.dias||1});
+      } else {
+        printRecetaJust({id:row.id,folio:row.folio||'',paciente:row.paciente||'',alumno:row.alumno||'',maestro:row.maestro||'',firma:row.firma||'',fechaAtencion:dt.fechaAtencion||'',fechaEmision:dt.fechaEmision||'',medicamentos:dt.medicamentos||[],indicaciones:dt.indicaciones||''});
+      }
+    })();
     return;
   }
   const btnNuevaJust = e.target.closest('.btn-nueva-just');
