@@ -354,9 +354,25 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_banco_pacientes_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{pacientes:[]};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbBP=window.supabase.createClient(SB_URL,SB_KEY);
+
+function bpRowToRec(r){
+  return{id:r.id,nombre:r.nombre||'',tipo:r.tipo||'',telefono:r.telefono||'',correo:r.correo||'',tratamiento:r.tratamiento||'',especialidad:r.especialidad||'',alumno:r.alumno||'',fechaRegistro:r.fecha_registro||''};
+}
+function bpRecToRow(rec){
+  return{id:rec.id,nombre:rec.nombre||'',tipo:rec.tipo||'',telefono:rec.telefono||'',correo:rec.correo||'',tratamiento:rec.tratamiento||'',especialidad:rec.especialidad||'',alumno:rec.alumno||'',fecha_registro:rec.fechaRegistro||''};
+}
+async function loadData(){
+  const{data,error}=await sbBP.from('banco_pacientes').select('*').order('fecha_registro',{ascending:false});
+  if(error){console.error('Error cargando banco de pacientes:',error);return{pacientes:[]};}
+  return{pacientes:(data||[]).map(bpRowToRec)};
+}
+async function refreshData(){
+  S.data=await loadData();
+  renderAll();
+}
 function uid(){return'BP-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,4).toUpperCase();}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
@@ -390,7 +406,7 @@ const ESPECIALIDADES=[
   {grupo:'Diagnóstico',nombre:'Diagnóstico Integral en Odontología'},
 ];
 
-const S={data:loadData(),editId:null,verId:null,asignarId:null};
+const S={data:{pacientes:[]},editId:null,verId:null,asignarId:null};
 
 /* ─── Tipo selector ─── */
 function selTipo(card){
@@ -471,9 +487,14 @@ function setupACEsp(inputId,listId){
   });
 }
 
+let alumnosCache=[];
+async function cargarAlumnosCache(){
+  const{data,error}=await sbBP.from('alumnos').select('nombre').order('nombre');
+  if(error){console.error('Error cargando alumnos:',error);return;}
+  alumnosCache=(data||[]).map(a=>a.nombre).filter(Boolean);
+}
 function getAlumnos(){
-  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}
-  return[];
+  return alumnosCache;
 }
 
 setupACEsp('f-especialidad','ac-especialidad');
@@ -565,7 +586,7 @@ document.getElementById('btn-cancel').addEventListener('click',closePanel);
 document.getElementById('panel-overlay').addEventListener('click',closePanel);
 
 /* ─── Guardar ─── */
-document.getElementById('btn-save').addEventListener('click',()=>{
+document.getElementById('btn-save').addEventListener('click',async()=>{
   const nombre=document.getElementById('f-nombre').value.trim();
   const tipo=document.getElementById('f-tipo').value;
   const tratamiento=document.getElementById('f-tratamiento').value.trim();
@@ -588,10 +609,19 @@ document.getElementById('btn-save').addEventListener('click',()=>{
     alumno:document.getElementById('f-alumno').value.trim(),
     fechaRegistro:S.editId?(S.data.pacientes.find(x=>x.id===S.editId)||{}).fechaRegistro:new Date().toISOString(),
   };
-  if(S.editId){const i=S.data.pacientes.findIndex(x=>x.id===S.editId);if(i>-1)S.data.pacientes[i]=rec;}
-  else S.data.pacientes.push(rec);
-  saveData();renderAll();
-populateMaterias('f-especialidad');closePanel();
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true;
+  const row=bpRecToRow(rec);
+  let error;
+  if(S.editId){
+    ({error}=await sbBP.from('banco_pacientes').update(row).eq('id',S.editId));
+  } else {
+    ({error}=await sbBP.from('banco_pacientes').insert(row));
+  }
+  btn.disabled=false;
+  if(error){alert('No se pudo guardar el paciente: '+error.message);return;}
+  await refreshData();
+  populateMaterias('f-especialidad');closePanel();
 });
 
 /* ─── Ver paciente ─── */
@@ -650,13 +680,16 @@ function abrirAsignarDirect(id){
 }
 document.getElementById('cerrar-ma').addEventListener('click',()=>document.getElementById('modal-asignar').classList.remove('open'));
 document.getElementById('ma-cancel').addEventListener('click',()=>document.getElementById('modal-asignar').classList.remove('open'));
-document.getElementById('ma-guardar').addEventListener('click',()=>{
+document.getElementById('ma-guardar').addEventListener('click',async()=>{
   const alumno=document.getElementById('ma-alumno').value.trim();
   if(!alumno){document.getElementById('ma-alumno').focus();return;}
-  const i=S.data.pacientes.findIndex(x=>x.id===S.asignarId);
-  if(i>-1)S.data.pacientes[i].alumno=alumno;
-  saveData();renderAll();
-populateMaterias('f-especialidad');
+  const btn=document.getElementById('ma-guardar');
+  btn.disabled=true;
+  const{error}=await sbBP.from('banco_pacientes').update({alumno}).eq('id',S.asignarId);
+  btn.disabled=false;
+  if(error){alert('No se pudo asignar el alumno: '+error.message);return;}
+  await refreshData();
+  populateMaterias('f-especialidad');
   document.getElementById('modal-asignar').classList.remove('open');
 });
 
@@ -670,51 +703,69 @@ function abrirEliminarDirect(id){
 }
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
-  S.data.pacientes=S.data.pacientes.filter(x=>x.id!==document.getElementById('modal-confirm').dataset.id);
-  saveData();renderAll();
-populateMaterias('f-especialidad');document.getElementById('modal-confirm').classList.remove('open');
+  const id=document.getElementById('modal-confirm').dataset.id;
+  const btn=document.getElementById('btn-confirm-del');
+  btn.disabled=true;
+  const{error}=await sbBP.from('banco_pacientes').delete().eq('id',id);
+  btn.disabled=false;
+  if(error){alert('No se pudo eliminar: '+error.message);return;}
+  await refreshData();
+  populateMaterias('f-especialidad');document.getElementById('modal-confirm').classList.remove('open');
 });
 
 document.getElementById('buscar').addEventListener('input',renderLista);
 document.getElementById('filtro-tipo').addEventListener('change',renderLista);
 document.getElementById('filtro-estado').addEventListener('change',renderLista);
-renderAll();
-populateMaterias('f-especialidad');
+
+(async()=>{
+  await cargarAlumnosCache();
+  await cargarMateriasCache();
+  S.data=await loadData();
+  renderAll();
+  populateMaterias('f-especialidad');
+})();
+
+sbBP.channel('banco-pacientes-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'banco_pacientes'},()=>{refreshData();})
+  .subscribe();
+sbBP.channel('banco-pacientes-alumnos-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlumnosCache();})
+  .subscribe();
+sbBP.channel('banco-pacientes-materias-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'materias'},()=>{cargarMateriasCache();})
+  .subscribe();
 
 /* ── Materias dinámicas desde catálogo ── */
+let materiasCache=[];
+async function cargarMateriasCache(){
+  const{data,error}=await sbBP.from('materias').select('nombre,tipo,activa').order('nombre');
+  if(error){console.error('Error cargando materias:',error);return;}
+  materiasCache=(data||[]).filter(m=>m.activa!==false);
+}
 function populateMaterias(selectId, currentVal){
   const sel=document.getElementById(selectId);if(!sel)return;
-  try{
-    const d=localStorage.getItem('clinica_materias_v1');
-    if(d){
-      const parsed=JSON.parse(d);
-      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
-      if(mats.length){
-        const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
-        const groups={};
-        mats.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
-        sel.innerHTML='<option value="">— Seleccionar —</option>';
-        ORDEN.forEach(g=>{
-          if(!groups[g]||!groups[g].length)return;
-          const og=document.createElement('optgroup');og.label=g;
-          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
-          sel.appendChild(og);
-        });
-        // grupos extra no contemplados en ORDEN
-        Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
-          const og=document.createElement('optgroup');og.label=g;
-          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
-          sel.appendChild(og);
-        });
-        return;
-      }
-    }
-  }catch(e){}
-  // fallback: mantiene opciones hardcodeadas
+  if(materiasCache.length){
+    const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
+    const groups={};
+    materiasCache.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
+    sel.innerHTML='<option value="">— Seleccionar —</option>';
+    ORDEN.forEach(g=>{
+      if(!groups[g]||!groups[g].length)return;
+      const og=document.createElement('optgroup');og.label=g;
+      groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+      sel.appendChild(og);
+    });
+    Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
+      const og=document.createElement('optgroup');og.label=g;
+      groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+      sel.appendChild(og);
+    });
+    return;
+  }
   if(currentVal){Array.from(sel.options).forEach(o=>{if(o.value===currentVal)o.selected=true;});}
 }
 
