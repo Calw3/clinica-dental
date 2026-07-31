@@ -421,16 +421,51 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_ceye_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{registros:[],seq:1};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbCeye=window.supabase.createClient(SB_URL,SB_KEY);
+
+function ceyeRowToRec(r){
+  return{
+    id:r.id,timestamp:r.timestamp||'',turno:r.turno||'',receptor:r.receptor||'',clinica:r.clinica||'',
+    alumno:r.alumno||'',correo:r.correo||'',paquetes:r.paquetes||0,comentarios:r.comentarios||'',
+    fotoInst:r.foto_inst||'',estado:r.estado||'pendiente',esterilTimestamp:r.esteril_timestamp||null,
+    esterilFoto:r.esteril_foto||'',esterilComentarios:r.esteril_comentarios||'',seq:r.seq||0
+  };
+}
+function ceyeRecToRow(rec){
+  return{
+    id:rec.id,timestamp:rec.timestamp||'',turno:rec.turno||'',receptor:rec.receptor||'',clinica:rec.clinica||'',
+    alumno:rec.alumno||'',correo:rec.correo||'',paquetes:Number(rec.paquetes)||0,comentarios:rec.comentarios||'',
+    foto_inst:rec.fotoInst||'',estado:rec.estado||'pendiente',esteril_timestamp:rec.esterilTimestamp||null,
+    esteril_foto:rec.esterilFoto||'',esteril_comentarios:rec.esterilComentarios||'',seq:rec.seq||0
+  };
+}
+async function loadData(){
+  const{data,error}=await sbCeye.from('ceye').select('*').order('timestamp',{ascending:false});
+  if(error){console.error('Error cargando CeYE:',error);return{registros:[]};}
+  return{registros:(data||[]).map(ceyeRowToRec)};
+}
+async function refreshData(){
+  S.data=await loadData();
+  renderAll();
+}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function uid(){const d=S.data;const n=String(d.seq||1).padStart(4,'0');d.seq=(d.seq||1)+1;return'CeYE-'+fmtDate(new Date()).replace(/\//g,'')+'-'+n;}
 function fmtDate(d){return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
 function fmtTime(d){return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function fmtTS(iso){if(!iso)return'—';const d=new Date(iso);return`${fmtDate(d)} a las ${fmtTime(d)}`;}
+function nextSeqHoy(){
+  const todayStr=fmtDate(new Date()).replace(/\//g,'');
+  const prefix='CeYE-'+todayStr+'-';
+  const nums=S.data.registros.filter(r=>r.id&&r.id.startsWith(prefix)).map(r=>parseInt(r.id.slice(prefix.length))||0);
+  return(nums.length?Math.max(...nums):0)+1;
+}
+function genId(){
+  const seq=nextSeqHoy();
+  return{id:'CeYE-'+fmtDate(new Date()).replace(/\//g,'')+'-'+String(seq).padStart(4,'0'),seq};
+}
 
-const S={data:loadData(),verId:null,esterilId:null,newId:null,newTS:null};
+const S={data:{registros:[]},verId:null,esterilId:null,newId:null,newTS:null,newSeq:0};
 
 /* ─── Fotos ─── */
 function loadFoto(inp,imgId,lblId,clearId){
@@ -495,17 +530,26 @@ function setupAC(inputId,listId,getItems,onSelect){
   });
 }
 
+let maestrosCache=[],alumnosCache=[];
+async function cargarMaestrosCache(){
+  const{data,error}=await sbCeye.from('maestros').select('nombre').order('nombre');
+  if(error){console.error('Error cargando maestros:',error);return;}
+  maestrosCache=(data||[]).map(m=>m.nombre).filter(Boolean);
+}
+async function cargarAlumnosCache(){
+  const{data,error}=await sbCeye.from('alumnos').select('nombre,correo,correo_institucional').order('nombre');
+  if(error){console.error('Error cargando alumnos:',error);return;}
+  alumnosCache=(data||[]).map(a=>({nombre:a.nombre,correo:a.correo,correoInstitucional:a.correo_institucional}));
+}
 function getMaestros(){
-  try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}
-  return[];
+  return maestrosCache;
 }
 function getAlumnos(){
-  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}
-  return[];
+  return alumnosCache.map(a=>a.nombre);
 }
 function getAlumnoCorreo(nombre){
-  try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);const a=(p.alumnos||[]).find(x=>x.nombre===nombre);return a?a.correoInstitucional||a.correo||'':''}}catch(e){}
-  return'';
+  const a=alumnosCache.find(x=>x.nombre===nombre);
+  return a?a.correoInstitucional||a.correo||'':'';
 }
 
 setupAC('f-receptor','ac-receptor',getMaestros);
@@ -516,7 +560,9 @@ setupAC('f-alumno','ac-alumno',getAlumnos,(nombre)=>{
 /* ─── Panel ─── */
 function openPanel(){
   const now=new Date();
-  S.newId=uid();
+  const g=genId();
+  S.newId=g.id;
+  S.newSeq=g.seq;
   S.newTS=now.toISOString();
   document.getElementById('f-id-val').textContent=S.newId;
   document.getElementById('f-id-chip').style.display='inline-flex';
@@ -543,7 +589,7 @@ document.getElementById('btn-cancel').addEventListener('click',closePanel);
 document.getElementById('panel-overlay').addEventListener('click',closePanel);
 
 /* ─── Guardar ─── */
-document.getElementById('btn-save').addEventListener('click',()=>{
+document.getElementById('btn-save').addEventListener('click',async()=>{
   const turno=document.getElementById('f-turno').value;
   const receptor=document.getElementById('f-receptor').value.trim();
   const clinica=document.getElementById('f-clinica').value;
@@ -575,10 +621,15 @@ document.getElementById('btn-save').addEventListener('click',()=>{
     esterilTimestamp:null,
     esterilFoto:'',
     esterilComentarios:'',
+    seq:S.newSeq,
   };
-  S.data.registros.unshift(rec);
-  saveData();renderAll();
-populateMaterias('f-clinica');closePanel();
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true;
+  const{error}=await sbCeye.from('ceye').insert(ceyeRecToRow(rec));
+  btn.disabled=false;
+  if(error){alert('No se pudo guardar el registro: '+error.message);return;}
+  await refreshData();
+  populateMaterias('f-clinica');closePanel();
 });
 
 /* ─── Stats ─── */
@@ -682,7 +733,7 @@ function abrirEsterilDirect(id){
 }
 document.getElementById('cerrar-me').addEventListener('click',()=>document.getElementById('modal-esteril').classList.remove('open'));
 document.getElementById('me-cancel').addEventListener('click',()=>document.getElementById('modal-esteril').classList.remove('open'));
-document.getElementById('me-confirmar').addEventListener('click',()=>{
+document.getElementById('me-confirmar').addEventListener('click',async()=>{
   const foto=getFoto('prev-me-foto');
   if(!foto){
     const lbl=document.getElementById('lbl-me-foto');
@@ -690,15 +741,19 @@ document.getElementById('me-confirmar').addEventListener('click',()=>{
     setTimeout(()=>{lbl.style.borderColor='';lbl.style.background='';},2000);
     return;
   }
-  const i=S.data.registros.findIndex(x=>x.id===S.esterilId);
-  if(i>-1){
-    S.data.registros[i].estado='esteril';
-    S.data.registros[i].esterilTimestamp=new Date().toISOString();
-    S.data.registros[i].esterilFoto=foto;
-    S.data.registros[i].esterilComentarios=document.getElementById('me-comentarios').value.trim();
-  }
-  saveData();renderAll();
-populateMaterias('f-clinica');
+  const row={
+    estado:'esteril',
+    esteril_timestamp:new Date().toISOString(),
+    esteril_foto:foto,
+    esteril_comentarios:document.getElementById('me-comentarios').value.trim(),
+  };
+  const btn=document.getElementById('me-confirmar');
+  btn.disabled=true;
+  const{error}=await sbCeye.from('ceye').update(row).eq('id',S.esterilId);
+  btn.disabled=false;
+  if(error){alert('No se pudo marcar como estéril: '+error.message);return;}
+  await refreshData();
+  populateMaterias('f-clinica');
   document.getElementById('modal-esteril').classList.remove('open');
 });
 
@@ -712,51 +767,71 @@ function abrirEliminarDirect(id){
 }
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
-  S.data.registros=S.data.registros.filter(x=>x.id!==document.getElementById('modal-confirm').dataset.id);
-  saveData();renderAll();
-populateMaterias('f-clinica');document.getElementById('modal-confirm').classList.remove('open');
+  const id=document.getElementById('modal-confirm').dataset.id;
+  const btn=document.getElementById('btn-confirm-del');
+  btn.disabled=true;
+  const{error}=await sbCeye.from('ceye').delete().eq('id',id);
+  btn.disabled=false;
+  if(error){alert('No se pudo eliminar: '+error.message);return;}
+  await refreshData();
+  populateMaterias('f-clinica');document.getElementById('modal-confirm').classList.remove('open');
 });
 
 document.getElementById('buscar').addEventListener('input',renderLista);
 document.getElementById('filtro-estado').addEventListener('change',renderLista);
 document.getElementById('filtro-turno').addEventListener('change',renderLista);
-renderAll();
-populateMaterias('f-clinica');
+
+(async()=>{
+  await Promise.all([cargarMaestrosCache(),cargarAlumnosCache(),cargarMateriasCache()]);
+  S.data=await loadData();
+  renderAll();
+  populateMaterias('f-clinica');
+})();
+
+sbCeye.channel('ceye-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'ceye'},()=>{refreshData();})
+  .subscribe();
+sbCeye.channel('ceye-maestros-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'maestros'},()=>{cargarMaestrosCache();})
+  .subscribe();
+sbCeye.channel('ceye-alumnos-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlumnosCache();})
+  .subscribe();
+sbCeye.channel('ceye-materias-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'materias'},()=>{cargarMateriasCache();})
+  .subscribe();
 
 /* ── Materias dinámicas desde catálogo ── */
+let materiasCache=[];
+async function cargarMateriasCache(){
+  const{data,error}=await sbCeye.from('materias').select('nombre,tipo,activa').order('nombre');
+  if(error){console.error('Error cargando materias:',error);return;}
+  materiasCache=(data||[]).filter(m=>m.activa!==false);
+}
 function populateMaterias(selectId, currentVal){
   const sel=document.getElementById(selectId);if(!sel)return;
-  try{
-    const d=localStorage.getItem('clinica_materias_v1');
-    if(d){
-      const parsed=JSON.parse(d);
-      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
-      if(mats.length){
-        const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
-        const groups={};
-        mats.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
-        sel.innerHTML='<option value="">— Seleccionar —</option>';
-        ORDEN.forEach(g=>{
-          if(!groups[g]||!groups[g].length)return;
-          const og=document.createElement('optgroup');og.label=g;
-          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
-          sel.appendChild(og);
-        });
-        // grupos extra no contemplados en ORDEN
-        Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
-          const og=document.createElement('optgroup');og.label=g;
-          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
-          sel.appendChild(og);
-        });
-        return;
-      }
-    }
-  }catch(e){}
-  // fallback: mantiene opciones hardcodeadas
+  if(materiasCache.length){
+    const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
+    const groups={};
+    materiasCache.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
+    sel.innerHTML='<option value="">— Seleccionar —</option>';
+    ORDEN.forEach(g=>{
+      if(!groups[g]||!groups[g].length)return;
+      const og=document.createElement('optgroup');og.label=g;
+      groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+      sel.appendChild(og);
+    });
+    Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
+      const og=document.createElement('optgroup');og.label=g;
+      groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+      sel.appendChild(og);
+    });
+    return;
+  }
   if(currentVal){Array.from(sel.options).forEach(o=>{if(o.value===currentVal)o.selected=true;});}
 }
 
