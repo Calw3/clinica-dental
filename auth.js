@@ -11,7 +11,7 @@
    2. Al final del <script> de cada página, llamar:
       initAuth().then(user => { ... arrancar módulo ... });
    
-   3. Roles disponibles: coordinador, maestro, alumno
+   3. Roles disponibles: coordinador, administrador, maestro, servicio_social, alumno
    
    ══════════════════════════════════════════════════════════════ */
 
@@ -189,9 +189,11 @@ function renderUserBar(profile) {
   }
 
   const rolBadge = {
-    coordinador: { bg: 'var(--teal-50, #FDEEE2)',  color: 'var(--teal-800, #8C3F09)',  label: 'Coordinador' },
-    maestro:     { bg: 'var(--blue-50, #E6F1FB)',   color: 'var(--blue-800, #0C447C)',  label: 'Maestro' },
-    alumno:      { bg: 'var(--green-50, #EAF3DE)',  color: 'var(--green-800, #27500A)', label: 'Alumno' },
+    coordinador:     { bg: 'var(--teal-50, #FDEEE2)',  color: 'var(--teal-800, #8C3F09)',  label: 'Coordinador' },
+    administrador:   { bg: 'var(--red-50, #FCEBEB)',   color: 'var(--red-600, #A32D2D)',   label: 'Administración' },
+    maestro:         { bg: 'var(--blue-50, #E6F1FB)',   color: 'var(--blue-800, #0C447C)',  label: 'Maestro' },
+    servicio_social: { bg: 'var(--amber-50, #FAEEDA)',  color: 'var(--amber-600, #854F0B)', label: 'Servicio Social' },
+    alumno:          { bg: 'var(--green-50, #EAF3DE)',  color: 'var(--green-800, #27500A)', label: 'Alumno' },
   };
 
   const r = rolBadge[profile.rol] || rolBadge.alumno;
