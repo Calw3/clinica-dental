@@ -499,7 +499,13 @@ function setupAC(inputId,listId,getItems){
   });
 }
 function getEquipoNombres(){return S.data.equipos.map(e=>e.nombre);}
-function getAlumnoNombres(){try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}return[];}
+let alumnoNombresCache=[];
+async function cargarAlumnoNombresCache(){
+  const{data,error}=await sbPrest.from('alumnos').select('nombre').order('nombre');
+  if(error){console.error('Error cargando nombres de alumnos:',error);return;}
+  alumnoNombresCache=(data||[]).map(a=>a.nombre).filter(Boolean);
+}
+function getAlumnoNombres(){return alumnoNombresCache;}
 function getMaestroNombres(){try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}return[];}
 function getNombresResp(){return S.tipoResp==='alumno'?getAlumnoNombres():getMaestroNombres();}
 setupAC('pp-equipo','ac-pp-equipo',getEquipoNombres);
@@ -896,9 +902,13 @@ document.getElementById('buscar-e').addEventListener('input',renderEquipos);
 
 (async()=>{
   S.data=await loadData();
+  await cargarAlumnoNombresCache();
   renderAll();
 })();
 
+sbPrest.channel('alumnos-nombres-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlumnoNombresCache();})
+  .subscribe();
 sbPrest.channel('equipos-changes')
   .on('postgres_changes',{event:'*',schema:'public',table:'equipos'},()=>{refreshData();})
   .subscribe();
