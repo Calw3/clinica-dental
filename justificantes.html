@@ -348,17 +348,47 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_justificantes_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{justificantes:[],folioSeq:1,recetas:[],recetaSeq:1};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbJust=window.supabase.createClient(SB_URL,SB_KEY);
+
+/* ── Mapeo camelCase (frontend) ↔ tabla justificantes (tipo + datos jsonb) ── */
+function justRowToRec(r){
+  const d=r.datos||{};
+  return{id:r.id,folio:r.folio||'',paciente:r.paciente||'',alumno:r.alumno||'',maestro:r.maestro||'',firma:r.firma||'',
+    fechaAtencion:d.fechaAtencion||'',fechaEmision:d.fechaEmision||'',diagnostico:d.diagnostico||'',dias:d.dias||1};
+}
+function justRecToRow(rec){
+  return{id:rec.id,tipo:'just',folio:rec.folio||'',paciente:rec.paciente||'',alumno:rec.alumno||'',maestro:rec.maestro||'',firma:rec.firma||'',
+    datos:{fechaAtencion:rec.fechaAtencion||'',fechaEmision:rec.fechaEmision||'',diagnostico:rec.diagnostico||'',dias:rec.dias||1}};
+}
+function recRowToRec(r){
+  const d=r.datos||{};
+  return{id:r.id,folio:r.folio||'',paciente:r.paciente||'',alumno:r.alumno||'',maestro:r.maestro||'',firma:r.firma||'',
+    fechaAtencion:d.fechaAtencion||'',fechaEmision:d.fechaEmision||'',medicamentos:d.medicamentos||[],indicaciones:d.indicaciones||''};
+}
+function recRecToRow(rec){
+  return{id:rec.id,tipo:'rec',folio:rec.folio||'',paciente:rec.paciente||'',alumno:rec.alumno||'',maestro:rec.maestro||'',firma:rec.firma||'',
+    datos:{fechaAtencion:rec.fechaAtencion||'',fechaEmision:rec.fechaEmision||'',medicamentos:rec.medicamentos||[],indicaciones:rec.indicaciones||''}};
+}
+async function loadData(){
+  const{data,error}=await sbJust.from('justificantes').select('*').order('created_at',{ascending:false});
+  if(error){console.error('Error cargando justificantes:',error);return{justificantes:[],recetas:[]};}
+  const rows=data||[];
+  return{
+    justificantes:rows.filter(r=>r.tipo==='just').map(justRowToRec),
+    recetas:rows.filter(r=>r.tipo==='rec').map(recRowToRec)
+  };
+}
+async function refreshData(){
+  S.data=await loadData();
+  renderAll();
+}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function fmtFecha(s){if(!s)return'—';const[y,m,d]=s.split('-');const ms=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return`${parseInt(d)} de ${ms[parseInt(m)-1]} de ${y}`;}
 function todayISO(){const d=new Date();const p=v=>String(v).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 
-const S={data:loadData(),tab:'just',editId:null,editType:null,verId:null,verType:null,delId:null,delType:null,jFirmaDirty:false,rFirmaDirty:false};
-/* ensure arrays exist (compat with old data) */
-if(!S.data.recetas)S.data.recetas=[];
-if(!S.data.recetaSeq)S.data.recetaSeq=1;
+const S={data:{justificantes:[],recetas:[]},tab:'just',editId:null,editType:null,verId:null,verType:null,delId:null,delType:null,jFirmaDirty:false,rFirmaDirty:false};
 
 /* ─── Tabs ─── */
 function switchTab(t){
@@ -395,9 +425,25 @@ function setupAC(inputId,listId,getItems,onSelect){
     else if(e.key==='Escape'){list.classList.remove('open');}
   });
 }
-function getPacientes(){try{const d=localStorage.getItem('clinica_dental_data_v1');if(d){const p=JSON.parse(d);return(p.expedientes||[]).map(e=>e.nombre).filter(Boolean).sort();}}catch(e){}return[];}
-function getAlumnos(){try{const d=localStorage.getItem('clinica_alumnos_v1');if(d){const p=JSON.parse(d);return(p.alumnos||[]).map(a=>a.nombre).filter(Boolean).sort();}}catch(e){}return[];}
-function getMaestros(){try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}return[];}
+let pacientesCache=[],alumnosCache=[],maestrosCache=[];
+async function cargarPacientesCache(){
+  const{data,error}=await sbJust.from('expedientes').select('nombre').order('nombre');
+  if(error){console.error('Error cargando expedientes:',error);return;}
+  pacientesCache=(data||[]).map(e=>e.nombre).filter(Boolean);
+}
+async function cargarAlumnosCache(){
+  const{data,error}=await sbJust.from('alumnos').select('nombre').order('nombre');
+  if(error){console.error('Error cargando alumnos:',error);return;}
+  alumnosCache=(data||[]).map(a=>a.nombre).filter(Boolean);
+}
+async function cargarMaestrosCache(){
+  const{data,error}=await sbJust.from('maestros').select('nombre').order('nombre');
+  if(error){console.error('Error cargando maestros:',error);return;}
+  maestrosCache=(data||[]).map(m=>m.nombre).filter(Boolean);
+}
+function getPacientes(){return pacientesCache;}
+function getAlumnos(){return alumnosCache;}
+function getMaestros(){return maestrosCache;}
 setupAC('f-paciente','ac-paciente',getPacientes);
 setupAC('f-alumno','ac-alumno',getAlumnos);
 setupAC('f-maestro','ac-maestro',getMaestros);
@@ -486,8 +532,18 @@ function getMeds(){
 function clearMeds(){document.getElementById('med-lista').innerHTML='';medCount=0;}
 
 /* ─── Folios ─── */
-function genFolioJ(){const y=new Date().getFullYear();return`J-${y}-${String(S.data.folioSeq||1).padStart(3,'0')}`;}
-function genFolioR(){const y=new Date().getFullYear();return`R-${y}-${String(S.data.recetaSeq||1).padStart(3,'0')}`;}
+function genFolioJ(){
+  const y=new Date().getFullYear();
+  const nums=S.data.justificantes.filter(j=>j.folio&&j.folio.startsWith(`J-${y}-`)).map(j=>parseInt(j.folio.split('-')[2])||0);
+  const next=(nums.length?Math.max(...nums):0)+1;
+  return`J-${y}-${String(next).padStart(3,'0')}`;
+}
+function genFolioR(){
+  const y=new Date().getFullYear();
+  const nums=S.data.recetas.filter(r=>r.folio&&r.folio.startsWith(`R-${y}-`)).map(r=>parseInt(r.folio.split('-')[2])||0);
+  const next=(nums.length?Math.max(...nums):0)+1;
+  return`R-${y}-${String(next).padStart(3,'0')}`;
+}
 
 /* ─── Stats ─── */
 function renderStats(){
@@ -622,7 +678,7 @@ document.getElementById('panel-overlay').addEventListener('click',closePanel);
 document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel(S.tab));
 
 /* ─── Guardar justificante ─── */
-document.getElementById('pj-save').addEventListener('click',()=>{
+document.getElementById('pj-save').addEventListener('click',async()=>{
   const paciente=document.getElementById('f-paciente').value.trim();
   const fechaAtencion=document.getElementById('f-fechaAtencion').value;
   const diagnostico=document.getElementById('f-diagnostico').value.trim();
@@ -642,13 +698,22 @@ document.getElementById('pj-save').addEventListener('click',()=>{
     alumno:document.getElementById('f-alumno').value.trim(),
     maestro,firma:jCanvas.getData(),
   };
-  if(S.editId){const i=S.data.justificantes.findIndex(x=>x.id===S.editId);if(i>-1)S.data.justificantes[i]=rec;}
-  else{S.data.justificantes.push(rec);S.data.folioSeq=(S.data.folioSeq||1)+1;}
-  saveData();renderAll();closePanel();
+  const btn=document.getElementById('pj-save');
+  btn.disabled=true;
+  const row=justRecToRow(rec);
+  let error;
+  if(S.editId){
+    ({error}=await sbJust.from('justificantes').update(row).eq('id',S.editId));
+  } else {
+    ({error}=await sbJust.from('justificantes').insert(row));
+  }
+  btn.disabled=false;
+  if(error){alert('No se pudo guardar el justificante: '+error.message);return;}
+  await refreshData();closePanel();
 });
 
 /* ─── Guardar receta ─── */
-document.getElementById('pr-save').addEventListener('click',()=>{
+document.getElementById('pr-save').addEventListener('click',async()=>{
   const paciente=document.getElementById('r-paciente').value.trim();
   const maestro=document.getElementById('r-maestro').value.trim();
   const meds=getMeds();
@@ -667,9 +732,18 @@ document.getElementById('pr-save').addEventListener('click',()=>{
     indicaciones:document.getElementById('r-indicaciones').value.trim(),
     firma:rCanvas.getData(),
   };
-  if(S.editId){const i=S.data.recetas.findIndex(x=>x.id===S.editId);if(i>-1)S.data.recetas[i]=rec;}
-  else{S.data.recetas.push(rec);S.data.recetaSeq=(S.data.recetaSeq||1)+1;}
-  saveData();renderAll();closePanel();
+  const btn=document.getElementById('pr-save');
+  btn.disabled=true;
+  const row=recRecToRow(rec);
+  let error;
+  if(S.editId){
+    ({error}=await sbJust.from('justificantes').update(row).eq('id',S.editId));
+  } else {
+    ({error}=await sbJust.from('justificantes').insert(row));
+  }
+  btn.disabled=false;
+  if(error){alert('No se pudo guardar la receta: '+error.message);return;}
+  await refreshData();closePanel();
 });
 
 /* ─── Ver justificante ─── */
@@ -723,11 +797,14 @@ function abrirEliminarDirect(id,type){
 }
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;}
-  if(S.delType==='just')S.data.justificantes=S.data.justificantes.filter(x=>x.id!==S.delId);
-  else S.data.recetas=S.data.recetas.filter(x=>x.id!==S.delId);
-  saveData();renderAll();document.getElementById('modal-confirm').classList.remove('open');
+  const btn=document.getElementById('btn-confirm-del');
+  btn.disabled=true;
+  const{error}=await sbJust.from('justificantes').delete().eq('id',S.delId);
+  btn.disabled=false;
+  if(error){alert('No se pudo eliminar: '+error.message);return;}
+  await refreshData();document.getElementById('modal-confirm').classList.remove('open');
 });
 
 /* ─── Imprimir justificante ─── */
@@ -879,10 +956,13 @@ function imprimirRec(id){
 }
 
 document.getElementById('buscar').addEventListener('input',renderLista);
-renderAll();
 
-// Deep-link desde expediente
-(function(){
+(async()=>{
+  await Promise.all([cargarPacientesCache(),cargarAlumnosCache(),cargarMaestrosCache()]);
+  S.data=await loadData();
+  renderAll();
+
+  // Deep-link desde expediente
   const qp=new URLSearchParams(location.search);
   const openId=qp.get('openId');
   const tipo=qp.get('tipo')||'just';
@@ -899,6 +979,19 @@ renderAll();
     }
   }
 })();
+
+sbJust.channel('justificantes-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'justificantes'},()=>{refreshData();})
+  .subscribe();
+sbJust.channel('justificantes-expedientes-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},()=>{cargarPacientesCache();})
+  .subscribe();
+sbJust.channel('justificantes-alumnos-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlumnosCache();})
+  .subscribe();
+sbJust.channel('justificantes-maestros-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'maestros'},()=>{cargarMaestrosCache();})
+  .subscribe();
 </script>
 </body>
 </html>
