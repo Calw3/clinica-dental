@@ -155,7 +155,7 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
         <p class="eyebrow">Clínica Dental Universitaria Anáhuac</p>
         <h1>Control de Pagos y Visitas</h1>
       </div>
-      <span style="font-size:11px;color:var(--text-muted);">Sincronizado en la nube (Supabase)</span>
+      <span style="font-size:11px;color:var(--text-muted);">Los datos se guardan en este navegador</span>
     </header>
   <!-- Pestañas -->
   <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;">
@@ -529,95 +529,14 @@ const TRATAMIENTOS=[
   {grupo:'Tomografías',codigo:'TX-005',nombre:'Tomografía 3D Senos Paranasales',costo:540},
 ];
 
-/* ── Persistencia en Supabase (tablas pagos_visitas / pagos_visitas_papelera) ── */
-function rowToRecPago(r){
-  return {...r, formaPago:r.forma_pago||'', registradoPor:r.registrado_por||'', lugarPago:r.lugar_pago||'', qrPago:r.qr_pago||'', tratamientos:r.tratamientos||[]};
-}
-function recToRowPago(p){
-  return {
-    id:p.id, timestamp:p.timestamp||'', fecha:p.fecha||'', paciente:p.paciente||'', clinica:p.clinica||'',
-    estudiante:p.estudiante||'', tratamientos:p.tratamientos||[], descuento:Number(p.descuento)||0,
-    total:Number(p.total)||0, forma_pago:p.formaPago||'', registrado_por:p.registradoPor||'',
-    lugar_pago:p.lugarPago||'', observaciones:p.observaciones||'', qr_pago:p.qrPago||'',
-  };
-}
-function rowToRecPap(r){return {...rowToRecPago(r), _eliminadoEl:r.eliminado_el||''};}
-function recToRowPap(p){return {...recToRowPago(p), eliminado_el:p._eliminadoEl||''};}
+const KEY='clinica_pagos_v1';
+const KEY_P='clinica_pagos_papelera_v1';
+function loadPagos(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return[];}
+function savePagos(){localStorage.setItem(KEY,JSON.stringify(S.pagos));}
+function loadPapelera(){try{const r=localStorage.getItem(KEY_P);if(r)return JSON.parse(r);}catch(e){}return[];}
+function savePapelera(){localStorage.setItem(KEY_P,JSON.stringify(S.papelera));}
 
-async function loadPagos(){
-  try{
-    const {data,error}=await getSupabase().from('pagos_visitas').select('*');
-    if(error)throw error;
-    return (data||[]).map(rowToRecPago);
-  }catch(e){console.error('Error cargando pagos:',e);return[];}
-}
-async function savePagos(){
-  try{
-    const sb=getSupabase();
-    if(S.pagos.length){
-      const {error}=await sb.from('pagos_visitas').upsert(S.pagos.map(recToRowPago),{onConflict:'id'});
-      if(error)throw error;
-    }
-    const {data:existentes}=await sb.from('pagos_visitas').select('id');
-    const idsActuales=new Set(S.pagos.map(p=>p.id));
-    const aBorrar=(existentes||[]).filter(r=>!idsActuales.has(r.id)).map(r=>r.id);
-    if(aBorrar.length)await sb.from('pagos_visitas').delete().in('id',aBorrar);
-  }catch(e){console.error('Error guardando pagos:',e);}
-}
-async function loadPapelera(){
-  try{
-    const {data,error}=await getSupabase().from('pagos_visitas_papelera').select('*');
-    if(error)throw error;
-    return (data||[]).map(rowToRecPap);
-  }catch(e){console.error('Error cargando papelera:',e);return[];}
-}
-async function savePapelera(){
-  try{
-    const sb=getSupabase();
-    if(S.papelera.length){
-      const {error}=await sb.from('pagos_visitas_papelera').upsert(S.papelera.map(recToRowPap),{onConflict:'id'});
-      if(error)throw error;
-    }
-    const {data:existentes}=await sb.from('pagos_visitas_papelera').select('id');
-    const idsActuales=new Set(S.papelera.map(p=>p.id));
-    const aBorrar=(existentes||[]).filter(r=>!idsActuales.has(r.id)).map(r=>r.id);
-    if(aBorrar.length)await sb.from('pagos_visitas_papelera').delete().in('id',aBorrar);
-  }catch(e){console.error('Error guardando papelera:',e);}
-}
-
-/* ── Catálogos en caché (expedientes, alumnos, materias) para autocompletado ── */
-let CACHE_EXPEDIENTES=[],CACHE_ALUMNOS=[],CACHE_MATERIAS=[];
-async function cargarCatalogos(){
-  try{
-    const sb=getSupabase();
-    const [exps,als,mats]=await Promise.all([
-      sb.from('expedientes').select('nombre'),
-      sb.from('alumnos').select('nombre'),
-      sb.from('materias').select('nombre,tipo,activa').eq('activa',true),
-    ]);
-    CACHE_EXPEDIENTES=(exps.data||[]).map(e=>e.nombre).filter(Boolean).sort();
-    CACHE_ALUMNOS=(als.data||[]).map(a=>a.nombre).filter(Boolean).sort();
-    CACHE_MATERIAS=(mats.data||[]).map(m=>({nombre:m.nombre,grupo:m.tipo}));
-  }catch(e){console.error('Error cargando catálogos:',e);}
-}
-
-/* ── Sincronización en tiempo real ── */
-function suscribirRealtime(){
-  getSupabase().channel('pagos_visitas_rt')
-    .on('postgres_changes',{event:'*',schema:'public',table:'pagos_visitas'},async()=>{S.pagos=await loadPagos();renderAll();})
-    .on('postgres_changes',{event:'*',schema:'public',table:'pagos_visitas_papelera'},async()=>{S.papelera=await loadPapelera();if(S.tab==='eliminados')renderPapelera();renderStats();})
-    .subscribe();
-}
-
-const S={pagos:[],papelera:[],selMode:false,sel:new Set(),editId:null,tab:'registros',selPapMode:false,selPap:new Set()};
-
-async function initApp(){
-  await cargarCatalogos();
-  S.pagos=await loadPagos();
-  S.papelera=await loadPapelera();
-  renderAll();
-  suscribirRealtime();
-}
+const S={pagos:loadPagos(),papelera:loadPapelera(),selMode:false,sel:new Set(),editId:null,tab:'registros',selPapMode:false,selPap:new Set()};
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -1265,8 +1184,6 @@ function generarCorte(){
   .grand-total span:last-child{font-size:24px;font-weight:700;color:#5C2906;}
   .footer{margin-top:32px;padding-top:12px;border-top:1px solid #e8e6de;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
 </head>
 <body>
 <div class="page-header">
@@ -1322,8 +1239,20 @@ ${buildResumen(imagen,tI,'#0C447C')}
 }
 
 /* ── Autocomplete ── */
-function getExpedienteNombres(){return CACHE_EXPEDIENTES;}
-function getAlumnoNombres(){return CACHE_ALUMNOS;}
+function getExpedienteNombres(){
+  try{
+    const d=localStorage.getItem('clinica_dental_data_v1');
+    if(d){const p=JSON.parse(d);return(p.expedientes||[]).map(e=>e.nombre).filter(Boolean).sort();}
+  }catch(e){}
+  return[];
+}
+function getAlumnoNombres(){
+  try{
+    const d=localStorage.getItem('clinica_alumnos_v1');
+    if(d){const p=JSON.parse(d);return(p.alumnos||p||[]).map(a=>a.nombre||a.nombreCompleto).filter(Boolean).sort();}
+  }catch(e){}
+  return[];
+}
 
 function setupAC(inputId, listId, getFn){
   const inp=document.getElementById(inputId);
@@ -1426,11 +1355,19 @@ setupAC('f-estudiante', 'ac-estudiante', getAlumnoNombres);
   });
 })();
 
-initApp();
+renderAll();
 
 /* ── Materias dinámicas ── */
 function getMateriasList(){
-  return CACHE_MATERIAS.length?CACHE_MATERIAS:MATERIAS;
+  try{
+    const d=localStorage.getItem('clinica_materias_v1');
+    if(d){
+      const parsed=JSON.parse(d);
+      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
+      if(mats.length)return mats.map(m=>({nombre:m.nombre,grupo:m.tipo}));
+    }
+  }catch(e){}
+  return MATERIAS;
 }
 
 </script>
