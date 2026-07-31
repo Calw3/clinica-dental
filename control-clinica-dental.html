@@ -819,7 +819,7 @@ document.getElementById('form-expediente').addEventListener('submit', async (e) 
   closeExpedienteModal();
 });
 
-function verExpediente(id){
+async function verExpediente(id){
   const e = STATE.data.expedientes.find(x => x.id === id);
   if(!e) return;
   document.getElementById('ver-expediente-nombre').textContent = e.nombre || 'Expediente';
@@ -854,7 +854,9 @@ function verExpediente(id){
 
   /* ── Pagos y visitas ── */
   try {
-    const pagosData = JSON.parse(localStorage.getItem('clinica_pagos_v1') || '[]');
+    const { data: pagosRaw, error: errPagos } = await sbExp.from('pagos_visitas').select('*');
+    if(errPagos) console.error('Error cargando pagos:', errPagos);
+    const pagosData = pagosRaw || [];
     const nombrePac = (e.nombre || '').toLowerCase().trim();
     const pagosP = pagosData.filter(p => (p.paciente || '').toLowerCase().trim() === nombrePac)
                             .sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
@@ -863,21 +865,16 @@ function verExpediente(id){
     if(pagosP.length === 0){
       html += `<p style="font-size:13px;color:var(--text-muted);margin:4px 0 8px;">Sin registros de pagos aún.</p>`;
     } else {
-      const totalGlobal = pagosP.reduce((s,p) => {
-        const t = p.total !== undefined ? Number(p.total) :
-          (Number(p.totalA)||0)+(Number(p.totalB)||0)+(Number(p.totalC)||0)-(Number(p.descuento)||0);
-        return s + t;
-      }, 0);
+      const totalGlobal = pagosP.reduce((s,p) => s + (Number(p.total)||0), 0);
       html += `<div style="overflow-x:auto;"><table class="pagos-table">
         <thead><tr>
           <th>Fecha</th><th>Clínica</th><th>Estudiante</th><th>Tratamientos</th><th style="text-align:right;">Total</th><th></th>
         </tr></thead><tbody>`;
       pagosP.forEach(p => {
-        const total = p.total !== undefined ? Number(p.total) :
-          (Number(p.totalA)||0)+(Number(p.totalB)||0)+(Number(p.totalC)||0)-(Number(p.descuento)||0);
+        const total = Number(p.total)||0;
         const trats = (p.tratamientos && p.tratamientos.length)
           ? p.tratamientos.map(t => `<span class="trat-pill">${escapeHtml(t.nombre)}</span>`).join('')
-          : [p.tratA, p.tratB, p.tratC].filter(Boolean).map(t => `<span class="trat-pill">${escapeHtml(t)}</span>`).join('');
+          : '—';
         const tieneNota = notasEv.some(n => n.pagoId === p.id);
         const btnNota = p.id ? `<button type="button" class="btn-nota-ev" data-expid="${id}" data-pagoid="${escapeHtml(p.id)}" title="${tieneNota?'Ver nota de evolución':'Agregar nota de evolución'}" style="background:${tieneNota?'var(--teal-50)':'#fff'};border:1px solid ${tieneNota?'var(--teal-600)':'var(--border)'};color:${tieneNota?'var(--teal-800)':'var(--text-secondary)'};border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;white-space:nowrap;">${tieneNota?'📝 Ver nota':'📝 Nota'}</button>` : '';
         html += `<tr>
