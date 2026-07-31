@@ -558,10 +558,9 @@ function renderList(){
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn bout bsm" onclick="imprimir('${c.folio}')">🖨 Imprimir</button>
-        <button class="btn bred bsm" data-role="coordinador,maestro" onclick="eliminar('${c.folio}')">✕</button>
+        <button class="btn bred bsm" onclick="eliminar('${c.folio}')">✕</button>
       </div>
     </div>`).join('');
-  if(window.refreshRoleVisibility)refreshRoleVisibility();
 }
 
 function eliminar(folio){
