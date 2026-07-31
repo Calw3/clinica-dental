@@ -495,7 +495,8 @@ function mapFromDb(row){
     emergenciaContacto: row.emergencia_contacto, emergenciaTelefono: row.emergencia_telefono,
     alergia: row.alergia, alergiaEspecifique: row.alergia_especifique,
     firma: row.firma || '', fotografiaPaciente: row.fotografia_paciente || '',
-    fotografiaAnverso: row.fotografia_anverso || '', fotografiaReverso: row.fotografia_reverso || ''
+    fotografiaAnverso: row.fotografia_anverso || '', fotografiaReverso: row.fotografia_reverso || '',
+    historiaClinica: row.historia_clinica || null, notasEvolucion: row.notas_evolucion || null
   };
 }
 function mapToDb(rec){
