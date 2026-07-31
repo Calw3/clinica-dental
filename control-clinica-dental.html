@@ -346,6 +346,16 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-nota-evolucion">
+  <div class="modal" style="max-width:920px; width:96vw; height:92vh; padding:0; display:flex; flex-direction:column;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid var(--border); flex-shrink:0;">
+      <h3 style="margin:0; font-size:15px; font-weight:600;">Nota de evolución</h3>
+      <button type="button" class="btn-icon" id="cerrar-modal-nota-evolucion" aria-label="Cerrar">✕</button>
+    </div>
+    <iframe id="iframe-nota-evolucion" style="border:none; width:100%; flex:1;"></iframe>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-confirmar-eliminar">
   <div class="modal" style="max-width:420px;">
     <div class="modal-head">
@@ -938,6 +948,32 @@ async function verExpediente(id){
 }
 document.getElementById('cerrar-modal-ver').addEventListener('click', () => document.getElementById('modal-ver-expediente').classList.remove('open'));
 document.getElementById('cerrar-ver-expediente').addEventListener('click', () => document.getElementById('modal-ver-expediente').classList.remove('open'));
+
+/* ── Modal de nota de evolución (iframe) ── */
+function abrirNotaEvolucion(expId, pagoId){
+  const iframe = document.getElementById('iframe-nota-evolucion');
+  iframe.src = 'nota-evolucion.html?expId=' + encodeURIComponent(expId) + '&pagoId=' + encodeURIComponent(pagoId);
+  document.getElementById('modal-nota-evolucion').classList.add('open');
+}
+function cerrarNotaEvolucion(){
+  document.getElementById('modal-nota-evolucion').classList.remove('open');
+  document.getElementById('iframe-nota-evolucion').src = 'about:blank';
+}
+document.getElementById('cerrar-modal-nota-evolucion').addEventListener('click', cerrarNotaEvolucion);
+
+window.addEventListener('message', (e) => {
+  if(!e.data || typeof e.data !== 'object') return;
+  if(e.data.type === 'cerrar-nota-evolucion'){
+    cerrarNotaEvolucion();
+  } else if(e.data.type === 'nota-guardada'){
+    refreshExpedientes().then(() => {
+      const idAbierto = document.getElementById('eliminar-expediente-actual').dataset.id;
+      if(idAbierto && document.getElementById('modal-ver-expediente').classList.contains('open')){
+        verExpediente(idAbierto);
+      }
+    });
+  }
+});
 document.getElementById('eliminar-expediente-actual').addEventListener('click', (e) => {
   const id = e.target.dataset.id;
   document.getElementById('input-confirmar-eliminar').value = '';
@@ -1026,7 +1062,7 @@ document.getElementById('hc-completa-actual').addEventListener('click', () => {
 document.getElementById('modal-ver-expediente').addEventListener('click', (e) => {
   const btnNota = e.target.closest('.btn-nota-ev');
   if(btnNota){
-    location.href = 'nota-evolucion.html?expId=' + encodeURIComponent(btnNota.dataset.expid) + '&pagoId=' + encodeURIComponent(btnNota.dataset.pagoid);
+    abrirNotaEvolucion(btnNota.dataset.expid, btnNota.dataset.pagoid);
     return;
   }
   const btnVerRec = e.target.closest('.btn-ver-receta');
