@@ -709,6 +709,7 @@ document.getElementById('filtro-horario').addEventListener('change',renderLista)
 buildHorarioTable();
 (async()=>{
   S.data=await loadData();
+  await cargarMateriasCache();
   renderAll();
   populateMaterias('f-clinica');
 })();
@@ -716,35 +717,37 @@ buildHorarioTable();
 sbMae.channel('maestros-changes')
   .on('postgres_changes',{event:'*',schema:'public',table:'maestros'},()=>{refreshData();})
   .subscribe();
+sbMae.channel('materias-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'materias'},()=>{cargarMateriasCache();})
+  .subscribe();
 
 /* ── Materias dinámicas desde catálogo ── */
+let materiasCache=[];
+async function cargarMateriasCache(){
+  const{data,error}=await sbMae.from('materias').select('nombre,tipo,activa').order('nombre');
+  if(error){console.error('Error cargando materias:',error);return;}
+  materiasCache=(data||[]).filter(m=>m.activa!==false);
+}
 function populateMaterias(selectId, currentVal){
   const sel=document.getElementById(selectId);if(!sel)return;
-  try{
-    const d=localStorage.getItem('clinica_materias_v1');
-    if(d){
-      const parsed=JSON.parse(d);
-      const mats=(parsed.materias||[]).filter(m=>m.activa!==false);
-      if(mats.length){
-        const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
-        const groups={};
-        mats.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
-        sel.innerHTML='<option value="">— Seleccionar —</option>';
-        ORDEN.forEach(g=>{
-          if(!groups[g]||!groups[g].length)return;
-          const og=document.createElement('optgroup');og.label=g;
-          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
-          sel.appendChild(og);
-        });
-        Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
-          const og=document.createElement('optgroup');og.label=g;
-          groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
-          sel.appendChild(og);
-        });
-        return;
-      }
-    }
-  }catch(e){}
+  if(materiasCache.length){
+    const ORDEN=['Clínica Integral','Especialidad Clínica','Diagnóstico','Ciencias Básicas','Formación Universitaria'];
+    const groups={};
+    materiasCache.forEach(m=>{if(!groups[m.tipo])groups[m.tipo]=[];groups[m.tipo].push(m.nombre);});
+    sel.innerHTML='<option value="">— Seleccionar —</option>';
+    ORDEN.forEach(g=>{
+      if(!groups[g]||!groups[g].length)return;
+      const og=document.createElement('optgroup');og.label=g;
+      groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+      sel.appendChild(og);
+    });
+    Object.keys(groups).filter(g=>!ORDEN.includes(g)).forEach(g=>{
+      const og=document.createElement('optgroup');og.label=g;
+      groups[g].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===currentVal)o.selected=true;og.appendChild(o);});
+      sel.appendChild(og);
+    });
+    return;
+  }
   if(currentVal){Array.from(sel.options).forEach(o=>{if(o.value===currentVal)o.selected=true;});}
 }
 
