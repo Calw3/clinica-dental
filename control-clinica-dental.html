@@ -482,69 +482,20 @@
 </div>
 
 <script>
-/* ── Persistencia en Supabase (tabla expedientes) ── */
-function rowToRecExp(r){
-  return {
-    id:r.id, nombre:r.nombre||'', idPaciente:r.id_paciente||'', sexo:r.sexo||'', edad:r.edad||'',
-    fechaNacimiento:r.fecha_nacimiento||'', lugarNacimiento:r.lugar_nacimiento||'', direccion:r.direccion||'',
-    telefono:r.telefono||'', correo:r.correo||'', escolaridad:r.escolaridad||'', estadoCivil:r.estado_civil||'',
-    profesion:r.profesion||'', ocupacion:r.ocupacion||'', religion:r.religion||'', referido:r.referido||'',
-    tipoPaciente:r.tipo_paciente||'', tipoHistoria:r.tipo_historia||'', padecimiento:r.padecimiento||'',
-    habitos:r.habitos||'', ultimaVisita:r.ultima_visita||'', consentimientos:r.consentimientos||'',
-    datosRelevantes:r.datos_relevantes||'', emergenciaContacto:r.emergencia_contacto||'',
-    emergenciaTelefono:r.emergencia_telefono||'', alergia:r.alergia||'', alergiaEspecifique:r.alergia_especifique||'',
-    firma:r.firma||'', fotografiaPaciente:r.fotografia_paciente||'', fotografiaAnverso:r.fotografia_anverso||'',
-    fotografiaReverso:r.fotografia_reverso||'', historiaClinica:r.historia_clinica||null, notasEvolucion:r.notas_evolucion||[],
-  };
-}
-function recToRowExp(e){
-  return {
-    id:e.id, nombre:e.nombre||'', id_paciente:e.idPaciente||'', sexo:e.sexo||'', edad:e.edad||'',
-    fecha_nacimiento:e.fechaNacimiento||'', lugar_nacimiento:e.lugarNacimiento||'', direccion:e.direccion||'',
-    telefono:e.telefono||'', correo:e.correo||'', escolaridad:e.escolaridad||'', estado_civil:e.estadoCivil||'',
-    profesion:e.profesion||'', ocupacion:e.ocupacion||'', religion:e.religion||'', referido:e.referido||'',
-    tipo_paciente:e.tipoPaciente||'', tipo_historia:e.tipoHistoria||'', padecimiento:e.padecimiento||'',
-    habitos:e.habitos||'', ultima_visita:e.ultimaVisita||'', consentimientos:e.consentimientos||'',
-    datos_relevantes:e.datosRelevantes||'', emergencia_contacto:e.emergenciaContacto||'',
-    emergencia_telefono:e.emergenciaTelefono||'', alergia:e.alergia||'', alergia_especifique:e.alergiaEspecifique||'',
-    firma:e.firma||'', fotografia_paciente:e.fotografiaPaciente||'', fotografia_anverso:e.fotografiaAnverso||'',
-    fotografia_reverso:e.fotografiaReverso||'', historia_clinica:e.historiaClinica||{}, notas_evolucion:e.notasEvolucion||[],
-  };
-}
-async function loadData(){
+const STORAGE_KEY = 'clinica_dental_data_v1';
+
+function loadData(){
   try{
-    const {data,error} = await getSupabase().from('expedientes').select('*');
-    if(error) throw error;
-    return { expedientes: (data||[]).map(rowToRecExp) };
-  }catch(e){console.error('Error cargando expedientes:',e); return { expedientes: [] };}
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { expedientes: [] };
 }
-async function saveData(){
-  try{
-    const sb = getSupabase();
-    if(STATE.data.expedientes.length){
-      const {error} = await sb.from('expedientes').upsert(STATE.data.expedientes.map(recToRowExp),{onConflict:'id'});
-      if(error) throw error;
-    }
-    const {data:existentes} = await sb.from('expedientes').select('id');
-    const idsActuales = new Set(STATE.data.expedientes.map(e=>e.id));
-    const aBorrar = (existentes||[]).filter(r=>!idsActuales.has(r.id)).map(r=>r.id);
-    if(aBorrar.length) await sb.from('expedientes').delete().in('id',aBorrar);
-  }catch(e){console.error('Error guardando expedientes:',e);}
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE.data));
 }
 
-const STATE = { data: { expedientes: [] }, editingId: null };
-
-function suscribirRealtimeExpedientes(){
-  getSupabase().channel('expedientes_rt')
-    .on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},async()=>{STATE.data=await loadData();renderAll();})
-    .subscribe();
-}
-
-async function initApp(){
-  STATE.data = await loadData();
-  renderAll();
-  suscribirRealtimeExpedientes();
-}
+const STATE = { data: loadData(), editingId: null };
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -818,7 +769,7 @@ document.getElementById('form-expediente').addEventListener('submit', (e) => {
   saveData(); renderAll(); closeExpedienteModal();
 });
 
-async function verExpediente(id){
+function verExpediente(id){
   const e = STATE.data.expedientes.find(x => x.id === id);
   if(!e) return;
   document.getElementById('ver-expediente-nombre').textContent = e.nombre || 'Expediente';
@@ -853,16 +804,10 @@ async function verExpediente(id){
 
   /* ── Pagos y visitas ── */
   try {
+    const pagosData = JSON.parse(localStorage.getItem('clinica_pagos_v1') || '[]');
     const nombrePac = (e.nombre || '').toLowerCase().trim();
-    const { data: pagosData, error: pagosErr } = await getSupabase()
-      .from('pagos_visitas')
-      .select('*')
-      .ilike('paciente', e.nombre || '');
-    if (pagosErr) throw pagosErr;
-    const pagosP = (pagosData || [])
-      .map(p => ({ ...p, formaPago: p.forma_pago, registradoPor: p.registrado_por }))
-      .filter(p => (p.paciente || '').toLowerCase().trim() === nombrePac)
-      .sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+    const pagosP = pagosData.filter(p => (p.paciente || '').toLowerCase().trim() === nombrePac)
+                            .sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
     const notasEv = e.notasEvolucion || [];
     html += `<div class="form-section-title" style="margin-top:16px;">Pagos y visitas (${pagosP.length})</div>`;
     if(pagosP.length === 0){
@@ -1081,8 +1026,7 @@ function printJustificante(j){
 .firma-block{text-align:center;min-width:220px;}
 .firma-linea{border-top:1px solid #333;margin-top:8px;padding-top:6px;font-size:12px;}
 .footer-doc{margin-top:40px;border-top:1px solid #ddd;padding-top:10px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
 </head><body>
 <div class="page">
   <div class="hdr"><div class="logo"><svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" stroke-linecap="round"/><circle cx="12" cy="9" r="2.5"/></svg></div>
@@ -1128,8 +1072,7 @@ table.meds th{padding:9px 12px;font-size:12px;text-align:left;}
 .firma-block{text-align:center;min-width:220px;}
 .firma-linea{border-top:1px solid #333;margin-top:8px;padding-top:6px;font-size:12px;}
 .footer-doc{margin-top:30px;border-top:1px solid #ddd;padding-top:10px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
 </head><body>
 <div class="page">
   <div class="hdr"><div class="logo"><svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8l-5-5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 3v5h10M8 13h8M8 17h5" stroke-linecap="round"/></svg></div>
@@ -1154,7 +1097,7 @@ document.body.addEventListener('click', (e) => {
   saveData(); renderAll();
 });
 
-initApp();
+renderAll();
 </script>
 </body>
 </html>
