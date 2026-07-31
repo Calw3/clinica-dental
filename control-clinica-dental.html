@@ -482,20 +482,58 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'clinica_dental_data_v1';
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbExp = window.supabase.createClient(SB_URL, SB_KEY);
 
-function loadData(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  return { expedientes: [] };
+/* ── Mapeo camelCase (frontend) ↔ snake_case (Supabase) ── */
+function rowToRecord(r){
+  return {
+    id: r.id,
+    idPaciente: r.id_paciente || '', nombre: r.nombre || '', sexo: r.sexo || '',
+    edad: r.edad || '', fechaNacimiento: r.fecha_nacimiento || '', lugarNacimiento: r.lugar_nacimiento || '',
+    direccion: r.direccion || '', telefono: r.telefono || '', correo: r.correo || '',
+    escolaridad: r.escolaridad || '', estadoCivil: r.estado_civil || '', profesion: r.profesion || '',
+    ocupacion: r.ocupacion || '', religion: r.religion || '', referido: r.referido || '',
+    tipoPaciente: r.tipo_paciente || '', tipoHistoria: r.tipo_historia || '',
+    padecimiento: r.padecimiento || '', habitos: r.habitos || '', ultimaVisita: r.ultima_visita || '',
+    consentimientos: r.consentimientos || '', datosRelevantes: r.datos_relevantes || '',
+    emergenciaContacto: r.emergencia_contacto || '', emergenciaTelefono: r.emergencia_telefono || '',
+    alergia: r.alergia || '', alergiaEspecifique: r.alergia_especifique || '',
+    firma: r.firma || '', fotografiaPaciente: r.fotografia_paciente || '',
+    fotografiaAnverso: r.fotografia_anverso || '', fotografiaReverso: r.fotografia_reverso || '',
+    historiaClinica: r.historia_clinica || null, notasEvolucion: r.notas_evolucion || []
+  };
 }
-function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE.data));
+function recordToRow(rec){
+  return {
+    id: rec.id,
+    id_paciente: rec.idPaciente || '', nombre: rec.nombre || '', sexo: rec.sexo || '',
+    edad: rec.edad || '', fecha_nacimiento: rec.fechaNacimiento || '', lugar_nacimiento: rec.lugarNacimiento || '',
+    direccion: rec.direccion || '', telefono: rec.telefono || '', correo: rec.correo || '',
+    escolaridad: rec.escolaridad || '', estado_civil: rec.estadoCivil || '', profesion: rec.profesion || '',
+    ocupacion: rec.ocupacion || '', religion: rec.religion || '', referido: rec.referido || '',
+    tipo_paciente: rec.tipoPaciente || '', tipo_historia: rec.tipoHistoria || '',
+    padecimiento: rec.padecimiento || '', habitos: rec.habitos || '', ultima_visita: rec.ultimaVisita || '',
+    consentimientos: rec.consentimientos || '', datos_relevantes: rec.datosRelevantes || '',
+    emergencia_contacto: rec.emergenciaContacto || '', emergencia_telefono: rec.emergenciaTelefono || '',
+    alergia: rec.alergia || '', alergia_especifique: rec.alergiaEspecifique || '',
+    firma: rec.firma || '', fotografia_paciente: rec.fotografiaPaciente || '',
+    fotografia_anverso: rec.fotografiaAnverso || '', fotografia_reverso: rec.fotografiaReverso || ''
+  };
 }
 
-const STATE = { data: loadData(), editingId: null };
+async function loadData(){
+  const { data, error } = await sbExp.from('expedientes').select('*').order('nombre');
+  if(error){ console.error('Error cargando expedientes:', error); return { expedientes: [] }; }
+  return { expedientes: (data || []).map(rowToRecord) };
+}
+async function refreshExpedientes(){
+  STATE.data = await loadData();
+  renderAll();
+}
+
+const STATE = { data: { expedientes: [] }, editingId: null };
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -746,7 +784,7 @@ document.querySelectorAll('#form-expediente .btn-group').forEach(group => {
   });
 });
 
-document.getElementById('form-expediente').addEventListener('submit', (e) => {
+document.getElementById('form-expediente').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
   const record = { id: STATE.editingId || fd.get('idPaciente') };
@@ -760,13 +798,25 @@ document.getElementById('form-expediente').addEventListener('submit', (e) => {
     record[key] = document.getElementById('preview-' + key).getAttribute('data-value') || '';
   });
 
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Guardando...'; }
+
+  const row = recordToRow(record);
+  let error;
   if(STATE.editingId){
-    const idx = STATE.data.expedientes.findIndex(x => x.id === STATE.editingId);
-    if(idx > -1) STATE.data.expedientes[idx] = record;
+    ({ error } = await sbExp.from('expedientes').update(row).eq('id', STATE.editingId));
   } else {
-    STATE.data.expedientes.push(record);
+    ({ error } = await sbExp.from('expedientes').insert(row));
   }
-  saveData(); renderAll(); closeExpedienteModal();
+
+  if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Guardar expediente'; }
+
+  if(error){
+    alert('No se pudo guardar el expediente: ' + error.message);
+    return;
+  }
+  await refreshExpedientes();
+  closeExpedienteModal();
 });
 
 function verExpediente(id){
@@ -899,15 +949,19 @@ document.getElementById('eliminar-expediente-actual').addEventListener('click', 
 });
 document.getElementById('cerrar-modal-confirmar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
 document.getElementById('cancelar-confirmar-eliminar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
-document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', (e) => {
+document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', async (e) => {
   const id = e.target.dataset.id;
   const texto = document.getElementById('input-confirmar-eliminar').value.trim();
   if(texto !== 'ELIMINAR'){
     document.getElementById('input-confirmar-eliminar').style.borderColor = 'var(--red-600)';
     return;
   }
-  STATE.data.expedientes = STATE.data.expedientes.filter(x => x.id !== id);
-  saveData(); renderAll();
+  const { error } = await sbExp.from('expedientes').delete().eq('id', id);
+  if(error){
+    alert('No se pudo eliminar el expediente: ' + error.message);
+    return;
+  }
+  await refreshExpedientes();
   document.getElementById('modal-confirmar-eliminar').classList.remove('open');
   document.getElementById('modal-ver-expediente').classList.remove('open');
 });
@@ -1088,16 +1142,29 @@ table.meds th{padding:9px 12px;font-size:12px;text-align:left;}
   win.document.close();
 }
 
-document.body.addEventListener('click', (e) => {
+document.body.addEventListener('click', async (e) => {
   const del = e.target.closest('[data-del]');
   if(!del) return;
   const key = del.dataset.del;
   const id = del.dataset.id;
-  STATE.data[key] = STATE.data[key].filter(x => x.id !== id);
-  saveData(); renderAll();
+  if(key === 'expedientes'){
+    const { error } = await sbExp.from('expedientes').delete().eq('id', id);
+    if(error){ alert('No se pudo eliminar: ' + error.message); return; }
+    await refreshExpedientes();
+  }
 });
 
-renderAll();
+/* ── Carga inicial + sincronización en tiempo real ── */
+(async () => {
+  STATE.data = await loadData();
+  renderAll();
+})();
+
+sbExp.channel('expedientes-changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'expedientes' }, () => {
+    refreshExpedientes();
+  })
+  .subscribe();
 </script>
 </body>
 </html>
