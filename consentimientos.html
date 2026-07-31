@@ -260,15 +260,63 @@ textarea{resize:vertical;min-height:60px}
 
 <script>
 // ── Storage ─────────────────────────────────────────────────────────────────
-const KEY = 'clinica_consentimientos_v1';
-const load = () => { try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]} };
-const save = a  => localStorage.setItem(KEY, JSON.stringify(a));
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbCons=window.supabase.createClient(SB_URL,SB_KEY);
+
+/* ── Mapeo: folio se usa como id primario ── */
+function consRowToRec(r){
+  const d=r.datos||{};
+  return{
+    folio:r.id,tipo:r.tipo||'',paciente:r.paciente||'',alumno:r.alumno||'',docente:r.doctor||'',fecha:r.fecha||'',
+    tutor:d.tutor||'',edad:d.edad||'',telefono:d.telefono||'',domicilio:d.domicilio||'',cedula:d.cedula||'',
+    diagnostico:d.diagnostico||'',notas:d.notas||'',benefPed:d.benefPed||'',compPed:d.compPed||'',
+    riesgos:d.riesgos||'',efectos:d.efectos||'',alternativas:d.alternativas||'',motivo:d.motivo||'',
+    beneficio:d.beneficio||'',testigo:d.testigo||'',actos:d.actos||[],sigs:d.sigs||{}
+  };
+}
+function consRecToRow(rec){
+  return{
+    id:rec.folio,tipo:rec.tipo||'',paciente:rec.paciente||'',alumno:rec.alumno||'',doctor:rec.docente||'',fecha:rec.fecha||'',
+    firma:(rec.sigs&&rec.sigs.pac)||'',
+    datos:{
+      tutor:rec.tutor||'',edad:rec.edad||'',telefono:rec.telefono||'',domicilio:rec.domicilio||'',cedula:rec.cedula||'',
+      diagnostico:rec.diagnostico||'',notas:rec.notas||'',benefPed:rec.benefPed||'',compPed:rec.compPed||'',
+      riesgos:rec.riesgos||'',efectos:rec.efectos||'',alternativas:rec.alternativas||'',motivo:rec.motivo||'',
+      beneficio:rec.beneficio||'',testigo:rec.testigo||'',actos:rec.actos||[],sigs:rec.sigs||{}
+    }
+  };
+}
+
+let consCache=[];
+async function cargarConsCache(){
+  const{data,error}=await sbCons.from('consentimientos').select('*').order('created_at',{ascending:false});
+  if(error){console.error('Error cargando consentimientos:',error);return;}
+  consCache=(data||[]).map(consRowToRec);
+}
+const load = () => consCache;
 
 // ── Catálogos ────────────────────────────────────────────────────────────────
-const getPacsObjs = () => { try{const d=localStorage.getItem('clinica_dental_data_v1'); if(!d)return[]; const obj=JSON.parse(d); return(obj.expedientes||[]).filter(Boolean);}catch(e){return[]} };
-const getPacs = () => getPacsObjs().map(p=>p.nombre||p.paciente||'').filter(Boolean);
-const getAlus = () => { try{const d=JSON.parse(localStorage.getItem('clinica_alumnos_v1')||'{}'); return(d.alumnos||[]).map(a=>a.nombre||'').filter(Boolean)}catch(e){return[]} };
-const getDocs = () => { try{const d=JSON.parse(localStorage.getItem('clinica_maestros_v1')||'{}'); return(d.maestros||[]).map(m=>m.nombre||'').filter(Boolean)}catch(e){return[]} };
+let pacsCache=[],alusCache=[],docsCache=[];
+async function cargarPacsCache(){
+  const{data,error}=await sbCons.from('expedientes').select('*').order('nombre');
+  if(error){console.error('Error cargando expedientes:',error);return;}
+  pacsCache=data||[];
+}
+async function cargarAlusCache(){
+  const{data,error}=await sbCons.from('alumnos').select('nombre').order('nombre');
+  if(error){console.error('Error cargando alumnos:',error);return;}
+  alusCache=(data||[]).map(a=>a.nombre).filter(Boolean);
+}
+async function cargarDocsCache(){
+  const{data,error}=await sbCons.from('maestros').select('nombre').order('nombre');
+  if(error){console.error('Error cargando maestros:',error);return;}
+  docsCache=(data||[]).map(m=>m.nombre).filter(Boolean);
+}
+const getPacsObjs = () => pacsCache;
+const getPacs = () => getPacsObjs().map(p=>p.nombre||'').filter(Boolean);
+const getAlus = () => alusCache;
+const getDocs = () => docsCache;
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 function switchTab(t){
@@ -485,7 +533,7 @@ function mostrarPreview(){
 }
 
 // ── Guardar ───────────────────────────────────────────────────────────────────
-function guardar(){
+async function guardar(){
   const tipo=document.getElementById('f-tipo').value;
   if(!tipo){alert('Seleccione el tipo de consentimiento.');return;}
   const pac=document.getElementById('f-pac').value.trim();
@@ -520,7 +568,9 @@ function guardar(){
     actos,
     sigs:{pac:getSig('sp'),doc:getSig('sd'),testigo:getSig('st'),alu:getSig('sa')}
   };
-  const arr=load(); arr.unshift(rec); save(arr);
+  const{error}=await sbCons.from('consentimientos').insert(consRecToRow(rec));
+  if(error){alert('No se pudo guardar: '+error.message);return;}
+  await cargarConsCache();
   alert('Consentimiento '+rec.folio+' guardado correctamente.');
   resetForm();
   switchTab('list');
@@ -563,9 +613,11 @@ function renderList(){
     </div>`).join('');
 }
 
-function eliminar(folio){
+async function eliminar(folio){
   if(!confirm('¿Eliminar consentimiento '+folio+'?'))return;
-  save(load().filter(c=>c.folio!==folio));
+  const{error}=await sbCons.from('consentimientos').delete().eq('id',folio);
+  if(error){alert('No se pudo eliminar: '+error.message);return;}
+  await cargarConsCache();
   renderList();
 }
 
@@ -924,6 +976,26 @@ function imprimir(folio){
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('f-fecha').value=new Date().toISOString().slice(0,10);
 ['sp','sd','st','sa'].forEach(setupSig);
+
+(async()=>{
+  await Promise.all([cargarConsCache(),cargarPacsCache(),cargarAlusCache(),cargarDocsCache()]);
+})();
+
+sbCons.channel('consentimientos-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'consentimientos'},async()=>{
+    await cargarConsCache();
+    if(!document.getElementById('tab-list').classList.contains('hide')) renderList();
+  })
+  .subscribe();
+sbCons.channel('consentimientos-expedientes-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},()=>{cargarPacsCache();})
+  .subscribe();
+sbCons.channel('consentimientos-alumnos-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlusCache();})
+  .subscribe();
+sbCons.channel('consentimientos-maestros-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'maestros'},()=>{cargarDocsCache();})
+  .subscribe();
 </script>
 </body>
 </html>
