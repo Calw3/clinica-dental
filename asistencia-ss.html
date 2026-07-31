@@ -197,9 +197,25 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
 </div>
 
 <script>
-const KEY='clinica_asistencia_ss_v1';
-function loadData(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return{registros:[]};}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(S.data));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbAsis=window.supabase.createClient(SB_URL,SB_KEY);
+
+function asisRowToRec(r){
+  return{id:r.id,alumnoId:r.alumno_id||'',idInstitucional:r.id_institucional||'',nombre:r.nombre||'',semestre:r.semestre||'',tipo:r.tipo||'',timestamp:r.timestamp||'',fecha:r.fecha||'',hora:r.hora||''};
+}
+function asisRecToRow(rec){
+  return{id:rec.id,alumno_id:rec.alumnoId||'',id_institucional:rec.idInstitucional||'',nombre:rec.nombre||'',semestre:rec.semestre||'',tipo:rec.tipo||'',timestamp:rec.timestamp||'',fecha:rec.fecha||'',hora:rec.hora||''};
+}
+async function loadData(){
+  const{data,error}=await sbAsis.from('asistencia_ss').select('*').order('timestamp',{ascending:false});
+  if(error){console.error('Error cargando asistencia SS:',error);return{registros:[]};}
+  return{registros:(data||[]).map(asisRowToRec)};
+}
+async function refreshData(){
+  S.data=await loadData();
+  renderHistorial();
+}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -210,7 +226,7 @@ function fmtHora(ts){const d=new Date(ts);return`${pad(d.getHours())}:${pad(d.ge
 function fmtFechaLarga(iso){const[y,m,d]=iso.split('-');const f=new Date(iso+'T12:00:00');return`${DIAS_S[f.getDay()]} ${parseInt(d)} de ${MESES[parseInt(m)-1]} de ${y}`;}
 function fmtFechaCorta(iso){const[y,m,d]=iso.split('-');return`${parseInt(d)}/${parseInt(m)}/${y}`;}
 
-const S={data:loadData(),tab:'kiosk'};
+const S={data:{registros:[]},tab:'kiosk'};
 
 /* ─── Reloj ─── */
 function tickReloj(){
@@ -237,20 +253,19 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 });
 
 /* ─── Buscar alumno por ID institucional ─── */
+let alumnosCache=[];
+async function cargarAlumnosCache(){
+  const{data,error}=await sbAsis.from('alumnos').select('id,id_institucional,nombre,semestre');
+  if(error){console.error('Error cargando alumnos:',error);return;}
+  alumnosCache=(data||[]).map(a=>({id:a.id,idInstitucional:a.id_institucional,nombre:a.nombre,semestre:a.semestre}));
+}
 function getMaestro(idInstitucional){
-  try{
-    const d=localStorage.getItem('clinica_alumnos_v1');
-    if(d){
-      const p=JSON.parse(d);
-      return (p.alumnos||[]).find(a=>(a.idInstitucional||'').toUpperCase().trim()===(idInstitucional||'').toUpperCase().trim())||null;
-    }
-  }catch(e){}
-  return null;
+  return alumnosCache.find(a=>(a.idInstitucional||'').toUpperCase().trim()===(idInstitucional||'').toUpperCase().trim())||null;
 }
 
 /* ─── Registrar ─── */
 let confirmTimer=null;
-function registrar(tipo){
+async function registrar(tipo){
   const idVal=document.getElementById('kiosk-id').value.trim();
   const errEl=document.getElementById('kiosk-error');
   const inp=document.getElementById('kiosk-id');
@@ -286,8 +301,14 @@ function registrar(tipo){
     fecha:todayISO(),
     hora:`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
   };
-  S.data.registros.push(rec);
-  saveData();
+
+  const{error}=await sbAsis.from('asistencia_ss').insert(asisRecToRow(rec));
+  if(error){
+    errEl.textContent='No se pudo registrar: '+error.message;
+    setTimeout(()=>{errEl.textContent='';},4000);
+    return;
+  }
+  await refreshData();
 
   /* Mostrar confirmación */
   mostrarConfirm(rec);
@@ -455,6 +476,19 @@ document.getElementById('filtro-tipo').addEventListener('change',renderHistorial
 document.getElementById('filtro-fecha').value=todayISO();
 document.getElementById('tab-kiosk').style.display='flex';
 document.getElementById('kiosk-id').focus();
+
+(async()=>{
+  await cargarAlumnosCache();
+  S.data=await loadData();
+  renderHistorial();
+})();
+
+sbAsis.channel('asistencia-ss-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'asistencia_ss'},()=>{refreshData();})
+  .subscribe();
+sbAsis.channel('asistencia-ss-alumnos-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlumnosCache();})
+  .subscribe();
 </script>
 </body>
 </html>
