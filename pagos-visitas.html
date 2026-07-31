@@ -530,14 +530,48 @@ const TRATAMIENTOS=[
   {grupo:'Tomografías',codigo:'TX-005',nombre:'Tomografía 3D Senos Paranasales',costo:540},
 ];
 
-const KEY='clinica_pagos_v1';
-const KEY_P='clinica_pagos_papelera_v1';
-function loadPagos(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return[];}
-function savePagos(){localStorage.setItem(KEY,JSON.stringify(S.pagos));}
-function loadPapelera(){try{const r=localStorage.getItem(KEY_P);if(r)return JSON.parse(r);}catch(e){}return[];}
-function savePapelera(){localStorage.setItem(KEY_P,JSON.stringify(S.papelera));}
+function mapPagoFromDb(row){
+  return {
+    id: row.id, timestamp: row.timestamp, fecha: row.fecha, paciente: row.paciente,
+    clinica: row.clinica, estudiante: row.estudiante, tratamientos: row.tratamientos || [],
+    descuento: row.descuento, total: row.total, formaPago: row.forma_pago,
+    registradoPor: row.registrado_por, lugarPago: row.lugar_pago,
+    observaciones: row.observaciones, qrPago: row.qr_pago || ''
+  };
+}
+function mapPagoToDb(rec){
+  return {
+    id: rec.id, timestamp: rec.timestamp, fecha: rec.fecha, paciente: rec.paciente,
+    clinica: rec.clinica, estudiante: rec.estudiante, tratamientos: rec.tratamientos || [],
+    descuento: rec.descuento, total: rec.total, forma_pago: rec.formaPago,
+    registrado_por: rec.registradoPor, lugar_pago: rec.lugarPago,
+    observaciones: rec.observaciones, qr_pago: rec.qrPago
+  };
+}
+function mapPapeleraFromDb(row){
+  const rec = mapPagoFromDb(row);
+  rec._eliminadoEl = row.eliminado_el;
+  return rec;
+}
 
-const S={pagos:loadPagos(),papelera:loadPapelera(),selMode:false,sel:new Set(),editId:null,tab:'registros',selPapMode:false,selPap:new Set()};
+async function cargarPagos(){
+  const sb=getSupabase();
+  const { data, error } = await sb.from('pagos_visitas').select('*').order('created_at',{ascending:false});
+  if(error){ console.error('Error cargando pagos:',error); return; }
+  S.pagos=(data||[]).map(mapPagoFromDb);
+  renderAll();
+}
+async function cargarPapelera(){
+  const sb=getSupabase();
+  const { data, error } = await sb.from('pagos_visitas_papelera').select('*').order('eliminado_el',{ascending:false});
+  if(error){ console.error('Error cargando papelera:',error); return; }
+  S.papelera=(data||[]).map(mapPapeleraFromDb);
+  if(S.tab==='eliminados') renderPapelera();
+  const badge=document.getElementById('badge-pap');
+  if(badge){ badge.textContent=S.papelera.length; badge.style.display=S.papelera.length?'inline':'none'; }
+}
+
+const S={pagos:[],papelera:[],selMode:false,sel:new Set(),editId:null,tab:'registros',selPapMode:false,selPap:new Set()};
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -843,7 +877,7 @@ document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel());
 document.getElementById('btn-panel-cancel').addEventListener('click',closePanel);
 document.getElementById('panel-overlay').addEventListener('click',closePanel);
 
-document.getElementById('btn-panel-save').addEventListener('click',()=>{
+document.getElementById('btn-panel-save').addEventListener('click',async ()=>{
   const fd=new FormData(document.getElementById('form-pago'));
   const nuevaFormaPago=document.querySelector('[data-group="formaPago"] .selected')?.dataset.value||'';
   const anteriorRec=S.editId?S.pagos.find(x=>x.id===S.editId):null;
@@ -870,9 +904,25 @@ document.getElementById('btn-panel-save').addEventListener('click',()=>{
     observaciones:fd.get('observaciones'),
     qrPago:document.getElementById('prev-qr').getAttribute('data-value')||'',
   };
+  const sb=getSupabase();
+  const dbRec=mapPagoToDb(rec);
+  const saveBtn=document.getElementById('btn-panel-save');
+  saveBtn.disabled=true;
+  let error;
+  if(S.editId){
+    ({error}=await sb.from('pagos_visitas').update(dbRec).eq('id',S.editId));
+  } else {
+    ({error}=await sb.from('pagos_visitas').insert(dbRec));
+  }
+  saveBtn.disabled=false;
+  if(error){
+    console.error('Error al guardar pago:',error);
+    alert('No se pudo guardar el pago: '+error.message);
+    return;
+  }
   if(S.editId){const i=S.pagos.findIndex(x=>x.id===S.editId);if(i>-1)S.pagos[i]=rec;}
   else S.pagos.push(rec);
-  savePagos();renderAll();closePanel();
+  renderAll();closePanel();
 });
 
 /* Click fila */
@@ -927,15 +977,22 @@ document.getElementById('btn-del-sel').addEventListener('click',()=>{
 /* Modal confirm — mover a papelera */
 document.getElementById('cerrar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
 document.getElementById('cancelar-confirm').addEventListener('click',()=>document.getElementById('modal-confirm').classList.remove('open'));
-document.getElementById('btn-confirm-del').addEventListener('click',()=>{
+document.getElementById('btn-confirm-del').addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm').style.borderColor='var(--red-600)';return;
   }
   const ahora=new Date().toLocaleString('es-MX');
-  const eliminados=S.pagos.filter(p=>S.sel.has(p.id)).map(p=>({...p,_eliminadoEl:ahora}));
-  S.papelera.push(...eliminados);
+  const eliminados=S.pagos.filter(p=>S.sel.has(p.id));
+  const idsSel=[...S.sel];
+  const sb=getSupabase();
+  const { error: errIns } = await sb.from('pagos_visitas_papelera').insert(
+    eliminados.map(p=>({ ...mapPagoToDb(p), eliminado_el: ahora }))
+  );
+  if(errIns){ console.error(errIns); alert('No se pudo mover a la papelera: '+errIns.message); return; }
+  const { error: errDel } = await sb.from('pagos_visitas').delete().in('id', idsSel);
+  if(errDel){ console.error(errDel); alert('El registro se copió a la papelera pero no se pudo quitar de la lista: '+errDel.message); }
+  S.papelera.push(...eliminados.map(p=>({...p,_eliminadoEl:ahora})));
   S.pagos=S.pagos.filter(p=>!S.sel.has(p.id));
-  savePagos();savePapelera();
   document.getElementById('modal-confirm').classList.remove('open');
   salirSeleccion();renderAll();
 });
@@ -988,14 +1045,18 @@ function renderPapelera(){
   document.getElementById('th-check-pap').style.display=S.selPapMode?'table-cell':'none';
 }
 
-function restaurar(id){
+async function restaurar(id){
   const idx=S.papelera.findIndex(p=>p.id===id);
   if(idx===-1)return;
   const rec={...S.papelera[idx]};
   delete rec._eliminadoEl;
+  const sb=getSupabase();
+  const { error: errIns } = await sb.from('pagos_visitas').insert(mapPagoToDb(rec));
+  if(errIns){ console.error(errIns); alert('No se pudo restaurar: '+errIns.message); return; }
+  const { error: errDel } = await sb.from('pagos_visitas_papelera').delete().eq('id', id);
+  if(errDel) console.error(errDel);
   S.pagos.push(rec);
   S.papelera.splice(idx,1);
-  savePagos();savePapelera();
   renderPapelera();renderStats();
 }
 
@@ -1046,14 +1107,21 @@ document.getElementById('btn-sel-pap-todos').addEventListener('click',()=>{
   if(all)S.selPap.clear();else todos.forEach(id=>S.selPap.add(id));
   actualizarSelPap();renderPapelera();
 });
-document.getElementById('btn-restaurar-sel').addEventListener('click',()=>{
-  [...S.selPap].forEach(id=>{
-    const idx=S.papelera.findIndex(p=>p.id===id);
-    if(idx===-1)return;
-    const rec={...S.papelera[idx]};delete rec._eliminadoEl;
-    S.pagos.push(rec);S.papelera.splice(idx,1);
-  });
-  savePagos();savePapelera();
+document.getElementById('btn-restaurar-sel').addEventListener('click',async ()=>{
+  const ids=[...S.selPap];
+  const recs=ids.map(id=>{
+    const rec={...S.papelera.find(p=>p.id===id)};
+    delete rec._eliminadoEl;
+    return rec;
+  }).filter(Boolean);
+  if(!recs.length) return;
+  const sb=getSupabase();
+  const { error: errIns } = await sb.from('pagos_visitas').insert(recs.map(mapPagoToDb));
+  if(errIns){ console.error(errIns); alert('No se pudo restaurar: '+errIns.message); return; }
+  const { error: errDel } = await sb.from('pagos_visitas_papelera').delete().in('id', ids);
+  if(errDel) console.error(errDel);
+  recs.forEach(rec=>S.pagos.push(rec));
+  S.papelera=S.papelera.filter(p=>!ids.includes(p.id));
   salirSelPap();renderPapelera();renderStats();
 });
 document.getElementById('btn-del-pap-sel').addEventListener('click',()=>{
@@ -1068,13 +1136,15 @@ document.getElementById('btn-vaciar').addEventListener('click',()=>{
 /* Modal eliminación permanente */
 document.getElementById('cerrar-perm').addEventListener('click',()=>document.getElementById('modal-perm').classList.remove('open'));
 document.getElementById('cancelar-perm').addEventListener('click',()=>document.getElementById('modal-perm').classList.remove('open'));
-document.getElementById('btn-confirm-perm').addEventListener('click',()=>{
+document.getElementById('btn-confirm-perm').addEventListener('click',async ()=>{
   if(document.getElementById('inp-confirm-perm').value.trim()!=='ELIMINAR'){
     document.getElementById('inp-confirm-perm').style.borderColor='var(--red-600)';return;
   }
   const ids=JSON.parse(document.getElementById('modal-perm').dataset.ids||'[]');
+  const sb=getSupabase();
+  const { error } = await sb.from('pagos_visitas_papelera').delete().in('id', ids);
+  if(error){ console.error(error); alert('No se pudo eliminar de forma permanente: '+error.message); return; }
   S.papelera=S.papelera.filter(p=>!ids.includes(p.id));
-  savePapelera();
   document.getElementById('modal-perm').classList.remove('open');
   salirSelPap();renderPapelera();
 });
@@ -1366,7 +1436,12 @@ getSupabase().channel('pagos-visitas-expedientes')
   });
 })();
 
-renderAll();
+cargarPagos();
+cargarPapelera();
+getSupabase().channel('pagos-visitas-realtime')
+  .on('postgres_changes', { event:'*', schema:'public', table:'pagos_visitas' }, cargarPagos)
+  .on('postgres_changes', { event:'*', schema:'public', table:'pagos_visitas_papelera' }, cargarPapelera)
+  .subscribe();
 
 /* ── Materias dinámicas ── */
 function getMateriasList(){
