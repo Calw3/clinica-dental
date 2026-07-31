@@ -506,7 +506,13 @@ async function cargarAlumnoNombresCache(){
   alumnoNombresCache=(data||[]).map(a=>a.nombre).filter(Boolean);
 }
 function getAlumnoNombres(){return alumnoNombresCache;}
-function getMaestroNombres(){try{const d=localStorage.getItem('clinica_maestros_v1');if(d){const p=JSON.parse(d);return(p.maestros||[]).map(m=>m.nombre).filter(Boolean).sort();}}catch(e){}return[];}
+let maestroNombresCache=[];
+async function cargarMaestroNombresCache(){
+  const{data,error}=await sbPrest.from('maestros').select('nombre').order('nombre');
+  if(error){console.error('Error cargando nombres de maestros:',error);return;}
+  maestroNombresCache=(data||[]).map(m=>m.nombre).filter(Boolean);
+}
+function getMaestroNombres(){return maestroNombresCache;}
 function getNombresResp(){return S.tipoResp==='alumno'?getAlumnoNombres():getMaestroNombres();}
 setupAC('pp-equipo','ac-pp-equipo',getEquipoNombres);
 setupAC('pp-responsable','ac-pp-responsable',getNombresResp);
@@ -903,11 +909,15 @@ document.getElementById('buscar-e').addEventListener('input',renderEquipos);
 (async()=>{
   S.data=await loadData();
   await cargarAlumnoNombresCache();
+  await cargarMaestroNombresCache();
   renderAll();
 })();
 
 sbPrest.channel('alumnos-nombres-changes')
   .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlumnoNombresCache();})
+  .subscribe();
+sbPrest.channel('maestros-nombres-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'maestros'},()=>{cargarMaestroNombresCache();})
   .subscribe();
 sbPrest.channel('equipos-changes')
   .on('postgres_changes',{event:'*',schema:'public',table:'equipos'},()=>{refreshData();})
