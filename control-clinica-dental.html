@@ -338,7 +338,7 @@
     </div>
     <div id="ver-expediente-body"></div>
     <div class="modal-actions" style="flex-wrap:wrap;">
-      <button type="button" class="btn-secondary" id="eliminar-expediente-actual" data-role="coordinador,maestro">Eliminar expediente</button>
+      <button type="button" class="btn-secondary" id="eliminar-expediente-actual">Eliminar expediente</button>
       <button type="button" class="btn-secondary" id="editar-expediente-actual">Editar</button>
       <button type="button" class="btn-primary" id="hc-completa-actual" style="background:var(--teal-800);">📄 Historia Clínica Completa del Paciente</button>
       <button type="button" class="btn-primary" id="cerrar-ver-expediente">Cerrar</button>
@@ -482,58 +482,20 @@
 </div>
 
 <script>
-function mapFromDb(row){
-  return {
-    id: row.id, idPaciente: row.id_paciente, nombre: row.nombre, sexo: row.sexo,
-    edad: row.edad, fechaNacimiento: row.fecha_nacimiento, lugarNacimiento: row.lugar_nacimiento,
-    direccion: row.direccion, telefono: row.telefono, correo: row.correo,
-    escolaridad: row.escolaridad, estadoCivil: row.estado_civil, profesion: row.profesion,
-    ocupacion: row.ocupacion, religion: row.religion, referido: row.referido,
-    tipoPaciente: row.tipo_paciente, tipoHistoria: row.tipo_historia,
-    padecimiento: row.padecimiento, habitos: row.habitos, ultimaVisita: row.ultima_visita,
-    consentimientos: row.consentimientos, datosRelevantes: row.datos_relevantes,
-    emergenciaContacto: row.emergencia_contacto, emergenciaTelefono: row.emergencia_telefono,
-    alergia: row.alergia, alergiaEspecifique: row.alergia_especifique,
-    firma: row.firma || '', fotografiaPaciente: row.fotografia_paciente || '',
-    fotografiaAnverso: row.fotografia_anverso || '', fotografiaReverso: row.fotografia_reverso || '',
-    historiaClinica: row.historia_clinica || null, notasEvolucion: row.notas_evolucion || null
-  };
+const STORAGE_KEY = 'clinica_dental_data_v1';
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { expedientes: [] };
 }
-function mapToDb(rec){
-  return {
-    id: rec.id, id_paciente: rec.idPaciente, nombre: rec.nombre, sexo: rec.sexo,
-    edad: rec.edad, fecha_nacimiento: rec.fechaNacimiento, lugar_nacimiento: rec.lugarNacimiento,
-    direccion: rec.direccion, telefono: rec.telefono, correo: rec.correo,
-    escolaridad: rec.escolaridad, estado_civil: rec.estadoCivil, profesion: rec.profesion,
-    ocupacion: rec.ocupacion, religion: rec.religion, referido: rec.referido,
-    tipo_paciente: rec.tipoPaciente, tipo_historia: rec.tipoHistoria,
-    padecimiento: rec.padecimiento, habitos: rec.habitos, ultima_visita: rec.ultimaVisita,
-    consentimientos: rec.consentimientos, datos_relevantes: rec.datosRelevantes,
-    emergencia_contacto: rec.emergenciaContacto, emergencia_telefono: rec.emergenciaTelefono,
-    alergia: rec.alergia, alergia_especifique: rec.alergiaEspecifique,
-    firma: rec.firma, fotografia_paciente: rec.fotografiaPaciente,
-    fotografia_anverso: rec.fotografiaAnverso, fotografia_reverso: rec.fotografiaReverso
-  };
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE.data));
 }
 
-async function cargarExpedientes(){
-  const sb = getSupabase();
-  const { data, error } = await sb.from('expedientes').select('*').order('created_at', { ascending:false });
-  if(error){ console.error('Error cargando expedientes:', error); return; }
-  STATE.data.expedientes = (data||[]).map(mapFromDb);
-  renderAll();
-}
-
-const STATE = { data: { expedientes: [] }, editingId: null };
-
-function suscribirRealtimeExpedientes(){
-  const sb = getSupabase();
-  sb.channel('expedientes-realtime')
-    .on('postgres_changes', { event:'*', schema:'public', table:'expedientes' }, () => {
-      cargarExpedientes();
-    })
-    .subscribe();
-}
+const STATE = { data: loadData(), editingId: null };
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -784,7 +746,7 @@ document.querySelectorAll('#form-expediente .btn-group').forEach(group => {
   });
 });
 
-document.getElementById('form-expediente').addEventListener('submit', async (e) => {
+document.getElementById('form-expediente').addEventListener('submit', (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
   const record = { id: STATE.editingId || fd.get('idPaciente') };
@@ -798,36 +760,16 @@ document.getElementById('form-expediente').addEventListener('submit', async (e) 
     record[key] = document.getElementById('preview-' + key).getAttribute('data-value') || '';
   });
 
-  const sb = getSupabase();
-  const dbRecord = mapToDb(record);
-  const submitBtn = e.target.querySelector('[type="submit"]');
-  if(submitBtn) submitBtn.disabled = true;
-
-  let error;
-  if(STATE.editingId){
-    ({ error } = await sb.from('expedientes').update(dbRecord).eq('id', STATE.editingId));
-  } else {
-    ({ error } = await sb.from('expedientes').insert(dbRecord));
-  }
-
-  if(submitBtn) submitBtn.disabled = false;
-  if(error){
-    console.error('Error al guardar expediente:', error);
-    alert('No se pudo guardar el expediente: ' + error.message);
-    return;
-  }
-
   if(STATE.editingId){
     const idx = STATE.data.expedientes.findIndex(x => x.id === STATE.editingId);
     if(idx > -1) STATE.data.expedientes[idx] = record;
   } else {
     STATE.data.expedientes.push(record);
   }
-  renderAll(); closeExpedienteModal();
+  saveData(); renderAll(); closeExpedienteModal();
 });
 
-
-function verExpediente(id){
+async function verExpediente(id){
   const e = STATE.data.expedientes.find(x => x.id === id);
   if(!e) return;
   document.getElementById('ver-expediente-nombre').textContent = e.nombre || 'Expediente';
@@ -862,10 +804,16 @@ function verExpediente(id){
 
   /* ── Pagos y visitas ── */
   try {
-    const pagosData = JSON.parse(localStorage.getItem('clinica_pagos_v1') || '[]');
     const nombrePac = (e.nombre || '').toLowerCase().trim();
-    const pagosP = pagosData.filter(p => (p.paciente || '').toLowerCase().trim() === nombrePac)
-                            .sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+    const { data: pagosData, error: pagosErr } = await getSupabase()
+      .from('pagos_visitas')
+      .select('*')
+      .ilike('paciente', e.nombre || '');
+    if (pagosErr) throw pagosErr;
+    const pagosP = (pagosData || [])
+      .map(p => ({ ...p, formaPago: p.forma_pago, registradoPor: p.registrado_por }))
+      .filter(p => (p.paciente || '').toLowerCase().trim() === nombrePac)
+      .sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
     const notasEv = e.notasEvolucion || [];
     html += `<div class="form-section-title" style="margin-top:16px;">Pagos y visitas (${pagosP.length})</div>`;
     if(pagosP.length === 0){
@@ -957,22 +905,15 @@ document.getElementById('eliminar-expediente-actual').addEventListener('click', 
 });
 document.getElementById('cerrar-modal-confirmar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
 document.getElementById('cancelar-confirmar-eliminar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
-document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', async (e) => {
+document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', (e) => {
   const id = e.target.dataset.id;
   const texto = document.getElementById('input-confirmar-eliminar').value.trim();
   if(texto !== 'ELIMINAR'){
     document.getElementById('input-confirmar-eliminar').style.borderColor = 'var(--red-600)';
     return;
   }
-  const sb = getSupabase();
-  const { error } = await sb.from('expedientes').delete().eq('id', id);
-  if(error){
-    console.error('Error al eliminar expediente:', error);
-    alert('No se pudo eliminar el expediente: ' + error.message);
-    return;
-  }
   STATE.data.expedientes = STATE.data.expedientes.filter(x => x.id !== id);
-  renderAll();
+  saveData(); renderAll();
   document.getElementById('modal-confirmar-eliminar').classList.remove('open');
   document.getElementById('modal-ver-expediente').classList.remove('open');
 });
@@ -1091,7 +1032,8 @@ function printJustificante(j){
 .firma-block{text-align:center;min-width:220px;}
 .firma-linea{border-top:1px solid #333;margin-top:8px;padding-top:6px;font-size:12px;}
 .footer-doc{margin-top:40px;border-top:1px solid #ddd;padding-top:10px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </head><body>
 <div class="page">
   <div class="hdr"><div class="logo"><svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" stroke-linecap="round"/><circle cx="12" cy="9" r="2.5"/></svg></div>
@@ -1137,7 +1079,8 @@ table.meds th{padding:9px 12px;font-size:12px;text-align:left;}
 .firma-block{text-align:center;min-width:220px;}
 .firma-linea{border-top:1px solid #333;margin-top:8px;padding-top:6px;font-size:12px;}
 .footer-doc{margin-top:30px;border-top:1px solid #ddd;padding-top:10px;font-size:10px;color:#aaa;display:flex;justify-content:space-between;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 </head><body>
 <div class="page">
   <div class="hdr"><div class="logo"><svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8l-5-5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 3v5h10M8 13h8M8 17h5" stroke-linecap="round"/></svg></div>
@@ -1159,11 +1102,10 @@ document.body.addEventListener('click', (e) => {
   const key = del.dataset.del;
   const id = del.dataset.id;
   STATE.data[key] = STATE.data[key].filter(x => x.id !== id);
-  renderAll();
+  saveData(); renderAll();
 });
 
-cargarExpedientes();
-suscribirRealtimeExpedientes();
+renderAll();
 </script>
 </body>
 </html>
