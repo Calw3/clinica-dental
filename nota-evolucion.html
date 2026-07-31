@@ -242,7 +242,10 @@ async function guardarNotas(expIdParam,notas){
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-function volver(){history.length>1?history.back():(location.href='control-clinica-dental.html');}
+function volver(){
+  if(window.self!==window.top){ window.parent.postMessage({type:'cerrar-nota-evolucion'}, '*'); return; }
+  history.length>1?history.back():(location.href='control-clinica-dental.html');
+}
 document.getElementById('btn-volver').addEventListener('click',volver);
 document.getElementById('btn-volver-bottom').addEventListener('click',volver);
 
@@ -325,8 +328,8 @@ if(exp && esNotaNueva && !pago){
     <p style="font-size:18px;font-weight:600;color:var(--text-primary);">Se requiere una visita registrada</p>
     <p style="margin-top:8px;">Para crear una nueva nota de evolución primero debe registrarse la visita del paciente en el módulo de <strong>Control de Pagos y Visitas</strong>.</p>
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <a href="pagos-visitas.html" class="btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;padding:8px 16px;border-radius:var(--radius);">Registrar visita</a>
-      <button type="button" class="btn-secondary" onclick="location.href='control-clinica-dental.html'">Volver al expediente</button>
+      <a href="pagos-visitas.html" target="_top" class="btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;padding:8px 16px;border-radius:var(--radius);">Registrar visita</a>
+      <button type="button" class="btn-secondary" onclick="volver()">Volver al expediente</button>
     </div>`;
   return;
 }
@@ -462,6 +465,9 @@ document.getElementById('btn-guardar-ne').addEventListener('click',async ()=>{
     notasExistentes = notas;
     document.getElementById('badge-saved').style.display='';
     showToast('Nota de evolución guardada ✓');
+    if(window.self!==window.top){
+      window.parent.postMessage({type:'nota-guardada', expId}, '*');
+    }
   }catch(err){
     showToast('Error al guardar: '+err.message);
     console.error(err);
