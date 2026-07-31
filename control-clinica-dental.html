@@ -482,20 +482,57 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'clinica_dental_data_v1';
-
-function loadData(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  return { expedientes: [] };
+function mapFromDb(row){
+  return {
+    id: row.id, idPaciente: row.id_paciente, nombre: row.nombre, sexo: row.sexo,
+    edad: row.edad, fechaNacimiento: row.fecha_nacimiento, lugarNacimiento: row.lugar_nacimiento,
+    direccion: row.direccion, telefono: row.telefono, correo: row.correo,
+    escolaridad: row.escolaridad, estadoCivil: row.estado_civil, profesion: row.profesion,
+    ocupacion: row.ocupacion, religion: row.religion, referido: row.referido,
+    tipoPaciente: row.tipo_paciente, tipoHistoria: row.tipo_historia,
+    padecimiento: row.padecimiento, habitos: row.habitos, ultimaVisita: row.ultima_visita,
+    consentimientos: row.consentimientos, datosRelevantes: row.datos_relevantes,
+    emergenciaContacto: row.emergencia_contacto, emergenciaTelefono: row.emergencia_telefono,
+    alergia: row.alergia, alergiaEspecifique: row.alergia_especifique,
+    firma: row.firma || '', fotografiaPaciente: row.fotografia_paciente || '',
+    fotografiaAnverso: row.fotografia_anverso || '', fotografiaReverso: row.fotografia_reverso || ''
+  };
 }
-function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE.data));
+function mapToDb(rec){
+  return {
+    id: rec.id, id_paciente: rec.idPaciente, nombre: rec.nombre, sexo: rec.sexo,
+    edad: rec.edad, fecha_nacimiento: rec.fechaNacimiento, lugar_nacimiento: rec.lugarNacimiento,
+    direccion: rec.direccion, telefono: rec.telefono, correo: rec.correo,
+    escolaridad: rec.escolaridad, estado_civil: rec.estadoCivil, profesion: rec.profesion,
+    ocupacion: rec.ocupacion, religion: rec.religion, referido: rec.referido,
+    tipo_paciente: rec.tipoPaciente, tipo_historia: rec.tipoHistoria,
+    padecimiento: rec.padecimiento, habitos: rec.habitos, ultima_visita: rec.ultimaVisita,
+    consentimientos: rec.consentimientos, datos_relevantes: rec.datosRelevantes,
+    emergencia_contacto: rec.emergenciaContacto, emergencia_telefono: rec.emergenciaTelefono,
+    alergia: rec.alergia, alergia_especifique: rec.alergiaEspecifique,
+    firma: rec.firma, fotografia_paciente: rec.fotografiaPaciente,
+    fotografia_anverso: rec.fotografiaAnverso, fotografia_reverso: rec.fotografiaReverso
+  };
 }
 
-const STATE = { data: loadData(), editingId: null };
+async function cargarExpedientes(){
+  const sb = getSupabase();
+  const { data, error } = await sb.from('expedientes').select('*').order('created_at', { ascending:false });
+  if(error){ console.error('Error cargando expedientes:', error); return; }
+  STATE.data.expedientes = (data||[]).map(mapFromDb);
+  renderAll();
+}
+
+const STATE = { data: { expedientes: [] }, editingId: null };
+
+function suscribirRealtimeExpedientes(){
+  const sb = getSupabase();
+  sb.channel('expedientes-realtime')
+    .on('postgres_changes', { event:'*', schema:'public', table:'expedientes' }, () => {
+      cargarExpedientes();
+    })
+    .subscribe();
+}
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -746,7 +783,7 @@ document.querySelectorAll('#form-expediente .btn-group').forEach(group => {
   });
 });
 
-document.getElementById('form-expediente').addEventListener('submit', (e) => {
+document.getElementById('form-expediente').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
   const record = { id: STATE.editingId || fd.get('idPaciente') };
@@ -760,14 +797,34 @@ document.getElementById('form-expediente').addEventListener('submit', (e) => {
     record[key] = document.getElementById('preview-' + key).getAttribute('data-value') || '';
   });
 
+  const sb = getSupabase();
+  const dbRecord = mapToDb(record);
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  if(submitBtn) submitBtn.disabled = true;
+
+  let error;
+  if(STATE.editingId){
+    ({ error } = await sb.from('expedientes').update(dbRecord).eq('id', STATE.editingId));
+  } else {
+    ({ error } = await sb.from('expedientes').insert(dbRecord));
+  }
+
+  if(submitBtn) submitBtn.disabled = false;
+  if(error){
+    console.error('Error al guardar expediente:', error);
+    alert('No se pudo guardar el expediente: ' + error.message);
+    return;
+  }
+
   if(STATE.editingId){
     const idx = STATE.data.expedientes.findIndex(x => x.id === STATE.editingId);
     if(idx > -1) STATE.data.expedientes[idx] = record;
   } else {
     STATE.data.expedientes.push(record);
   }
-  saveData(); renderAll(); closeExpedienteModal();
+  renderAll(); closeExpedienteModal();
 });
+
 
 function verExpediente(id){
   const e = STATE.data.expedientes.find(x => x.id === id);
@@ -899,15 +956,22 @@ document.getElementById('eliminar-expediente-actual').addEventListener('click', 
 });
 document.getElementById('cerrar-modal-confirmar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
 document.getElementById('cancelar-confirmar-eliminar').addEventListener('click', () => document.getElementById('modal-confirmar-eliminar').classList.remove('open'));
-document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', (e) => {
+document.getElementById('confirmar-eliminar-definitivo').addEventListener('click', async (e) => {
   const id = e.target.dataset.id;
   const texto = document.getElementById('input-confirmar-eliminar').value.trim();
   if(texto !== 'ELIMINAR'){
     document.getElementById('input-confirmar-eliminar').style.borderColor = 'var(--red-600)';
     return;
   }
+  const sb = getSupabase();
+  const { error } = await sb.from('expedientes').delete().eq('id', id);
+  if(error){
+    console.error('Error al eliminar expediente:', error);
+    alert('No se pudo eliminar el expediente: ' + error.message);
+    return;
+  }
   STATE.data.expedientes = STATE.data.expedientes.filter(x => x.id !== id);
-  saveData(); renderAll();
+  renderAll();
   document.getElementById('modal-confirmar-eliminar').classList.remove('open');
   document.getElementById('modal-ver-expediente').classList.remove('open');
 });
@@ -1094,10 +1158,11 @@ document.body.addEventListener('click', (e) => {
   const key = del.dataset.del;
   const id = del.dataset.id;
   STATE.data[key] = STATE.data[key].filter(x => x.id !== id);
-  saveData(); renderAll();
+  renderAll();
 });
 
-renderAll();
+cargarExpedientes();
+suscribirRealtimeExpedientes();
 </script>
 </body>
 </html>
