@@ -1309,12 +1309,14 @@ async function cargarExpedienteNombresCache(){
 function getExpedienteNombres(){
   return expedienteNombresCache;
 }
+let alumnoNombresCache=[];
+async function cargarAlumnoNombresCache(){
+  const{data,error}=await sbPagos.from('alumnos').select('nombre').order('nombre');
+  if(error){console.error('Error cargando nombres de alumnos:',error);return;}
+  alumnoNombresCache=(data||[]).map(a=>a.nombre).filter(Boolean);
+}
 function getAlumnoNombres(){
-  try{
-    const d=localStorage.getItem('clinica_alumnos_v1');
-    if(d){const p=JSON.parse(d);return(p.alumnos||p||[]).map(a=>a.nombre||a.nombreCompleto).filter(Boolean).sort();}
-  }catch(e){}
-  return[];
+  return alumnoNombresCache;
 }
 
 function setupAC(inputId, listId, getFn){
@@ -1422,6 +1424,7 @@ setupAC('f-estudiante', 'ac-estudiante', getAlumnoNombres);
   S.pagos=await loadPagos();
   S.papelera=await loadPapelera();
   await cargarExpedienteNombresCache();
+  await cargarAlumnoNombresCache();
   renderAll();
 })();
 
@@ -1433,6 +1436,9 @@ sbPagos.channel('pagos-visitas-papelera-changes')
   .subscribe();
 sbPagos.channel('expedientes-nombres-changes')
   .on('postgres_changes',{event:'*',schema:'public',table:'expedientes'},()=>{cargarExpedienteNombresCache();})
+  .subscribe();
+sbPagos.channel('alumnos-nombres-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'alumnos'},()=>{cargarAlumnoNombresCache();})
   .subscribe();
 
 /* ── Materias dinámicas ── */
