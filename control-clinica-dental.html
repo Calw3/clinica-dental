@@ -536,7 +536,34 @@ function recordToRow(rec){
 async function loadData(){
   const { data, error } = await sbExp.from('expedientes').select('*').order('nombre');
   if(error){ console.error('Error cargando expedientes:', error); return { expedientes: [] }; }
-  return { expedientes: (data || []).map(rowToRecord) };
+  let expedientes = (data || []).map(rowToRecord);
+
+  /* Alumnos: solo ven pacientes asignados a ellos vía Control de pagos y visitas */
+  try {
+    const session = await getSession();
+    if (session) {
+      const profile = await getProfile(session.user.id);
+      if (profile && profile.rol === 'alumno') {
+        const miNombre = (profile.nombre || '').toLowerCase().trim();
+        const { data: pagosRows, error: errPagos } = await sbExp.from('pagos_visitas').select('paciente,estudiante');
+        if (errPagos) {
+          console.error('Error cargando pagos para filtrar expedientes:', errPagos);
+          expedientes = [];
+        } else {
+          const pacientesAsignados = new Set(
+            (pagosRows || [])
+              .filter(p => (p.estudiante || '').toLowerCase().trim() === miNombre)
+              .map(p => (p.paciente || '').toLowerCase().trim())
+          );
+          expedientes = expedientes.filter(e => pacientesAsignados.has((e.nombre || '').toLowerCase().trim()));
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error verificando rol para filtrar expedientes:', e);
+  }
+
+  return { expedientes };
 }
 async function refreshExpedientes(){
   STATE.data = await loadData();
@@ -1211,6 +1238,12 @@ document.body.addEventListener('click', async (e) => {
 
 sbExp.channel('expedientes-changes')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'expedientes' }, () => {
+    refreshExpedientes();
+  })
+  .subscribe();
+
+sbExp.channel('expedientes-pagos-changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'pagos_visitas' }, () => {
     refreshExpedientes();
   })
   .subscribe();
