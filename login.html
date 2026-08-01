@@ -390,22 +390,30 @@ footer {
   }
 
   async function resolverRolPorCodigo(codigo){
-    const hash = await hashCodigo(codigo);
-    const res = await fetch(`${SB_URL}/rest/v1/role_access_codes?select=rol,code_hash`, {
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+    // Ahora la validación ocurre del lado del servidor: se manda el código
+    // en texto plano (por HTTPS) a una función RPC que lo hashea internamente
+    // y devuelve solo el rol correspondiente. Ya no se descarga la tabla completa.
+    const res = await fetch(`${SB_URL}/rest/v1/rpc/resolver_rol_por_codigo`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ codigo })
     });
     if(!res.ok) throw new Error('No se pudo validar el código. Intenta de nuevo.');
-    const rows = await res.json();
-    const match = rows.find(r => r.code_hash === hash);
-    return match ? match.rol : null;
+    const rol = await res.json();
+    return rol || null;
   }
 
-  // ─── Estado ────────────────────────────────────────────────
+  // ─── Estado ────────────────────────────────────────────────────────
   let isLogin = true;
   let rolDetectado = null;
+  let codigoAccesoValidado = null;
   let s2FotoData = '';
 
-  // ─── Elementos ─────────────────────────────────────────────
+  // ─── Elementos ──────────────────────────────────────────────
   const form      = document.getElementById('auth-form');
   const alert     = document.getElementById('alert');
   const btnSubmit = document.getElementById('btn-submit');
@@ -429,7 +437,7 @@ footer {
     } catch(e) { /* no session, stay on login */ }
   })();
 
-  // ─── Alternar login / registro ─────────────────────────────
+  // ─── Alternar login / registro ────────────────────────────────
   function toggleMode() {
     isLogin = !isLogin;
     hideAlert();
@@ -460,6 +468,7 @@ footer {
     document.getElementById('toggle-wrap').style.display = 'block';
     loginCard.classList.remove('wide');
     rolDetectado = null;
+    codigoAccesoValidado = null;
   }
 
   // ─── Submit paso 1 (login, o validar y avanzar a paso 2 en registro) ──
@@ -507,6 +516,7 @@ footer {
       }
 
       rolDetectado = rol;
+      codigoAccesoValidado = codigo;
       mostrarPaso2(rol, email);
 
     } catch (err) {
@@ -545,7 +555,7 @@ footer {
     hideAlert();
   });
 
-  // ─── Foto ──────────────────────────────────────────────────
+  // ─── Foto ───────────────────────────────────────────────────────────
   document.getElementById('s2-foto-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -588,7 +598,7 @@ footer {
     btn.textContent = 'Creando cuenta...';
 
     try {
-      const { user } = await signUpWithEmail(email, password, { nombre, rol });
+      const { user } = await signUpWithEmail(email, password, { nombre, codigo_acceso: codigoAccesoValidado });
 
       if (user && !user.identities?.length) {
         showAlert('Este correo ya está registrado. Intenta iniciar sesión.', 'error');
@@ -647,7 +657,7 @@ footer {
     btn.textContent = 'Crear cuenta';
   });
 
-  // ─── Helpers ───────────────────────────────────────────────
+  // ─── Helpers ───────────────────────────────────────────────────────
   function showAlert(msg, type) {
     alert.textContent = msg;
     alert.className = `alert alert-${type}`;
