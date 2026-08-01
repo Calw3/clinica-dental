@@ -112,7 +112,8 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
         <option value="Formación Universitaria">Formación Universitaria</option>
       </select>
     </div>
-    <button class="btn-primary" id="btn-nuevo">+ Nueva materia</button>
+    <button class="btn-primary" id="btn-nuevo" data-role="servicio_social,maestro,coordinador,administrador">+ Nueva materia</button>
+    <button class="btn-secondary" id="btn-reset" data-role="servicio_social,maestro,coordinador,administrador">Restablecer</button>
   </div>
 
   <div class="lista-wrap">
@@ -294,6 +295,7 @@ function renderLista(){
 
   let html='';
   let globalN=0;
+  const esAlumno=window.currentUserRole==='alumno';
   GRUPO_ORDEN.forEach(grupo=>{
     const items=grouped[grupo]||[];
     if(!items.length)return;
@@ -301,12 +303,15 @@ function renderLista(){
     items.forEach(m=>{
       globalN++;
       const css=TIPO_CSS[m.tipo]||'';
+      const acciones=esAlumno
+        ? `<span class="toggle-btn ${m.activa!==false?'activa':'inactiva'}" style="cursor:default;">${m.activa!==false?'Activa':'Inactiva'}</span>`
+        : `<button class="toggle-btn ${m.activa!==false?'activa':'inactiva'}" onclick="toggleActiva('${m.id}',event)">${m.activa!==false?'Activa':'Inactiva'}</button>
+        <button class="btn-icon" title="Editar" onclick="openPanel('${m.id}',event)">✏</button>
+        <button class="btn-icon" onclick="abrirEliminar('${m.id}',event)">✕</button>`;
       html+=`<div class="list-row">
         <span class="row-num">${globalN}</span>
         <span class="row-name">${esc(m.nombre)}</span>
-        <button class="toggle-btn ${m.activa!==false?'activa':'inactiva'}" onclick="toggleActiva('${m.id}',event)">${m.activa!==false?'Activa':'Inactiva'}</button>
-        <button class="btn-icon" title="Editar" onclick="openPanel('${m.id}',event)">✏</button>
-        <button class="btn-icon" onclick="abrirEliminar('${m.id}',event)">✕</button>
+        ${acciones}
       </div>`;
     });
   });
