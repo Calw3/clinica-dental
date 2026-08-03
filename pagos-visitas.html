@@ -62,7 +62,7 @@ td{padding:10px 12px;white-space:nowrap;vertical-align:middle;}
 .badge-debito{background:var(--blue-50);color:var(--blue-800);}
 .badge-credito{background:var(--teal-50);color:var(--teal-800);}
 .badge-pendiente{background:var(--red-50);color:var(--red-600);}
-.qr-thumb{width:28px;height:28px;border-radius:4px;object-fit:cover;border:1px solid var(--border);}
+
 .money-cell{font-weight:600;color:var(--teal-800);}
 .row-checkbox{width:16px;height:16px;accent-color:var(--teal-600);cursor:pointer;}
 .empty-state{padding:48px 20px;text-align:center;color:var(--text-secondary);}
@@ -203,7 +203,7 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
             <th>Registrado por</th>
             <th>Lugar de pago</th>
             <th>Observaciones</th>
-            <th>QR Pago</th>
+            
           </tr>
         </thead>
         <tbody id="tabla-body"></tbody>
@@ -364,15 +364,6 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
       </div>
 
       <div class="field">
-        <label>QR Pago</label>
-        <label class="photo-tile" for="inp-qr">
-          <img id="prev-qr" style="display:none;">
-          <span class="photo-tile-empty" id="ph-qr">
-            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg>
-            Subir QR de pago
-          </span>
-        </label>
-        <input type="file" accept="image/*" id="inp-qr" style="display:none;">
       </div>
 
     </form>
@@ -544,7 +535,7 @@ function pagoRowToRec(r){
     tratC:trats[2]?.nombre||'',cantC:trats[2]?.cantidad||0,costoC:trats[2]?.costo||0,totalC:trats[2]?.total||0,
     descuento:r.descuento||0, total:r.total||0, formaPago:r.forma_pago||'',
     registradoPor:r.registrado_por||'', lugarPago:r.lugar_pago||'',
-    observaciones:r.observaciones||'', qrPago:r.qr_pago||''
+    observaciones:r.observaciones||''
   };
 }
 function pagoRecToRow(rec){
@@ -553,7 +544,7 @@ function pagoRecToRow(rec){
     clinica:rec.clinica||'', estudiante:rec.estudiante||'', tratamientos:rec.tratamientos||[],
     descuento:Number(rec.descuento)||0, total:Number(rec.total)||0, forma_pago:rec.formaPago||'',
     registrado_por:rec.registradoPor||'', lugar_pago:rec.lugarPago||'',
-    observaciones:rec.observaciones||'', qr_pago:rec.qrPago||''
+    observaciones:rec.observaciones||''
   };
 }
 function papRowToRec(r){ return{...pagoRowToRec(r), _eliminadoEl:r.eliminado_el||''}; }
@@ -758,18 +749,7 @@ document.querySelectorAll('.opt-group').forEach(g=>{
   });
 });
 
-/* QR upload */
-document.getElementById('inp-qr').addEventListener('change',e=>{
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=()=>{
-    const img=document.getElementById('prev-qr');
-    img.src=reader.result;img.style.display='block';
-    img.setAttribute('data-value',reader.result);
-    document.getElementById('ph-qr').style.display='none';
-  };
-  reader.readAsDataURL(file);
-});
+
 
 /* Render stats */
 function renderStats(){
@@ -815,7 +795,6 @@ function renderTabla(){
       <td>${esc(p.registradoPor)}</td>
       <td>${esc(p.lugarPago)}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">${esc(p.observaciones)}</td>
-      <td>${p.qrPago?`<img src="${p.qrPago}" class="qr-thumb">`:'—'}</td>
     </tr>`;
   }).join('');
   document.getElementById('th-check').style.display=S.selMode?'table-cell':'none';
@@ -833,9 +812,6 @@ function openPanel(id){
   const form=document.getElementById('form-pago');
   form.reset();
   document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
-  const img=document.getElementById('prev-qr');
-  img.style.display='none';img.removeAttribute('data-value');
-  document.getElementById('ph-qr').style.display='flex';
   document.getElementById('f-total-display').textContent='$0.00';
   document.getElementById('f-total').value='0';
   clearTrats();
@@ -863,7 +839,6 @@ function openPanel(id){
     calcTotal();
     if(p.formaPago){const b=document.querySelector(`[data-group="formaPago"] [data-value="${p.formaPago}"]`);if(b)b.classList.add('selected');}
     if(p.lugarPago){const b=document.querySelector(`[data-group="lugarPago"] [data-value="${p.lugarPago}"]`);if(b)b.classList.add('selected');}
-    if(p.qrPago){img.src=p.qrPago;img.style.display='block';img.setAttribute('data-value',p.qrPago);document.getElementById('ph-qr').style.display='none';}
   } else {
     document.getElementById('panel-title').textContent='Nuevo registro de pago';
     const now=new Date();
@@ -905,7 +880,6 @@ document.getElementById('btn-panel-save').addEventListener('click',async()=>{
     registradoPor:fd.get('registradoPor'),
     lugarPago:document.querySelector('[data-group="lugarPago"] .selected')?.dataset.value||'',
     observaciones:fd.get('observaciones'),
-    qrPago:document.getElementById('prev-qr').getAttribute('data-value')||'',
   };
   const btn=document.getElementById('btn-panel-save');
   btn.disabled=true;
