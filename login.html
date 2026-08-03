@@ -1,1 +1,731 @@
-404: Not Found
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar Sesión · Clínica Dental Anáhuac</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --teal-50:#FDEEE2; --teal-100:#F9D5B8; --teal-600:#C2570D; --teal-800:#8C3F09; --teal-900:#5C2906;
+  --red-50:#FCEBEB; --red-600:#A32D2D;
+  --green-50:#EAF3DE; --green-800:#27500A;
+  --blue-50:#E6F1FB; --blue-800:#0C447C;
+  --bg:#F7F6F2; --surface:#FFFFFF; --surface-1:#F1F0EA;
+  --text-primary:#1F1F1D; --text-secondary:#5F5E5A; --text-muted:#888780;
+  --border:#E3E1D8; --radius:10px;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg); color:var(--text-primary); min-height:100vh;
+  display:flex; align-items:center; justify-content:center; padding:24px 0 80px;
+}
+
+.login-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  width:100%; max-width:420px; padding:40px 36px; margin:20px;
+  box-shadow:0 4px 24px rgba(0,0,0,.06); transition:max-width .2s ease;
+}
+.login-card.wide { max-width:560px; }
+
+.login-header { text-align:center; margin-bottom:28px; }
+.login-header img { width:64px; height:64px; object-fit:contain; border-radius:10px; margin-bottom:16px; }
+.login-header .eyebrow {
+  font-size:11px; color:var(--text-muted); letter-spacing:.06em;
+  text-transform:uppercase; margin-bottom:4px;
+}
+.login-header h1 { font-size:20px; font-weight:600; color:var(--teal-900); }
+.login-header p.welcome { font-size:13px; color:var(--text-secondary); margin-top:8px; line-height:1.5; }
+
+.field { margin-bottom:18px; }
+.field label {
+  display:block; font-size:11px; font-weight:700; color:var(--text-secondary);
+  text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;
+}
+.field input, .field select {
+  width:100%; height:42px; border:1px solid var(--border); border-radius:var(--radius);
+  padding:0 14px; font-size:14px; font-family:inherit;
+  background:#fff; color:var(--text-primary); transition:border-color .15s, box-shadow .15s;
+}
+.field input:focus, .field select:focus {
+  outline:none; border-color:var(--teal-600);
+  box-shadow:0 0 0 3px var(--teal-50);
+}
+.field input::placeholder { color:var(--text-muted); }
+.field input:disabled, .field select:disabled { background:var(--surface-1); color:var(--text-muted); }
+.field small { display:block; margin-top:5px; font-size:11px; color:var(--text-muted); }
+
+.grid-2 { display:grid; gap:14px; }
+@media(min-width:480px){ .grid-2{ grid-template-columns:1fr 1fr; } }
+
+.btn-login {
+  width:100%; height:44px; background:var(--teal-600); color:#fff;
+  border:none; border-radius:var(--radius); font-size:14px; font-weight:600;
+  font-family:inherit; cursor:pointer; transition:background .15s;
+  margin-top:8px;
+}
+.btn-login:hover { background:var(--teal-800); }
+.btn-login:disabled { opacity:.6; cursor:not-allowed; }
+
+.btn-secondary {
+  width:100%; height:40px; background:#fff; color:var(--text-secondary);
+  border:1px solid var(--border); border-radius:var(--radius); font-size:13px; font-weight:600;
+  font-family:inherit; cursor:pointer; margin-top:10px;
+}
+.btn-secondary:hover { border-color:var(--teal-600); color:var(--teal-800); }
+
+.toggle-mode {
+  text-align:center; margin-top:20px; font-size:13px; color:var(--text-secondary);
+}
+.toggle-mode a {
+  color:var(--teal-600); font-weight:600; cursor:pointer; text-decoration:none;
+}
+.toggle-mode a:hover { text-decoration:underline; }
+
+.forgot-pass { text-align:right; margin-top:-10px; margin-bottom:18px; }
+.forgot-pass a {
+  font-size:12px; color:var(--text-secondary); cursor:pointer; text-decoration:none;
+}
+.forgot-pass a:hover { color:var(--teal-600); text-decoration:underline; }
+
+.alert {
+  padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px;
+  display:none; line-height:1.4;
+}
+.alert-error { background:var(--red-50); color:var(--red-600); border:1px solid rgba(163,45,45,.15); }
+.alert-success { background:var(--green-50); color:var(--green-800); border:1px solid rgba(39,80,10,.15); }
+
+.extra-fields { display:none; }
+.step2 { display:none; }
+
+.password-toggle {
+  position:relative;
+}
+.password-toggle input { padding-right:44px; }
+.password-toggle button {
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; color:var(--text-muted);
+  font-size:12px; font-family:inherit; padding:4px 6px;
+}
+.password-toggle button:hover { color:var(--text-primary); }
+
+.role-badge {
+  display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700;
+  padding:6px 12px; border-radius:8px; margin-bottom:20px;
+  background:var(--teal-50); color:var(--teal-800); text-transform:uppercase; letter-spacing:.03em;
+}
+
+.section-title {
+  font-size:12px; font-weight:700; color:var(--teal-800); text-transform:uppercase;
+  letter-spacing:.04em; margin:22px 0 12px; padding-bottom:6px; border-bottom:1px solid var(--border);
+}
+.section-title:first-child { margin-top:0; }
+
+.photo-upload {
+  display:flex; align-items:center; gap:14px; margin-bottom:18px;
+}
+.photo-preview {
+  width:56px; height:56px; border-radius:50%; background:var(--surface-1); overflow:hidden;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid var(--border);
+}
+.photo-preview img { width:100%; height:100%; object-fit:cover; display:none; }
+.photo-upload label.upload-btn {
+  font-size:12px; font-weight:600; color:var(--teal-800); background:var(--teal-50);
+  border:1px dashed var(--teal-600); border-radius:8px; padding:8px 14px; cursor:pointer;
+}
+
+footer {
+  position:fixed; bottom:16px; left:0; right:0;
+  text-align:center; font-size:11px; color:var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<div class="login-card" id="login-card">
+  <div class="login-header">
+    <img src="images.jpeg" alt="Logo Anáhuac"
+         onerror="this.style.display='none'">
+    <p class="eyebrow">Sistema de gestión clínica</p>
+    <h1 id="form-title">Iniciar sesión</h1>
+    <p class="welcome extra-fields" id="welcome-msg">¡Bienvenido(a) a la Clínica Dental Universitaria Anáhuac Xalapa! Crea tu cuenta para comenzar. Necesitarás el código de acceso correspondiente a tu rol dentro de la clínica.</p>
+  </div>
+
+  <div id="alert" class="alert alert-error"></div>
+
+  <!-- ═══ Paso 1: cuenta ═══ -->
+  <form id="auth-form" autocomplete="on">
+    <div class="field extra-fields" id="name-field">
+      <label for="inp-nombre">Nombre completo</label>
+      <input type="text" id="inp-nombre" placeholder="Ej. Juan García López" autocomplete="name">
+    </div>
+
+    <div class="field">
+      <label for="inp-email">Correo electrónico</label>
+      <input type="email" id="inp-email" placeholder="tucorreo@anahuac.mx"
+             autocomplete="email" required>
+    </div>
+
+    <div class="field">
+      <label for="inp-password">Contraseña</label>
+      <div class="password-toggle">
+        <input type="password" id="inp-password" placeholder="Mínimo 6 caracteres"
+               autocomplete="current-password" required minlength="6">
+        <button type="button" onclick="togglePassword()">Mostrar</button>
+      </div>
+    </div>
+
+    <div class="forgot-pass" id="forgot-pass-wrap">
+      <a id="forgot-link" onclick="handleForgotPassword()">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <div class="field extra-fields" id="confirm-field">
+      <label for="inp-confirm">Confirmar contraseña</label>
+      <div class="password-toggle">
+        <input type="password" id="inp-confirm" placeholder="Repite tu contraseña"
+               autocomplete="new-password" minlength="6">
+        <button type="button" onclick="toggleConfirm()">Mostrar</button>
+      </div>
+    </div>
+
+    <div class="field extra-fields" id="codigo-field">
+      <label for="inp-codigo">Código de acceso</label>
+      <input type="text" id="inp-codigo" placeholder="Proporcionado por la coordinación">
+      <small>Determina tu rol dentro del sistema (alumno, servicio social, maestro, coordinación o administración).</small>
+    </div>
+
+    <button type="submit" class="btn-login" id="btn-submit">Iniciar sesión</button>
+  </form>
+
+  <!-- ═══ Paso 2: datos según rol ═══ -->
+  <div id="step2" class="step2">
+    <span class="role-badge" id="role-badge"></span>
+
+    <!-- Campos de alumno -->
+    <div id="fields-alumno" style="display:none;">
+      <p class="section-title">Datos del alumno</p>
+      <div class="grid-2">
+        <div class="field">
+          <label>ID institucional</label>
+          <input type="text" id="s2-idInstitucional" placeholder="Ej. AU2023001">
+        </div>
+        <div class="field">
+          <label>Semestre actual *</label>
+          <select id="s2-semestre">
+            <option value=""></option>
+            <option>1°</option><option>2°</option><option>3°</option><option>4°</option>
+            <option>5°</option><option>6°</option><option>7°</option><option>8°</option>
+            <option>9°</option><option>10°+</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Generación</label>
+        <input type="text" id="s2-generacion" placeholder="Ej. 2021-2026">
+      </div>
+    </div>
+
+    <!-- Campos de maestro / coordinación / administración / servicio social -->
+    <div id="fields-staff" style="display:none;">
+      <p class="section-title">Datos del personal</p>
+      <div class="grid-2">
+        <div class="field">
+          <label>ID institucional</label>
+          <input type="text" id="s2-idInstitucional-staff" placeholder="Ej. AU2018045">
+        </div>
+        <div class="field">
+          <label>Puesto *</label>
+          <select id="s2-puesto">
+            <option value=""></option>
+            <option>Director Escuela Médico Cirujano Dentista</option>
+            <option>Coordinación Académica</option>
+            <option>Asistente Operativa</option>
+            <option>Asistente Administrativa</option>
+            <option>Docente de Medio Tiempo</option>
+            <option>Docente de Tiempo Completo</option>
+            <option>Docente de Honorarios</option>
+            <option>Servicio Social</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Clínica / Materia que imparte</label>
+        <select id="s2-clinica">
+          <option value=""></option>
+          <optgroup label="Clínicas Integrales">
+            <option>Clínica Integral del Adulto I</option>
+            <option>Clínica Integral del Adulto II</option>
+            <option>Clínica Integral del Adulto III</option>
+            <option>Clínica Integral del Adulto IV</option>
+            <option>Clínica de Atención Temprana I</option>
+            <option>Clínica de Atención Temprana II</option>
+            <option>Clínica de Atención Temprana III</option>
+            <option>Clínica de Atención Temprana IV</option>
+            <option>Clínica Multidisciplinaria I</option>
+            <option>Clínica Multidisciplinaria II</option>
+            <option>Clínica Multidisciplinaria III</option>
+            <option>Clínica Multidisciplinaria IV</option>
+          </optgroup>
+          <optgroup label="Especialidades Clínicas">
+            <option>Endodoncia I</option>
+            <option>Endodoncia II</option>
+            <option>Periodoncia I</option>
+            <option>Periodoncia II</option>
+            <option>Ortodoncia I</option>
+            <option>Ortodoncia II</option>
+            <option>Cirugía Bucal I</option>
+            <option>Cirugía Bucal II</option>
+            <option>Prótesis Dental Total</option>
+            <option>Prótesis Parcial Removible</option>
+            <option>Prótesis Fija</option>
+            <option>Odontopediatría I</option>
+            <option>Odontopediatría II</option>
+            <option>Implantología</option>
+            <option>Imagenología</option>
+          </optgroup>
+          <optgroup label="Ciencias Básicas">
+            <option>Anatomía General</option>
+            <option>Anatomía de Cabeza y Cuello</option>
+            <option>Histología y Embriología</option>
+            <option>Bioquímica</option>
+            <option>Fisiología</option>
+            <option>Microbiología e Inmunología</option>
+            <option>Patología General</option>
+            <option>Patología Bucal</option>
+            <option>Farmacología</option>
+            <option>Radiología</option>
+          </optgroup>
+          <optgroup label="Diagnóstico y Clínica">
+            <option>Semiología y Diagnóstico</option>
+            <option>Oclusión I</option>
+            <option>Oclusión II</option>
+            <option>Materiales Dentales I</option>
+            <option>Materiales Dentales II</option>
+            <option>Operatoria Dental I</option>
+            <option>Operatoria Dental II</option>
+            <option>Anestesiología</option>
+            <option>Urgencias Médico-Dentales</option>
+          </optgroup>
+          <optgroup label="Formación Universitaria">
+            <option>Bioética</option>
+            <option>Administración en Odontología</option>
+            <option>Epidemiología y Salud Pública</option>
+            <option>Metodología de la Investigación</option>
+            <option>Odontología Social</option>
+            <option>Inglés I</option>
+            <option>Inglés II</option>
+            <option>Inglés III</option>
+            <option>Desarrollo Humano</option>
+            <option>Servicio Social</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>Turno</label>
+        <select id="s2-turno">
+          <option value=""></option>
+          <option>Matutino</option>
+          <option>Vespertino</option>
+        </select>
+      </div>
+      <small style="display:block;margin:-10px 0 18px;color:var(--text-muted);">El horario detallado se puede configurar después desde el módulo de Maestros.</small>
+    </div>
+
+    <!-- Campos comunes -->
+    <p class="section-title">Contacto</p>
+    <div class="photo-upload">
+      <div class="photo-preview"><img id="s2-foto-preview"></div>
+      <label class="upload-btn" for="s2-foto-input">Subir fotografía</label>
+      <input type="file" id="s2-foto-input" accept="image/*" style="display:none;">
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Correo personal</label>
+        <input type="email" id="s2-correo" placeholder="correo@gmail.com">
+      </div>
+      <div class="field">
+        <label>Correo institucional</label>
+        <input type="email" id="s2-correoInstitucional" placeholder="alumno@anahuac.mx">
+      </div>
+    </div>
+    <div class="field">
+      <label>Teléfono</label>
+      <input type="tel" id="s2-telefono" placeholder="10 dígitos">
+    </div>
+
+    <button type="button" class="btn-login" id="btn-crear-cuenta">Crear cuenta</button>
+    <button type="button" class="btn-secondary" id="btn-volver-paso1">← Volver</button>
+  </div>
+
+  <div class="toggle-mode" id="toggle-wrap">
+    <span id="toggle-text">¿No tienes cuenta?</span>
+    <a id="toggle-link" onclick="toggleMode()">Crear cuenta</a>
+  </div>
+</div>
+
+<footer>Clínica Dental Universitaria Anáhuac Xalapa · 2026</footer>
+
+<script src="auth.js"></script>
+<script>
+  // ─── Config Supabase directo (para leer role_access_codes antes de autenticar) ──
+  const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+  const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+
+  const ROLE_LABELS = {
+    alumno:'Alumno', servicio_social:'Servicio Social', maestro:'Maestro',
+    coordinador:'Coordinación', administrador:'Administración'
+  };
+  const STAFF_ROLES = ['servicio_social','maestro','coordinador','administrador'];
+  const PUESTO_POR_ROL = {
+    coordinador:'Coordinación Académica',
+    administrador:'Asistente Administrativa',
+    servicio_social:'Servicio Social'
+  };
+
+  async function hashCodigo(str){
+    const enc = new TextEncoder().encode(str.trim());
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function resolverRolPorCodigo(codigo){
+    // Ahora la validación ocurre del lado del servidor: se manda el código
+    // en texto plano (por HTTPS) a una función RPC que lo hashea internamente
+    // y devuelve solo el rol correspondiente. Ya no se descarga la tabla completa.
+    const res = await fetch(`${SB_URL}/rest/v1/rpc/resolver_rol_por_codigo`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ codigo })
+    });
+    if(!res.ok) throw new Error('No se pudo validar el código. Intenta de nuevo.');
+    const rol = await res.json();
+    return rol || null;
+  }
+
+  // ─── Estado ────────────────────────────────────────────────────────
+  let isLogin = true;
+  let rolDetectado = null;
+  let codigoAccesoValidado = null;
+  let s2FotoData = '';
+
+  // ─── Elementos ──────────────────────────────────────────────
+  const form      = document.getElementById('auth-form');
+  const alert     = document.getElementById('alert');
+  const btnSubmit = document.getElementById('btn-submit');
+  const title     = document.getElementById('form-title');
+  const toggleTxt = document.getElementById('toggle-text');
+  const toggleLnk = document.getElementById('toggle-link');
+  const extras    = document.querySelectorAll('.extra-fields');
+  const inpNombre = document.getElementById('inp-nombre');
+  const inpEmail  = document.getElementById('inp-email');
+  const inpPass   = document.getElementById('inp-password');
+  const inpConf   = document.getElementById('inp-confirm');
+  const inpCodigo = document.getElementById('inp-codigo');
+  const loginCard = document.getElementById('login-card');
+  const step2     = document.getElementById('step2');
+
+  // ─── Si ya tiene sesión, ir directo al sistema ─────────────
+  (async () => {
+    try {
+      const session = await getSession();
+      if (session) window.location.href = 'index.html';
+    } catch(e) { /* no session, stay on login */ }
+  })();
+
+  // ─── Alternar login / registro ────────────────────────────────
+  function toggleMode() {
+    isLogin = !isLogin;
+    hideAlert();
+    salirPaso2();
+
+    if (isLogin) {
+      title.textContent     = 'Iniciar sesión';
+      btnSubmit.textContent  = 'Iniciar sesión';
+      toggleTxt.textContent  = '¿No tienes cuenta?';
+      toggleLnk.textContent  = 'Crear cuenta';
+      extras.forEach(el => el.style.display = 'none');
+      inpPass.autocomplete = 'current-password';
+      document.getElementById('forgot-pass-wrap').style.display = 'block';
+    } else {
+      title.textContent     = 'Crear cuenta';
+      btnSubmit.textContent  = 'Continuar';
+      toggleTxt.textContent  = '¿Ya tienes cuenta?';
+      toggleLnk.textContent  = 'Iniciar sesión';
+      extras.forEach(el => el.style.display = 'block');
+      inpPass.autocomplete = 'new-password';
+      document.getElementById('forgot-pass-wrap').style.display = 'none';
+    }
+  }
+
+  function salirPaso2(){
+    step2.style.display = 'none';
+    form.style.display = 'block';
+    document.getElementById('toggle-wrap').style.display = 'block';
+    loginCard.classList.remove('wide');
+    rolDetectado = null;
+    codigoAccesoValidado = null;
+  }
+
+  // ─── Submit paso 1 (login, o validar y avanzar a paso 2 en registro) ──
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+
+    const email    = inpEmail.value.trim();
+    const password = inpPass.value;
+
+    if (!email || !password) {
+      showAlert('Completa todos los campos.', 'error');
+      return;
+    }
+    if (password.length < 6) {
+      showAlert('La contraseña debe tener al menos 6 caracteres.', 'error');
+      return;
+    }
+
+    btnSubmit.disabled = true;
+
+    try {
+      if (isLogin) {
+        btnSubmit.textContent = 'Verificando...';
+        await loginWithEmail(email, password);
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // ── REGISTRO: validar paso 1 y pasar a paso 2 ──
+      btnSubmit.textContent = 'Validando código...';
+      const nombre  = inpNombre.value.trim();
+      const confirm = inpConf.value;
+      const codigo  = inpCodigo.value.trim();
+
+      if (!nombre) { showAlert('Escribe tu nombre completo.', 'error'); resetBtn(); return; }
+      if (password !== confirm) { showAlert('Las contraseñas no coinciden.', 'error'); resetBtn(); return; }
+      if (!codigo) { showAlert('Ingresa tu código de acceso.', 'error'); resetBtn(); return; }
+
+      const rol = await resolverRolPorCodigo(codigo);
+      if (!rol) {
+        showAlert('El código de acceso no es válido. Verifícalo con la coordinación.', 'error');
+        resetBtn();
+        return;
+      }
+
+      rolDetectado = rol;
+      codigoAccesoValidado = codigo;
+      mostrarPaso2(rol, email);
+
+    } catch (err) {
+      const msg = translateError(err.message || 'Error desconocido');
+      showAlert(msg, 'error');
+    }
+
+    resetBtn();
+  });
+
+  function mostrarPaso2(rol, email){
+    form.style.display = 'none';
+    document.getElementById('toggle-wrap').style.display = 'none';
+    loginCard.classList.add('wide');
+    step2.style.display = 'block';
+
+    document.getElementById('role-badge').textContent = 'Registrándote como: ' + (ROLE_LABELS[rol] || rol);
+    document.getElementById('fields-alumno').style.display = rol === 'alumno' ? 'block' : 'none';
+    document.getElementById('fields-staff').style.display = STAFF_ROLES.includes(rol) ? 'block' : 'none';
+
+    document.getElementById('s2-correoInstitucional').value = email;
+
+    if (PUESTO_POR_ROL[rol]) {
+      const sel = document.getElementById('s2-puesto');
+      sel.value = PUESTO_POR_ROL[rol];
+      sel.disabled = true;
+    } else {
+      document.getElementById('s2-puesto').disabled = false;
+    }
+
+    step2.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  document.getElementById('btn-volver-paso1').addEventListener('click', () => {
+    salirPaso2();
+    hideAlert();
+  });
+
+  // ─── Foto ───────────────────────────────────────────────────────────
+  document.getElementById('s2-foto-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      s2FotoData = reader.result;
+      const img = document.getElementById('s2-foto-preview');
+      img.src = s2FotoData;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ─── Submit paso 2: crear cuenta + registro en alumnos/maestros ──
+  document.getElementById('btn-crear-cuenta').addEventListener('click', async () => {
+    hideAlert();
+    const btn = document.getElementById('btn-crear-cuenta');
+
+    const email    = inpEmail.value.trim();
+    const password = inpPass.value;
+    const nombre   = inpNombre.value.trim();
+    const rol      = rolDetectado;
+
+    if (rol === 'alumno') {
+      const semestre = document.getElementById('s2-semestre').value;
+      if (!semestre) {
+        showAlert('Selecciona tu semestre actual.', 'error');
+        return;
+      }
+    }
+    if (STAFF_ROLES.includes(rol) && !PUESTO_POR_ROL[rol]) {
+      const puesto = document.getElementById('s2-puesto').value;
+      if (!puesto) {
+        showAlert('Selecciona tu puesto.', 'error');
+        return;
+      }
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Creando cuenta...';
+
+    try {
+      const { user } = await signUpWithEmail(email, password, { nombre, codigo_acceso: codigoAccesoValidado });
+
+      if (user && !user.identities?.length) {
+        showAlert('Este correo ya está registrado. Intenta iniciar sesión.', 'error');
+        btn.disabled = false; btn.textContent = 'Crear cuenta';
+        return;
+      }
+      if (!user) {
+        showAlert('No se pudo crear la cuenta. Intenta de nuevo.', 'error');
+        btn.disabled = false; btn.textContent = 'Crear cuenta';
+        return;
+      }
+
+      const sb = getSupabase();
+      const correo = document.getElementById('s2-correo').value.trim();
+      const correoInstitucional = document.getElementById('s2-correoInstitucional').value.trim();
+      const telefono = document.getElementById('s2-telefono').value.trim();
+
+      if (rol === 'alumno') {
+        const { error } = await sb.from('alumnos').insert({
+          id: user.id,
+          id_institucional: document.getElementById('s2-idInstitucional').value.trim(),
+          nombre, semestre: document.getElementById('s2-semestre').value,
+          generacion: document.getElementById('s2-generacion').value.trim(),
+          correo, correo_institucional: correoInstitucional, telefono, foto: s2FotoData
+        });
+        if (error) console.error('Error creando registro de alumno:', error);
+      } else if (STAFF_ROLES.includes(rol)) {
+        const { error } = await sb.from('maestros').insert({
+          id: user.id,
+          id_institucional: document.getElementById('s2-idInstitucional-staff').value.trim(),
+          nombre, puesto: document.getElementById('s2-puesto').value,
+          clinica: document.getElementById('s2-clinica').value,
+          turno: document.getElementById('s2-turno').value,
+          correo, correo_institucional: correoInstitucional, telefono, foto: s2FotoData
+        });
+        if (error) console.error('Error creando registro de personal:', error);
+      }
+
+      salirPaso2();
+      isLogin = true;
+      title.textContent = 'Iniciar sesión';
+      btnSubmit.textContent = 'Iniciar sesión';
+      toggleTxt.textContent = '¿No tienes cuenta?';
+      toggleLnk.textContent = 'Crear cuenta';
+      extras.forEach(el => el.style.display = 'none');
+      document.getElementById('forgot-pass-wrap').style.display = 'block';
+      form.reset();
+
+      showAlert('¡Cuenta creada correctamente! Revisa tu correo para confirmarla antes de iniciar sesión.', 'success');
+
+    } catch (err) {
+      showAlert(translateError(err.message || 'No se pudo crear la cuenta.'), 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Crear cuenta';
+  });
+
+  // ─── Helpers ───────────────────────────────────────────────────────
+  function showAlert(msg, type) {
+    alert.textContent = msg;
+    alert.className = `alert alert-${type}`;
+    alert.style.display = 'block';
+  }
+
+  function hideAlert() {
+    alert.style.display = 'none';
+  }
+
+  function resetBtn() {
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = isLogin ? 'Iniciar sesión' : 'Continuar';
+  }
+
+  function togglePassword() {
+    const inp = document.getElementById('inp-password');
+    const btn = inp.nextElementSibling;
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Ocultar'; }
+    else { inp.type = 'password'; btn.textContent = 'Mostrar'; }
+  }
+
+  function toggleConfirm() {
+    const inp = document.getElementById('inp-confirm');
+    const btn = inp.nextElementSibling;
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Ocultar'; }
+    else { inp.type = 'password'; btn.textContent = 'Mostrar'; }
+  }
+
+  // ─── Olvidé mi contraseña ──────────────────────────────────
+  async function handleForgotPassword() {
+    hideAlert();
+    const email = inpEmail.value.trim();
+
+    if (!email) {
+      showAlert('Escribe tu correo electrónico arriba y luego haz clic en "¿Olvidaste tu contraseña?".', 'error');
+      inpEmail.focus();
+      return;
+    }
+
+    const link = document.getElementById('forgot-link');
+    const textoOriginal = link.textContent;
+    link.textContent = 'Enviando...';
+
+    try {
+      await sendPasswordReset(email);
+      showAlert(
+        'Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada (y spam).',
+        'success'
+      );
+    } catch (err) {
+      showAlert(translateError(err.message || 'No se pudo enviar el correo. Intenta de nuevo.'), 'error');
+    }
+
+    link.textContent = textoOriginal;
+  }
+
+  function translateError(msg) {
+    const map = {
+      'Invalid login credentials': 'Correo o contraseña incorrectos.',
+      'Email not confirmed': 'Confirma tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.',
+      'User already registered': 'Este correo ya está registrado.',
+      'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
+      'Signup requires a valid password': 'Escribe una contraseña válida.',
+      'Unable to validate email address: invalid format': 'El formato del correo no es válido.',
+    };
+    return map[msg] || msg;
+  }
+</script>
+</body>
+</html>
