@@ -11,7 +11,7 @@
    2. Al final del <script> de cada página, llamar:
       initAuth().then(user => { ... arrancar módulo ... });
    
-   3. Roles disponibles: coordinador, administrador, maestro, servicio_social, alumno
+   3. Roles disponibles: coordinador, maestro, alumno
    
    ══════════════════════════════════════════════════════════════ */
 
@@ -24,13 +24,13 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 // ─── CLIENTE SUPABASE (vía CDN, cargado en cada HTML) ────────
 // Se espera que el HTML cargue el CDN antes de este archivo:
 // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-let sbClient;
+let supabase;
 
 function getSupabase() {
-  if (!sbClient) {
-    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  if (!supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
   }
-  return sbClient;
+  return supabase;
 }
 
 // ─── FUNCIONES PRINCIPALES ───────────────────────────────────
@@ -105,28 +105,6 @@ async function getUserRole(userId) {
   return profile?.rol || 'alumno';
 }
 
-/**
- * Enviar correo de restablecimiento de contraseña.
- * El enlace del correo redirige a reset-password.html
- */
-async function sendPasswordReset(email) {
-  const sb = getSupabase();
-  const redirectTo = window.location.origin +
-    window.location.pathname.replace(/[^/]*$/, '') + 'reset-password.html';
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
-  if (error) throw error;
-}
-
-/**
- * Actualizar la contraseña del usuario actual (usado en reset-password.html
- * después de que Supabase valida el enlace de recuperación).
- */
-async function updatePassword(newPassword) {
-  const sb = getSupabase();
-  const { error } = await sb.auth.updateUser({ password: newPassword });
-  if (error) throw error;
-}
-
 // ─── GUARD: proteger páginas ─────────────────────────────────
 
 /**
@@ -156,7 +134,8 @@ async function initAuth(allowedRoles = []) {
   }
 
   // Verificar rol si se especificaron roles permitidos
-  if (allowedRoles.length > 0 && !allowedRoles.includes(profile.rol)) {
+  // El administrador siempre tiene acceso total
+  if (allowedRoles.length > 0 && profile.rol !== 'administrador' && !allowedRoles.includes(profile.rol)) {
     alert('No tienes permisos para acceder a este módulo.');
     window.location.href = 'index.html';
     return;
@@ -189,11 +168,10 @@ function renderUserBar(profile) {
   }
 
   const rolBadge = {
-    coordinador:     { bg: 'var(--teal-50, #FDEEE2)',  color: 'var(--teal-800, #8C3F09)',  label: 'Coordinador' },
-    administrador:   { bg: 'var(--red-50, #FCEBEB)',   color: 'var(--red-600, #A32D2D)',   label: 'Administración' },
-    maestro:         { bg: 'var(--blue-50, #E6F1FB)',   color: 'var(--blue-800, #0C447C)',  label: 'Maestro' },
-    servicio_social: { bg: 'var(--amber-50, #FAEEDA)',  color: 'var(--amber-600, #854F0B)', label: 'Servicio Social' },
-    alumno:          { bg: 'var(--green-50, #EAF3DE)',  color: 'var(--green-800, #27500A)', label: 'Alumno' },
+    administrador: { bg: '#1F1F1D',                  color: '#FFFFFF',                   label: 'Administrador' },
+    coordinador:   { bg: 'var(--teal-50, #FDEEE2)',  color: 'var(--teal-800, #8C3F09)',  label: 'Coordinador' },
+    maestro:       { bg: 'var(--blue-50, #E6F1FB)',  color: 'var(--blue-800, #0C447C)',  label: 'Maestro' },
+    alumno:        { bg: 'var(--green-50, #EAF3DE)', color: 'var(--green-800, #27500A)', label: 'Alumno' },
   };
 
   const r = rolBadge[profile.rol] || rolBadge.alumno;
@@ -235,26 +213,14 @@ function applyRoleVisibility(userRole) {
   });
 }
 
-/**
- * Llamar después de cualquier render dinámico (renderLista, etc.)
- * para ocultar de nuevo los elementos [data-role] recién insertados
- * al DOM, ya que innerHTML los vuelve a mostrar por defecto.
- */
-function refreshRoleVisibility() {
-  if (window.currentUserRole) {
-    applyRoleVisibility(window.currentUserRole);
-  }
-}
-
 // ─── AUTO-GUARD: protección automática al cargar ─────────────
 // Si este script se carga en cualquier página que NO sea login.html,
 // verifica la sesión. Si no hay sesión, redirige a login.html.
 // Así no necesitas modificar el <script> de cada módulo.
 
 (async function autoGuard() {
-  // No proteger login.html ni reset-password.html (evita loop de redirección)
+  // No proteger login.html (evita loop de redirección)
   if (window.location.pathname.endsWith('login.html')) return;
-  if (window.location.pathname.endsWith('reset-password.html')) return;
 
   // Ocultar la página hasta confirmar autenticación (evita flash)
   document.documentElement.style.visibility = 'hidden';
@@ -273,7 +239,6 @@ function refreshRoleVisibility() {
     // Cargar perfil y mostrar barra de usuario + roles
     try {
       const profile = await getProfile(session.user.id);
-      window.currentUserRole = profile.rol;
       // Esperar a que el DOM esté listo para inyectar la barra
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
@@ -287,15 +252,12 @@ function refreshRoleVisibility() {
     } catch (e) {
       // Sin perfil aún — mostrar como alumno
       const fallback = { email: session.user.email, rol: 'alumno', nombre: '' };
-      window.currentUserRole = fallback.rol;
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
           renderUserBar(fallback);
-          applyRoleVisibility(fallback.rol);
         });
       } else {
         renderUserBar(fallback);
-        applyRoleVisibility(fallback.rol);
       }
     }
 
