@@ -974,7 +974,7 @@ async function verExpediente(id){
     }
     html += `<div style="display:flex;gap:8px;margin-top:8px;">
       <button type="button" class="btn-nueva-just" data-tipo="just" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--teal-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nuevo justificante</button>
-      <button type="button" class="btn-nueva-just" data-tipo="rec" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--blue-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nueva receta</button>
+      <button type="button" class="btn-nueva-just" data-tipo="rec" data-pac="${escapeHtml(e.nombre)}" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--blue-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nueva receta</button>
     </div>`;
   } catch(err){}
 
@@ -1113,7 +1113,11 @@ document.getElementById('modal-ver-expediente').addEventListener('click', (e) =>
   }
   const btnEditJust = e.target.closest('.btn-edit-just');
   if(btnEditJust){
-    location.href = 'justificantes.html?openId=' + encodeURIComponent(btnEditJust.dataset.id) + '&tipo=' + encodeURIComponent(btnEditJust.dataset.tipo);
+    if(btnEditJust.dataset.tipo==='rec'){
+      location.href = 'receta-medica.html?recId=' + encodeURIComponent(btnEditJust.dataset.id);
+    } else {
+      location.href = 'justificantes.html?openId=' + encodeURIComponent(btnEditJust.dataset.id) + '&tipo=' + encodeURIComponent(btnEditJust.dataset.tipo);
+    }
     return;
   }
   const btnPrintJust = e.target.closest('.btn-print-just');
@@ -1132,7 +1136,11 @@ document.getElementById('modal-ver-expediente').addEventListener('click', (e) =>
   }
   const btnNuevaJust = e.target.closest('.btn-nueva-just');
   if(btnNuevaJust){
-    location.href = 'justificantes.html?tab=' + encodeURIComponent(btnNuevaJust.dataset.tipo);
+    if(btnNuevaJust.dataset.tipo==='rec' && btnNuevaJust.dataset.pac){
+      location.href = 'receta-medica.html?pac=' + encodeURIComponent(btnNuevaJust.dataset.pac);
+    } else {
+      location.href = 'justificantes.html?tab=' + encodeURIComponent(btnNuevaJust.dataset.tipo);
+    }
     return;
   }
 });
