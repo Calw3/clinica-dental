@@ -211,6 +211,10 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
         <input type="text" id="f-idInstitucional" placeholder="Ej. MA2018042">
       </div>
       <div class="field">
+        <label>Cédula profesional</label>
+        <input type="text" id="f-cedulaProfesional" placeholder="Ej. 12345678">
+      </div>
+      <div class="field">
         <label>Nombre completo *</label>
         <input type="text" id="f-nombre" placeholder="Apellidos y nombre" required>
       </div>
@@ -412,14 +416,14 @@ const sbMae=window.supabase.createClient(SB_URL,SB_KEY);
 /* ── Mapeo camelCase (frontend) ↔ snake_case (Supabase) ── */
 function maestroRowToRec(r){
   return{
-    id:r.id, idInstitucional:r.id_institucional||'', nombre:r.nombre||'', puesto:r.puesto||'',
+    id:r.id, idInstitucional:r.id_institucional||'', cedulaProfesional:r.cedula_profesional||'', nombre:r.nombre||'', puesto:r.puesto||'',
     clinica:r.clinica||'', turno:r.turno||'', horario:r.horario||{}, foto:r.foto||'',
     telefono:r.telefono||'', correo:r.correo||'', correoInstitucional:r.correo_institucional||''
   };
 }
 function maestroRecToRow(rec){
   return{
-    id:rec.id, id_institucional:rec.idInstitucional||'', nombre:rec.nombre||'', puesto:rec.puesto||'',
+    id:rec.id, id_institucional:rec.idInstitucional||'', cedula_profesional:rec.cedulaProfesional||'', nombre:rec.nombre||'', puesto:rec.puesto||'',
     clinica:rec.clinica||'', turno:rec.turno||'', horario:rec.horario||{}, foto:rec.foto||'',
     telefono:rec.telefono||'', correo:rec.correo||'', correo_institucional:rec.correoInstitucional||''
   };
@@ -521,6 +525,7 @@ function openPanel(id){
     document.getElementById('panel-title').textContent='Editar maestro';
     document.getElementById('f-id').value=m.id;
     document.getElementById('f-idInstitucional').value=m.idInstitucional||'';
+    document.getElementById('f-cedulaProfesional').value=m.cedulaProfesional||'';
     document.getElementById('f-nombre').value=m.nombre||'';
     document.getElementById('f-puesto').value=m.puesto||'';
     document.getElementById('f-clinica').value=m.clinica||'';
@@ -570,6 +575,7 @@ document.getElementById('btn-save-panel').addEventListener('click',async()=>{
   const rec={
     id:S.editId||document.getElementById('f-id').value,
     idInstitucional:document.getElementById('f-idInstitucional').value.trim(),
+    cedulaProfesional:document.getElementById('f-cedulaProfesional').value.trim(),
     nombre,puesto,
     clinica:document.getElementById('f-clinica').value,
     turno:document.getElementById('f-turno').value,
