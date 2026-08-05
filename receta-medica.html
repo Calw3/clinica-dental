@@ -180,27 +180,63 @@
 </div>
 <div class="toast" id="toast"></div>
 
+
 <script>
-const EXP_KEY='clinica_dental_data_v1';
-function loadExpData(){try{const r=localStorage.getItem(EXP_KEY);if(r)return JSON.parse(r);}catch(e){}return{expedientes:[]};}
-function saveExpData(d){localStorage.setItem(EXP_KEY,JSON.stringify(d));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbRec=window.supabase.createClient(SB_URL,SB_KEY);
 
 const params=new URLSearchParams(location.search);
-const expId=params.get('expId');
-const recId=params.get('recId');
-
-const expData=loadExpData();
-const expIdx=expData.expedientes.findIndex(x=>x.id===expId);
-const exp=expIdx>-1?expData.expedientes[expIdx]:null;
+const recId=params.get('recId');   // id en tabla justificantes (edición)
+const pacNombre=params.get('pac'); // nombre del paciente (nueva receta desde expediente)
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-function volver(){history.length>1?history.back():(location.href='control-clinica-dental.html');}
+function showToast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function volver(){history.length>1?history.back():(location.href='justificantes.html?tab=rec');}
 document.getElementById('btn-volver').addEventListener('click',volver);
 document.getElementById('btn-volver-bottom').addEventListener('click',volver);
 function val(id){return(document.getElementById(id)||{}).value||'';}
 function setVal(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
+function todayISO(){const d=new Date();const p=v=>String(v).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
+
+/* ── Mapeo Supabase ↔ objeto receta (mismo patrón que justificantes.html) ── */
+function rowToRec(r){
+  const d=r.datos||{};
+  return{
+    id:r.id, folio:r.folio||'', paciente:r.paciente||'',
+    alumno:r.alumno||'', maestro:r.maestro||'', firma:r.firma||'',
+    fechaEmision:d.fechaEmision||'', clinica:d.clinica||'',
+    cedulaDocente:d.cedulaDocente||'', matricula:d.matricula||'',
+    peso:d.peso||'', talla:d.talla||'',
+    fechaNacimiento:d.fechaNacimiento||'', edad:d.edad||'',
+    diagnostico:d.diagnostico||'',
+    medicamentos:d.medicamentos||[], indicaciones:d.indicaciones||'',
+  };
+}
+function recToRow(rec){
+  return{
+    tipo:'rec',
+    folio:rec.folio||'',
+    paciente:rec.paciente||'',
+    alumno:rec.alumno||'',
+    maestro:rec.maestro||'',
+    firma:rec.firma||'',
+    datos:{
+      fechaEmision:rec.fechaEmision||'',
+      clinica:rec.clinica||'',
+      cedulaDocente:rec.cedulaDocente||'',
+      matricula:rec.matricula||'',
+      peso:rec.peso||'',
+      talla:rec.talla||'',
+      fechaNacimiento:rec.fechaNacimiento||'',
+      edad:rec.edad||'',
+      diagnostico:rec.diagnostico||'',
+      medicamentos:rec.medicamentos||[],
+      indicaciones:rec.indicaciones||'',
+    }
+  };
+}
 
 /* ── Canvas firma ── */
 const firmaCanvas=document.getElementById('rec-firma-canvas');
@@ -232,20 +268,14 @@ function addMed(data){
       <button type="button" class="btn-remove-med" onclick="removeMed('${id}')">✕ Quitar</button>
     </div>
     <div class="grid-med">
-      <div class="field" style="margin:0"><label>Nombre genérico del medicamento<span class="req">*</span></label><input type="text" class="med-nombre" placeholder="Ej. Amoxicilina" value="${esc(data?.nombre||'')}"></div>
+      <div class="field" style="margin:0"><label>Nombre genérico<span class="req">*</span></label><input type="text" class="med-nombre" placeholder="Ej. Amoxicilina" value="${esc(data?.nombre||'')}"></div>
       <div class="field" style="margin:0"><label>Concentración / Gramaje</label><input type="text" class="med-concentracion" placeholder="Ej. 500 mg" value="${esc(data?.concentracion||'')}"></div>
       <div class="field" style="margin:0"><label>Dosis por toma</label><input type="text" class="med-dosis" placeholder="Ej. 1 cápsula" value="${esc(data?.dosis||'')}"></div>
       <div class="field" style="margin:0"><label>Cantidad a surtir</label><input type="text" class="med-cantidad" placeholder="Ej. 15 piezas" value="${esc(data?.cantidad||'')}"></div>
     </div>
     <div class="grid-med2">
-      <div class="field" style="margin:0">
-        <label>Forma farmacéutica</label>
-        <select class="med-forma"><option value="">Seleccionar...</option>${formas}</select>
-      </div>
-      <div class="field" style="margin:0">
-        <label>Vía de administración</label>
-        <select class="med-via"><option value="">Seleccionar...</option>${vias}</select>
-      </div>
+      <div class="field" style="margin:0"><label>Forma farmacéutica</label><select class="med-forma"><option value="">Seleccionar...</option>${formas}</select></div>
+      <div class="field" style="margin:0"><label>Vía de administración</label><select class="med-via"><option value="">Seleccionar...</option>${vias}</select></div>
       <div class="field" style="margin:0"><label>Frecuencia</label><input type="text" class="med-frecuencia" placeholder="Ej. cada 8 h" value="${esc(data?.frecuencia||'')}"></div>
     </div>
     <div class="grid-2" style="margin-top:10px;">
@@ -272,91 +302,138 @@ function getMeds(){
 }
 document.getElementById('btn-add-med').addEventListener('click',()=>addMed(null));
 
-/* ── Init ── */
-if(!exp){
-  document.getElementById('rec-error').style.display='';
+/* ── Generar folio ── */
+async function generarFolio(){
+  const y=new Date().getFullYear();
+  const{data}=await sbRec.from('justificantes').select('folio').eq('tipo','rec').like('folio',`R-${y}-%`);
+  const nums=(data||[]).map(r=>parseInt((r.folio||'').split('-')[2])||0);
+  const next=(nums.length?Math.max(...nums):0)+1;
+  return`R-${y}-${String(next).padStart(4,'0')}`;
+}
+
+/* ── Init: cargar expediente desde Supabase ── */
+async function init(){
+  document.getElementById('rec-error').style.display='none';
   document.getElementById('rec-body').style.display='none';
   document.querySelector('.sticky-bar').style.display='none';
-} else {
+
+  let pacienteNombre = pacNombre || '';
+  let recExistente = null;
+
+  // Si es edición, cargar la receta existente de Supabase
+  if(recId){
+    const{data:row,error}=await sbRec.from('justificantes').select('*').eq('id',recId).single();
+    if(error||!row){
+      document.getElementById('rec-error').style.display='';
+      return;
+    }
+    recExistente=rowToRec(row);
+    pacienteNombre=recExistente.paciente;
+  }
+
+  if(!pacienteNombre){
+    document.getElementById('rec-error').style.display='';
+    return;
+  }
+
+  // Cargar datos del paciente desde expedientes
+  const{data:expRows}=await sbRec.from('expedientes').select('nombre,sexo,edad,tipo_paciente,fotografia_paciente,fecha_nacimiento,alergia,alergia_especifique').ilike('nombre',pacienteNombre.trim());
+  const exp=expRows&&expRows.length?expRows[0]:null;
+
+  // Mostrar ficha del paciente
   document.getElementById('rec-body').style.display='';
-  const avatar=exp.fotografiaPaciente?`<img src="${exp.fotografiaPaciente}">`:(initials(exp.nombre));
-  const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipoPaciente].filter(Boolean).join(' · ');
-  document.getElementById('ficha-paciente').innerHTML=`
-    <div class="avatar">${avatar}</div>
-    <div>
-      <p class="patient-name">${esc(exp.nombre)}</p>
-      <p class="patient-meta">${esc(meta||'')}</p>
-    </div>`;
+  document.querySelector('.sticky-bar').style.display='';
 
-  // Datos del paciente desde el expediente (read-only)
-  setVal('rec-paciente', exp.nombre||'');
-  setVal('rec-fechanac', exp.fechaNacimiento||exp.fecha_nacimiento||'');
-  setVal('rec-edad', exp.edad ? exp.edad+' años' : '');
-  const alergiaTexto=[exp.alergia, exp.alergiaEspecifique].filter(Boolean).join(' — ');
-  setVal('rec-alergias', alergiaTexto||'Sin alergias registradas');
+  if(exp){
+    const avatar=exp.fotografia_paciente?`<img src="${exp.fotografia_paciente}">`:(initials(exp.nombre||pacienteNombre));
+    const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipo_paciente].filter(Boolean).join(' · ');
+    document.getElementById('ficha-paciente').innerHTML=`
+      <div class="avatar">${avatar}</div>
+      <div><p class="patient-name">${esc(exp.nombre||pacienteNombre)}</p><p class="patient-meta">${esc(meta)}</p></div>`;
+    setVal('rec-paciente', exp.nombre||pacienteNombre);
+    setVal('rec-fechanac', exp.fecha_nacimiento||'');
+    setVal('rec-edad', exp.edad?exp.edad+' años':'');
+    const alergia=[exp.alergia,exp.alergia_especifique].filter(Boolean).join(' — ');
+    setVal('rec-alergias', alergia||'Sin alergias registradas');
+  } else {
+    document.getElementById('ficha-paciente').innerHTML=`<div class="avatar">${initials(pacienteNombre)}</div><div><p class="patient-name">${esc(pacienteNombre)}</p></div>`;
+    setVal('rec-paciente', pacienteNombre);
+    setVal('rec-alergias','Sin alergias registradas');
+  }
 
-  // Fecha de hoy por defecto
-  setVal('rec-fecha', new Date().toISOString().slice(0,10));
+  setVal('rec-fecha', todayISO());
 
-  // Cargar receta existente si se pasa recId
-  const recetas=exp.recetas||[];
-  const recExistente=recId?recetas.find(r=>r.id===recId):null;
   if(recExistente){
-    setVal('rec-fecha',recExistente.fecha);
-    setVal('rec-clinica',recExistente.clinica);
-    setVal('rec-docente',recExistente.docente||'');
-    setVal('rec-cedula-docente',recExistente.cedulaDocente||'');
-    setVal('rec-estudiante',recExistente.estudiante);
-    setVal('rec-matricula',recExistente.matricula||'');
-    setVal('rec-peso',recExistente.peso||'');
-    setVal('rec-talla',recExistente.talla||'');
-    setVal('rec-diagnostico',recExistente.diagnostico);
-    setVal('rec-indicaciones',recExistente.indicaciones);
+    // Modo edición — rellenar campos
+    setVal('rec-fecha', recExistente.fechaEmision||todayISO());
+    setVal('rec-clinica', recExistente.clinica);
+    setVal('rec-docente', recExistente.maestro);
+    setVal('rec-cedula-docente', recExistente.cedulaDocente);
+    setVal('rec-estudiante', recExistente.alumno);
+    setVal('rec-matricula', recExistente.matricula);
+    setVal('rec-peso', recExistente.peso);
+    setVal('rec-talla', recExistente.talla);
+    setVal('rec-diagnostico', recExistente.diagnostico);
+    setVal('rec-indicaciones', recExistente.indicaciones);
+    if(recExistente.fechaNacimiento) setVal('rec-fechanac', recExistente.fechaNacimiento);
+    if(recExistente.edad) setVal('rec-edad', recExistente.edad);
     (recExistente.medicamentos||[]).forEach(m=>addMed(m));
     if(recExistente.firma) loadFirma(recExistente.firma);
     document.getElementById('badge-saved').style.display='';
   } else {
-    addMed(null); // tarjeta inicial vacía
+    addMed(null);
   }
 }
 
-/* ── Guardar ── */
-document.getElementById('btn-guardar-rec').addEventListener('click',()=>{
-  if(!exp)return;
+init();
+
+/* ── Guardar en Supabase ── */
+document.getElementById('btn-guardar-rec').addEventListener('click',async()=>{
   const meds=getMeds();
   if(!meds.length){showToast('Agrega al menos un medicamento.');return;}
-  if(!val('rec-docente')){showToast('Indica el médico supervisor.');return;}
+  if(!val('rec-docente')){showToast('El médico supervisor es obligatorio.');return;}
   if(!val('rec-diagnostico')){showToast('El diagnóstico es obligatorio.');return;}
-  const recetas=expData.expedientes[expIdx].recetas||[];
-  const existIdx=recId?recetas.findIndex(r=>r.id===recId):-1;
+
+  const btn=document.getElementById('btn-guardar-rec');
+  btn.disabled=true;
+  btn.textContent='Guardando...';
+
+  const folio=recId?(document.getElementById('badge-saved').dataset.folio||await generarFolio()):await generarFolio();
+
   const rec={
-    id:existIdx>-1?recetas[existIdx].id:('rec-'+Date.now().toString(36)),
-    fecha:val('rec-fecha'),
+    id:recId||undefined,
+    folio,
+    paciente:val('rec-paciente'),
+    maestro:val('rec-docente'),
+    alumno:val('rec-estudiante'),
+    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):(recId?document.getElementById('badge-saved').dataset.firma||'':''),
+    fechaEmision:val('rec-fecha'),
     clinica:val('rec-clinica'),
-    docente:val('rec-docente'),
     cedulaDocente:val('rec-cedula-docente'),
-    estudiante:val('rec-estudiante'),
     matricula:val('rec-matricula'),
     peso:val('rec-peso'),
     talla:val('rec-talla'),
+    fechaNacimiento:val('rec-fechanac'),
+    edad:val('rec-edad'),
     diagnostico:val('rec-diagnostico'),
     medicamentos:meds,
     indicaciones:val('rec-indicaciones'),
-    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):(existIdx>-1?recetas[existIdx].firma:''),
-    fechaCreacion:existIdx>-1?recetas[existIdx].fechaCreacion:new Date().toISOString(),
-    fechaActualizacion:new Date().toISOString(),
   };
-  if(existIdx>-1) recetas[existIdx]=rec;
-  else recetas.push(rec);
-  expData.expedientes[expIdx].recetas=recetas;
-  saveExpData(expData);
+
+  const row=recToRow(rec);
+  let error;
+  if(recId){
+    ({error}=await sbRec.from('justificantes').update(row).eq('id',recId));
+  } else {
+    ({error}=await sbRec.from('justificantes').insert(row));
+  }
+
+  btn.disabled=false;
+  btn.textContent='Guardar receta';
+
+  if(error){showToast('Error al guardar: '+error.message,4000);return;}
   document.getElementById('badge-saved').style.display='';
   showToast('Receta guardada ✓');
-  if(existIdx===-1){
-    const url=new URL(location.href);
-    url.searchParams.set('recId',rec.id);
-    history.replaceState(null,'',url);
-  }
 });
 
 /* ── Impresión duplicada ── */
@@ -376,7 +453,6 @@ window.addEventListener('beforeprint',()=>{
   }
   clone.querySelectorAll('button').forEach(b=>b.remove());
   clone.removeAttribute('id');
-  // Firma de recibido del paciente
   const acuse=document.createElement('div');
   acuse.style.cssText='margin-top:18px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;';
   const iDiv=document.createElement('div');iDiv.style.cssText='font-size:11px;color:#444;line-height:1.9;';
