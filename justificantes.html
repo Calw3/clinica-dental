@@ -230,22 +230,50 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
   </div>
 </div>
 
-<!-- ═══ Panel receta ═══ -->
-<div class="panel" id="panel-rec">
+<!-- ═══ Panel receta (normalizado NOM) ═══ -->
+<div class="panel" id="panel-rec" style="width:min(680px,100vw);">
   <div class="panel-head">
     <h3 id="pr-title">Nueva receta</h3>
     <div class="panel-actions">
-      <button class="btn-secondary" onclick="closePanel()" style="height:32px;font-size:13px;padding:0 12px;">Cancelar</button>
+      <button class="btn-secondary" onclick="closePanel()" style="height:32px;font-size:13px;padding:0 12px;">✕ Cerrar</button>
       <button class="btn-primary" id="pr-save" style="height:32px;">Guardar</button>
     </div>
   </div>
   <div class="panel-body">
-    <p class="section-title">Identificación</p>
+
+    <!-- Prescriptor -->
+    <p class="section-title">Datos del prescriptor</p>
     <div class="grid-2">
-      <div class="field"><label>Folio (auto)</label><input type="text" id="r-folio" readonly></div>
+      <div class="field"><label>Institución</label><input type="text" id="r-institucion" readonly value="Universidad Anáhuac Xalapa — Clínica Dental Universitaria"></div>
+      <div class="field"><label>Domicilio del consultorio</label><input type="text" id="r-domicilio" readonly value="Circuito Arco Sur s/n, Lomas Verdes, C.P. 91098, Xalapa Enríquez, Ver."></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Clínica / Materia</label><input type="text" id="r-clinica" placeholder="Ej. Cirugía Oral"></div>
       <div class="field"><label>Fecha de emisión</label><input type="date" id="r-fechaEmision"></div>
     </div>
-    <p class="section-title">Paciente</p>
+    <div class="grid-2">
+      <div class="field">
+        <label>Médico supervisor / Docente *</label>
+        <div class="ac-wrap">
+          <input type="text" id="r-maestro" placeholder="Buscar en base de maestros..." autocomplete="off">
+          <div class="ac-list" id="ac-r-maestro"></div>
+        </div>
+      </div>
+      <div class="field"><label>Cédula profesional del supervisor</label><input type="text" id="r-cedula-docente" placeholder="Ej. 12345678"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Estudiante que prescribe</label>
+        <div class="ac-wrap">
+          <input type="text" id="r-alumno" placeholder="Buscar en base de alumnos..." autocomplete="off">
+          <div class="ac-list" id="ac-r-alumno"></div>
+        </div>
+      </div>
+      <div class="field"><label>Matrícula / Cédula del estudiante</label><input type="text" id="r-matricula" placeholder="Número de matrícula"></div>
+    </div>
+
+    <!-- Paciente -->
+    <p class="section-title">Datos del paciente</p>
     <div class="field">
       <label>Nombre del paciente *</label>
       <div class="ac-wrap">
@@ -253,29 +281,30 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
         <div class="ac-list" id="ac-r-paciente"></div>
       </div>
     </div>
-    <div class="field"><label>Fecha de atención</label><input type="date" id="r-fechaAtencion"></div>
-    <div class="field">
-      <label>Alumno que atiende</label>
-      <div class="ac-wrap">
-        <input type="text" id="r-alumno" placeholder="Buscar en base de alumnos..." autocomplete="off">
-        <div class="ac-list" id="ac-r-alumno"></div>
-      </div>
+    <div class="grid-2">
+      <div class="field"><label>Fecha de nacimiento</label><input type="date" id="r-fechanac" readonly></div>
+      <div class="field"><label>Edad</label><input type="text" id="r-edad" readonly></div>
     </div>
-    <div class="field">
-      <label>Maestro supervisor / firmante *</label>
-      <div class="ac-wrap">
-        <input type="text" id="r-maestro" placeholder="Buscar en base de maestros..." autocomplete="off">
-        <div class="ac-list" id="ac-r-maestro"></div>
-      </div>
+    <div class="grid-2">
+      <div class="field"><label>Peso (kg)</label><input type="number" id="r-peso" placeholder="Ej. 65" step="0.1" min="1" max="300"></div>
+      <div class="field"><label>Talla (cm)</label><input type="number" id="r-talla" placeholder="Ej. 170" step="0.5" min="30" max="250"></div>
     </div>
-    <p class="section-title">Medicamentos *</p>
+    <div class="field"><label>Alergias conocidas</label><input type="text" id="r-alergias" readonly placeholder="Se carga del expediente..."></div>
+    <div class="field"><label>Diagnóstico *</label><textarea id="r-diagnostico" rows="2" placeholder="Diagnóstico que motiva la prescripción..."></textarea></div>
+
+    <!-- Medicamentos -->
+    <p class="section-title">Medicamentos prescritos *</p>
     <div id="med-lista"></div>
     <button class="btn-add-med" id="btn-add-med" onclick="addMed()">+ Agregar medicamento</button>
-    <div class="field">
+
+    <!-- Indicaciones -->
+    <div class="field" style="margin-top:14px;">
       <label>Indicaciones generales</label>
-      <textarea id="r-indicaciones" placeholder="Instrucciones adicionales, cuidados, alergias conocidas..."></textarea>
+      <textarea id="r-indicaciones" rows="3" placeholder="Instrucciones adicionales, cuidados, restricciones..."></textarea>
     </div>
-    <p class="section-title">Firma del supervisor</p>
+
+    <!-- Firma -->
+    <p class="section-title">Firma del médico supervisor</p>
     <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Dibuja la firma del maestro supervisor.</p>
     <div class="canvas-wrap">
       <canvas id="firma-r-canvas" width="500" height="140"></canvas>
@@ -365,11 +394,26 @@ function justRecToRow(rec){
 function recRowToRec(r){
   const d=r.datos||{};
   return{id:r.id,folio:r.folio||'',paciente:r.paciente||'',alumno:r.alumno||'',maestro:r.maestro||'',firma:r.firma||'',
-    fechaAtencion:d.fechaAtencion||'',fechaEmision:d.fechaEmision||'',medicamentos:d.medicamentos||[],indicaciones:d.indicaciones||''};
+    fechaEmision:d.fechaEmision||'',clinica:d.clinica||'',cedulaDocente:d.cedulaDocente||'',
+    matricula:d.matricula||'',peso:d.peso||'',talla:d.talla||'',
+    fechaNacimiento:d.fechaNacimiento||'',edad:d.edad||'',diagnostico:d.diagnostico||'',
+    medicamentos:d.medicamentos||[],indicaciones:d.indicaciones||''};
 }
 function recRecToRow(rec){
   return{id:rec.id,tipo:'rec',folio:rec.folio||'',paciente:rec.paciente||'',alumno:rec.alumno||'',maestro:rec.maestro||'',firma:rec.firma||'',
-    datos:{fechaAtencion:rec.fechaAtencion||'',fechaEmision:rec.fechaEmision||'',medicamentos:rec.medicamentos||[],indicaciones:rec.indicaciones||''}};
+    datos:{
+      fechaEmision:rec.fechaEmision||'',
+      clinica:rec.clinica||'',
+      cedulaDocente:rec.cedulaDocente||'',
+      matricula:rec.matricula||'',
+      peso:rec.peso||'',
+      talla:rec.talla||'',
+      fechaNacimiento:rec.fechaNacimiento||'',
+      edad:rec.edad||'',
+      diagnostico:rec.diagnostico||'',
+      medicamentos:rec.medicamentos||[],
+      indicaciones:rec.indicaciones||'',
+    }};
 }
 async function loadData(){
   const{data,error}=await sbJust.from('justificantes').select('*').order('created_at',{ascending:false});
@@ -447,7 +491,20 @@ function getMaestros(){return maestrosCache;}
 setupAC('f-paciente','ac-paciente',getPacientes);
 setupAC('f-alumno','ac-alumno',getAlumnos);
 setupAC('f-maestro','ac-maestro',getMaestros);
-setupAC('r-paciente','ac-r-paciente',getPacientes);
+setupAC('r-paciente','ac-r-paciente',getPacientes, async (nombre)=>{
+  // Al seleccionar paciente, cargar sus datos del expediente
+  const{data:rows}=await sbJust.from('expedientes')
+    .select('nombre,fecha_nacimiento,edad,alergia,alergia_especifique')
+    .ilike('nombre',nombre.trim());
+  const exp=rows&&rows.length?rows[0]:null;
+  if(exp){
+    const el=id=>document.getElementById(id);
+    if(el('r-fechanac')) el('r-fechanac').value=exp.fecha_nacimiento||'';
+    if(el('r-edad')) el('r-edad').value=exp.edad?exp.edad+' años':'';
+    const alergia=[exp.alergia,exp.alergia_especifique].filter(Boolean).join(' — ');
+    if(el('r-alergias')) el('r-alergias').value=alergia||'Sin alergias registradas';
+  }
+});
 setupAC('r-alumno','ac-r-alumno',getAlumnos);
 setupAC('r-maestro','ac-r-maestro',getMaestros);
 
@@ -478,32 +535,30 @@ function getMedNum(){return document.getElementById('med-lista').querySelectorAl
 function addMed(med){
   medCount++;
   const id=medCount;
-  const num=getMedNum()+1;
+  const formas=['Tableta','Cápsula','Cápsula de liberación prolongada','Solución oral','Suspensión oral','Jarabe','Comprimido','Gragea','Gránulos','Polvo para suspensión','Ampolleta','Solución inyectable','Crema','Ungüento','Gel','Parche transdérmico','Colirio / Gotas oftálmicas','Gotas óticas','Spray nasal','Supositorio','Óvulo'].map(f=>`<option value="${f}" ${med?.forma===f?'selected':''}>${f}</option>`).join('');
+  const vias=['Oral','Sublingual','Tópica','Inyectable (IM)','Inyectable (IV)','Inhalatoria','Ótica','Oftálmica','Rectal','Transdérmica'].map(v=>`<option value="${v}" ${med?.via===v?'selected':''}>${v}</option>`).join('');
   const div=document.createElement('div');
   div.className='med-card';
   div.id='med-row-'+id;
   div.innerHTML=`
     <div class="med-card-header">
-      <span class="med-num" id="med-num-${id}">Medicamento ${num}</span>
+      <span class="med-num" id="med-num-${id}">Medicamento ${getMedNum()+1}</span>
       <button type="button" class="btn-rm-med" onclick="removeMed('med-row-${id}')">✕ Quitar</button>
     </div>
-    <div class="field">
-      <label>Nombre del medicamento</label>
-      <input type="text" id="mn-${id}" placeholder="Ej. Amoxicilina 500mg" value="${esc(med?.nombre||'')}">
+    <div class="med-grid" style="grid-template-columns:2fr 1fr 1fr 1fr;">
+      <div class="field"><label>Nombre genérico *</label><input type="text" id="mn-${id}" placeholder="Ej. Amoxicilina" value="${esc(med?.nombre||'')}"></div>
+      <div class="field"><label>Concentración</label><input type="text" id="mconc-${id}" placeholder="Ej. 500 mg" value="${esc(med?.concentracion||'')}"></div>
+      <div class="field"><label>Dosis por toma</label><input type="text" id="mc-${id}" placeholder="Ej. 1 cápsula" value="${esc(med?.dosis||med?.cantidad||'')}"></div>
+      <div class="field"><label>Cantidad a surtir</label><input type="text" id="mcant-${id}" placeholder="Ej. 15 piezas" value="${esc(med?.cantidad||'')}"></div>
+    </div>
+    <div class="med-grid" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="field"><label>Forma farmacéutica</label><select id="mforma-${id}"><option value="">Seleccionar...</option>${formas}</select></div>
+      <div class="field"><label>Vía de administración</label><select id="mvia-${id}"><option value="">Seleccionar...</option>${vias}</select></div>
+      <div class="field"><label>Frecuencia</label><input type="text" id="mf-${id}" placeholder="Ej. cada 8 h" value="${esc(med?.frecuencia||'')}"></div>
     </div>
     <div class="med-grid">
-      <div class="field">
-        <label>Cantidad</label>
-        <input type="text" id="mc-${id}" placeholder="Ej. 1 cápsula" value="${esc(med?.cantidad||med?.dosis||'')}">
-      </div>
-      <div class="field">
-        <label>Cada cuánto</label>
-        <input type="text" id="mf-${id}" placeholder="Ej. Cada 8 horas" value="${esc(med?.frecuencia||'')}">
-      </div>
-    </div>
-    <div class="field">
-      <label>Por cuánto tiempo</label>
-      <input type="text" id="md-${id}" placeholder="Ej. 5 días" value="${esc(med?.duracion||'')}">
+      <div class="field"><label>Duración del tratamiento</label><input type="text" id="md-${id}" placeholder="Ej. 7 días" value="${esc(med?.duracion||'')}"></div>
+      <div class="field"><label>Nombre comercial (opcional)</label><input type="text" id="mcom-${id}" placeholder="Ej. Amoxil" value="${esc(med?.comercial||'')}"></div>
     </div>`;
   document.getElementById('med-lista').appendChild(div);
   renumberMeds();
@@ -522,10 +577,15 @@ function getMeds(){
   return Array.from(document.getElementById('med-lista').querySelectorAll('.med-card')).map(card=>{
     const id=card.id.replace('med-row-','');
     return{
-      nombre:document.getElementById('mn-'+id).value.trim(),
-      cantidad:document.getElementById('mc-'+id).value.trim(),
-      frecuencia:document.getElementById('mf-'+id).value.trim(),
-      duracion:document.getElementById('md-'+id).value.trim(),
+      nombre:(document.getElementById('mn-'+id)||{}).value?.trim()||'',
+      concentracion:(document.getElementById('mconc-'+id)||{}).value?.trim()||'',
+      dosis:(document.getElementById('mc-'+id)||{}).value?.trim()||'',
+      cantidad:(document.getElementById('mcant-'+id)||{}).value?.trim()||'',
+      forma:(document.getElementById('mforma-'+id)||{}).value||'',
+      via:(document.getElementById('mvia-'+id)||{}).value||'',
+      frecuencia:(document.getElementById('mf-'+id)||{}).value?.trim()||'',
+      duracion:(document.getElementById('md-'+id)||{}).value?.trim()||'',
+      comercial:(document.getElementById('mcom-'+id)||{}).value?.trim()||'',
     };
   }).filter(m=>m.nombre);
 }
@@ -641,27 +701,26 @@ function openPanel(type,id){
     setTimeout(()=>document.getElementById('f-paciente').focus(),260);
   } else {
     rCanvas.clear();clearMeds();
-    document.getElementById('r-paciente').value='';
-    document.getElementById('r-fechaAtencion').value=todayISO();
-    document.getElementById('r-fechaEmision').value=todayISO();
-    document.getElementById('r-alumno').value='';
-    document.getElementById('r-maestro').value='';
-    document.getElementById('r-indicaciones').value='';
+    const setR=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+    setR('r-paciente','');setR('r-fechaEmision',todayISO());
+    setR('r-alumno','');setR('r-maestro','');setR('r-indicaciones','');
+    setR('r-clinica','');setR('r-cedula-docente','');setR('r-matricula','');
+    setR('r-peso','');setR('r-talla','');setR('r-fechanac','');
+    setR('r-edad','');setR('r-alergias','');setR('r-diagnostico','');
     if(id){
       const r=S.data.recetas.find(x=>x.id===id);
       document.getElementById('pr-title').textContent='Editar receta';
-      document.getElementById('r-folio').value=r.folio;
-      document.getElementById('r-paciente').value=r.paciente||'';
-      document.getElementById('r-fechaAtencion').value=r.fechaAtencion||'';
-      document.getElementById('r-fechaEmision').value=r.fechaEmision||'';
-      document.getElementById('r-alumno').value=r.alumno||'';
-      document.getElementById('r-maestro').value=r.maestro||'';
-      document.getElementById('r-indicaciones').value=r.indicaciones||'';
+      setR('r-paciente',r.paciente);setR('r-fechaEmision',r.fechaEmision);
+      setR('r-alumno',r.alumno);setR('r-maestro',r.maestro);
+      setR('r-indicaciones',r.indicaciones);setR('r-clinica',r.clinica);
+      setR('r-cedula-docente',r.cedulaDocente);setR('r-matricula',r.matricula);
+      setR('r-peso',r.peso);setR('r-talla',r.talla);
+      setR('r-fechanac',r.fechaNacimiento);setR('r-edad',r.edad);
+      setR('r-diagnostico',r.diagnostico);
       (r.medicamentos||[]).forEach(m=>addMed(m));
       rCanvas.load(r.firma||'');
     } else {
       document.getElementById('pr-title').textContent='Nueva receta';
-      document.getElementById('r-folio').value=genFolioR();
       addMed();
     }
     document.getElementById('panel-rec').classList.add('open');
@@ -725,21 +784,29 @@ document.getElementById('pr-save').addEventListener('click',async()=>{
   const meds=getMeds();
   if(!paciente){document.getElementById('r-paciente').focus();return;}
   if(!maestro){document.getElementById('r-maestro').focus();return;}
+  if(!document.getElementById('r-diagnostico').value.trim()){document.getElementById('r-diagnostico').focus();return;}
   if(!meds.length){document.getElementById('btn-add-med').scrollIntoView({behavior:'smooth'});return;}
   const rec={
     id:S.editId||(Date.now().toString(36)+Math.random().toString(36).slice(2,5)).toUpperCase(),
-    folio:document.getElementById('r-folio').value,
+    folio:document.getElementById('r-folio')?document.getElementById('r-folio').value:await generarFolioRec(),
     paciente,
-    fechaAtencion:document.getElementById('r-fechaAtencion').value,
     fechaEmision:document.getElementById('r-fechaEmision').value||todayISO(),
     alumno:document.getElementById('r-alumno').value.trim(),
     maestro,
     medicamentos:meds,
     indicaciones:document.getElementById('r-indicaciones').value.trim(),
     firma:rCanvas.getData(),
+    clinica:document.getElementById('r-clinica').value.trim(),
+    cedulaDocente:document.getElementById('r-cedula-docente').value.trim(),
+    matricula:document.getElementById('r-matricula').value.trim(),
+    peso:document.getElementById('r-peso').value.trim(),
+    talla:document.getElementById('r-talla').value.trim(),
+    fechaNacimiento:document.getElementById('r-fechanac').value,
+    edad:document.getElementById('r-edad').value,
+    diagnostico:document.getElementById('r-diagnostico').value.trim(),
   };
   const btn=document.getElementById('pr-save');
-  btn.disabled=true;
+  btn.disabled=true;btn.textContent='Guardando...';
   const row=recRecToRow(rec);
   let error;
   if(S.editId){
@@ -747,7 +814,7 @@ document.getElementById('pr-save').addEventListener('click',async()=>{
   } else {
     ({error}=await sbJust.from('justificantes').insert(row));
   }
-  btn.disabled=false;
+  btn.disabled=false;btn.textContent='Guardar';
   if(error){alert('No se pudo guardar la receta: '+error.message);return;}
   await refreshData();closePanel();
 });
