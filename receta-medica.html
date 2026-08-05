@@ -339,13 +339,8 @@ document.getElementById('btn-guardar-rec').addEventListener('click',async()=>{
 
   btn.disabled=false;
   if(error){showToast('Error al guardar: '+error.message);return;}
-  document.getElementById('badge-saved').style.display='';
   showToast('Receta guardada ✓');
-  if(!recId && data){
-    const url=new URL(location.href);
-    url.searchParams.set('recId',data.id);
-    history.replaceState(null,'',url);
-  }
+  setTimeout(()=>volver(),1200);
 });
 
 /* ── Impresión duplicada ── */
