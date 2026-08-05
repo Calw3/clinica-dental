@@ -119,19 +119,6 @@
         Imprimir
       </button>
     </header>
-  <!-- Buscador de paciente (se muestra cuando no viene pac= ni recId=) -->
-  <div id="rec-buscador" style="display:none;">
-    <div class="pac-search-wrap">
-      <h2>¿A quién va dirigida la receta?</h2>
-      <p>Busca al paciente en los expedientes clínicos registrados.</p>
-      <div class="pac-search-box">
-        <input type="text" id="pac-input" placeholder="Escribe el nombre del paciente..." autocomplete="off">
-        <button type="button" class="pac-clear-btn" id="pac-clear">✕</button>
-        <div class="pac-ac-list" id="pac-ac-list"></div>
-      </div>
-    </div>
-  </div>
-
   <div id="rec-error" class="error-msg" style="display:none;">
     <p style="font-size:18px;font-weight:600;color:var(--text-primary);">Paciente no encontrado</p>
     <p>Regresa al expediente e intenta de nuevo.</p>
@@ -139,10 +126,7 @@
 
   <div id="rec-body" style="display:none;">
 
-    <!-- Ficha del paciente -->
-    <div class="patient-card patient-card-x" id="ficha-paciente">
-      <button type="button" class="btn-cambiar-pac" id="btn-cambiar-pac" style="display:none;" title="Cambiar paciente">✕ Cambiar</button>
-    </div>
+
 
     <!-- SECCIÓN 1: Datos del prescriptor (NOM — Art. 29 Reglamento de Insumos para la Salud) -->
     <div class="section-card">
@@ -169,12 +153,30 @@
     <!-- SECCIÓN 2: Datos del paciente (Art. 29 Reglamento — CONAMED) -->
     <div class="section-card">
       <p class="section-title">Datos del paciente</p>
-      <div class="grid-2">
-        <div class="field"><label>Nombre completo<span class="req">*</span></label><input type="text" id="rec-paciente" readonly></div>
-        <div class="field"><label>Fecha de nacimiento<span class="req">*</span></label><input type="date" id="rec-fechanac" readonly></div>
+      <!-- Buscador (visible cuando no hay paciente seleccionado) -->
+      <div id="pac-search-row" class="field">
+        <label>Nombre del paciente<span class="req">*</span></label>
+        <div class="pac-search-box">
+          <input type="text" id="pac-input" placeholder="Escribe el nombre para buscar..." autocomplete="off">
+          <button type="button" class="pac-clear-btn" id="pac-clear" title="Limpiar">✕</button>
+          <div class="pac-ac-list" id="pac-ac-list"></div>
+        </div>
       </div>
-      <div class="grid-3">
+      <!-- Ficha paciente seleccionado (visible cuando hay paciente) -->
+      <div id="pac-selected-row" style="display:none;">
+        <div class="field" style="margin-bottom:8px;">
+          <label>Nombre completo<span class="req">*</span></label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="text" id="rec-paciente" readonly style="flex:1;">
+            <button type="button" id="btn-cambiar-pac" style="white-space:nowrap;height:36px;padding:0 12px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text-secondary);cursor:pointer;flex-shrink:0;">✕ Cambiar</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Fecha de nacimiento</label><input type="date" id="rec-fechanac" readonly></div>
         <div class="field"><label>Edad</label><input type="text" id="rec-edad" readonly></div>
+      </div>
+      <div class="grid-2">
         <div class="field"><label>Peso (kg)</label><input type="number" id="rec-peso" placeholder="Ej. 65" step="0.1" min="1" max="300"></div>
         <div class="field"><label>Talla (cm)</label><input type="number" id="rec-talla" placeholder="Ej. 170" step="0.5" min="30" max="250"></div>
       </div>
@@ -355,134 +357,96 @@ function setupBuscador(){
   const input=document.getElementById('pac-input');
   const list=document.getElementById('pac-ac-list');
   const clearBtn=document.getElementById('pac-clear');
-
   input.addEventListener('input',()=>{
     const q=input.value.trim().toLowerCase();
     clearBtn.style.display=q?'block':'none';
     if(!q){list.classList.remove('open');list.innerHTML='';return;}
     const matches=_pacCache.filter(p=>(p.nombre||'').toLowerCase().includes(q)).slice(0,10);
-    if(!matches.length){
-      list.innerHTML=`<div class="pac-ac-empty">Sin resultados para "${input.value}"</div>`;
-      list.classList.add('open');return;
-    }
+    if(!matches.length){list.innerHTML=`<div class="pac-ac-empty">Sin resultados</div>`;list.classList.add('open');return;}
     list.innerHTML=matches.map(p=>`<div class="pac-ac-item" data-nombre="${esc(p.nombre)}">${esc(p.nombre)}</div>`).join('');
     list.classList.add('open');
   });
-
   list.addEventListener('click',e=>{
     const item=e.target.closest('.pac-ac-item');
     if(!item)return;
-    const nombre=item.dataset.nombre;
     list.classList.remove('open');
-    input.value='';
-    clearBtn.style.display='none';
-    const exp=_pacCache.find(p=>p.nombre===nombre);
-    if(exp) mostrarPaciente(exp);
+    const exp=_pacCache.find(p=>p.nombre===item.dataset.nombre)||{nombre:item.dataset.nombre};
+    seleccionarPaciente(exp);
   });
-
-  clearBtn.addEventListener('click',()=>{
-    input.value='';clearBtn.style.display='none';
-    list.classList.remove('open');list.innerHTML='';
-    input.focus();
-  });
-
-  document.addEventListener('click',e=>{
-    if(!e.target.closest('.pac-search-box')) list.classList.remove('open');
-  });
+  clearBtn.addEventListener('click',()=>{input.value='';clearBtn.style.display='none';list.classList.remove('open');input.focus();});
+  document.addEventListener('click',e=>{if(!e.target.closest('.pac-search-box'))list.classList.remove('open');});
 }
 
-function mostrarPaciente(exp){
+function seleccionarPaciente(exp){
   const nombre=exp.nombre||'';
-  const avatar=exp.fotografia_paciente?`<img src="${exp.fotografia_paciente}">`:(initials(nombre));
-  const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipo_paciente].filter(Boolean).join(' · ');
-  const fichaEl=document.getElementById('ficha-paciente');
-  fichaEl.innerHTML=`
-    <div class="avatar">${avatar}</div>
-    <div style="flex:1"><p class="patient-name">${esc(nombre)}</p><p class="patient-meta">${esc(meta)}</p></div>
-    <button type="button" class="btn-cambiar-pac" id="btn-cambiar-pac">✕ Cambiar</button>`;
-  document.getElementById('btn-cambiar-pac').addEventListener('click',cambiarPaciente);
-
-  setVal('rec-paciente', nombre);
-  setVal('rec-fechanac', exp.fecha_nacimiento||'');
-  setVal('rec-edad', exp.edad?exp.edad+' años':'');
+  setVal('rec-paciente',nombre);
+  setVal('rec-fechanac',exp.fecha_nacimiento||'');
+  setVal('rec-edad',exp.edad?exp.edad+' años':'');
   const alergia=[exp.alergia,exp.alergia_especifique].filter(Boolean).join(' — ');
-  setVal('rec-alergias', alergia||'Sin alergias registradas');
-
-  // Ocultar buscador, mostrar formulario
-  document.getElementById('rec-buscador').style.display='none';
-  document.getElementById('rec-body').style.display='';
-  document.querySelector('.sticky-bar').style.display='';
+  setVal('rec-alergias',alergia||'Sin alergias registradas');
+  // Ocultar buscador, mostrar fila con nombre + botón cambiar
+  document.getElementById('pac-search-row').style.display='none';
+  document.getElementById('pac-selected-row').style.display='';
 }
 
 function cambiarPaciente(){
-  // Limpiar campos del paciente y volver al buscador
-  document.getElementById('rec-body').style.display='none';
-  document.querySelector('.sticky-bar').style.display='none';
-  document.getElementById('rec-buscador').style.display='';
   setVal('rec-paciente','');setVal('rec-fechanac','');
   setVal('rec-edad','');setVal('rec-alergias','');
-  setVal('rec-peso','');setVal('rec-talla','');
-  setVal('rec-diagnostico','');
-  document.getElementById('meds-list').innerHTML='';
+  document.getElementById('pac-selected-row').style.display='none';
+  document.getElementById('pac-search-row').style.display='';
   document.getElementById('pac-input').value='';
+  document.getElementById('pac-clear').style.display='none';
+  document.getElementById('pac-ac-list').classList.remove('open');
   document.getElementById('pac-input').focus();
 }
 
-/* ── Init: cargar expediente desde Supabase ── */
+/* ── Init ── */
 async function init(){
-  document.getElementById('rec-buscador').style.display='none';
   document.getElementById('rec-error').style.display='none';
-  document.getElementById('rec-body').style.display='none';
-  document.querySelector('.sticky-bar').style.display='none';
+  // El formulario siempre visible
+  document.getElementById('rec-body').style.display='';
+  document.querySelector('.sticky-bar').style.display='';
+  setVal('rec-fecha',todayISO());
 
   await cargarPacCache();
+  setupBuscador();
 
-  let recExistente = null;
+  document.getElementById('btn-cambiar-pac').addEventListener('click',cambiarPaciente);
 
   // CASO 1: edición de receta existente
   if(recId){
     const{data:row,error}=await sbRec.from('justificantes').select('*').eq('id',recId).single();
-    if(error||!row){
-      document.getElementById('rec-error').style.display='';
-      return;
-    }
-    recExistente=rowToRec(row);
-    const exp=_pacCache.find(p=>(p.nombre||'').toLowerCase().trim()===(recExistente.paciente||'').toLowerCase().trim())
-              || {nombre:recExistente.paciente};
-    mostrarPaciente(exp);
-    // Rellenar campos de edición
-    setVal('rec-fecha', recExistente.fechaEmision||todayISO());
-    setVal('rec-clinica', recExistente.clinica);
-    setVal('rec-docente', recExistente.maestro);
-    setVal('rec-cedula-docente', recExistente.cedulaDocente);
-    setVal('rec-estudiante', recExistente.alumno);
-    setVal('rec-matricula', recExistente.matricula);
-    setVal('rec-peso', recExistente.peso);
-    setVal('rec-talla', recExistente.talla);
-    setVal('rec-diagnostico', recExistente.diagnostico);
-    setVal('rec-indicaciones', recExistente.indicaciones);
-    if(recExistente.fechaNacimiento) setVal('rec-fechanac', recExistente.fechaNacimiento);
-    if(recExistente.edad) setVal('rec-edad', recExistente.edad);
-    (recExistente.medicamentos||[]).forEach(m=>addMed(m));
-    if(recExistente.firma) loadFirma(recExistente.firma);
+    if(error||!row){document.getElementById('rec-error').style.display='';document.getElementById('rec-body').style.display='none';document.querySelector('.sticky-bar').style.display='none';return;}
+    const rec=rowToRec(row);
+    const exp=_pacCache.find(p=>(p.nombre||'').toLowerCase().trim()===(rec.paciente||'').toLowerCase().trim())||{nombre:rec.paciente};
+    seleccionarPaciente(exp);
+    setVal('rec-fecha',rec.fechaEmision||todayISO());
+    setVal('rec-clinica',rec.clinica);
+    setVal('rec-docente',rec.maestro);
+    setVal('rec-cedula-docente',rec.cedulaDocente);
+    setVal('rec-estudiante',rec.alumno);
+    setVal('rec-matricula',rec.matricula);
+    setVal('rec-peso',rec.peso);
+    setVal('rec-talla',rec.talla);
+    setVal('rec-diagnostico',rec.diagnostico);
+    setVal('rec-indicaciones',rec.indicaciones);
+    if(rec.fechaNacimiento)setVal('rec-fechanac',rec.fechaNacimiento);
+    if(rec.edad)setVal('rec-edad',rec.edad);
+    (rec.medicamentos||[]).forEach(m=>addMed(m));
+    if(rec.firma)loadFirma(rec.firma);
     document.getElementById('badge-saved').style.display='';
     return;
   }
 
-  // CASO 2: viene con pac= en la URL (desde expediente)
+  // CASO 2: viene con pac= en la URL
   if(pacNombre){
-    const exp=_pacCache.find(p=>(p.nombre||'').toLowerCase().trim()===pacNombre.toLowerCase().trim())
-              || {nombre:pacNombre};
-    mostrarPaciente(exp);
-    setVal('rec-fecha', todayISO());
+    const exp=_pacCache.find(p=>(p.nombre||'').toLowerCase().trim()===pacNombre.toLowerCase().trim())||{nombre:pacNombre};
+    seleccionarPaciente(exp);
     addMed(null);
     return;
   }
 
-  // CASO 3: sin parámetros — mostrar buscador
-  document.getElementById('rec-buscador').style.display='';
-  setVal('rec-fecha', todayISO());
-  setupBuscador();
+  // CASO 3: sin parámetros — buscador visible, formulario disponible
   addMed(null);
 }
 
