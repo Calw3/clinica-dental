@@ -149,17 +149,16 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const EXP_KEY='clinica_dental_data_v1';
-function loadExpData(){try{const r=localStorage.getItem(EXP_KEY);if(r)return JSON.parse(r);}catch(e){}return{expedientes:[]};}
-function saveExpData(d){localStorage.setItem(EXP_KEY,JSON.stringify(d));}
+const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
+const sbRec = supabase.createClient(SB_URL, SB_KEY);
 
 const params=new URLSearchParams(location.search);
 const expId=params.get('expId');
 const recId=params.get('recId');
+const pacNombre=params.get('pac'); // fallback cuando solo viene nombre
 
-const expData=loadExpData();
-const expIdx=expData.expedientes.findIndex(x=>x.id===expId);
-const exp=expIdx>-1?expData.expedientes[expIdx]:null;
+let exp=null; // se llena async en init()
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
@@ -226,15 +225,27 @@ function getMeds(){
 }
 document.getElementById('btn-add-med').addEventListener('click',()=>addMed(null));
 
-/* ── Init ── */
-if(!exp){
-  document.getElementById('rec-error').style.display='';
-  document.getElementById('rec-body').style.display='none';
-  document.querySelector('.sticky-bar').style.display='none';
-} else {
+/* ── Init async (Supabase) ── */
+async function init(){
+  // 1. Cargar expediente desde Supabase
+  if(expId){
+    const {data,error}=await sbRec.from('expedientes').select('*').eq('id',expId).single();
+    if(!error && data) exp=data;
+  } else if(pacNombre){
+    const {data,error}=await sbRec.from('expedientes').select('*').ilike('nombre',pacNombre.trim()).limit(1);
+    if(!error && data && data.length) exp=data[0];
+  }
+
+  if(!exp){
+    document.getElementById('rec-error').style.display='';
+    document.getElementById('rec-body').style.display='none';
+    document.querySelector('.sticky-bar').style.display='none';
+    return;
+  }
+
   document.getElementById('rec-body').style.display='';
-  const avatar=exp.fotografiaPaciente?`<img src="${exp.fotografiaPaciente}">`:(initials(exp.nombre));
-  const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipoPaciente].filter(Boolean).join(' · ');
+  const avatar=exp.foto_paciente?`<img src="${exp.foto_paciente}">`:(initials(exp.nombre));
+  const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipo_paciente].filter(Boolean).join(' · ');
   document.getElementById('ficha-paciente').innerHTML=`
     <div class="avatar">${avatar}</div>
     <div>
@@ -242,59 +253,80 @@ if(!exp){
       <p class="patient-meta">${esc(meta||'')}</p>
     </div>`;
 
-  // Alergias del expediente (read-only)
-  const alergiaTexto=[exp.alergia, exp.alergiaEspecifique].filter(Boolean).join(' — ');
+  // Alergias (read-only)
+  const hc=exp.historia_clinica||{};
+  const alergiaTexto=[hc.alergia,hc.alergiaEspecifique].filter(Boolean).join(' — ');
   setVal('rec-alergias', alergiaTexto||'Sin alergias registradas');
 
   // Fecha de hoy por defecto
   setVal('rec-fecha', new Date().toISOString().slice(0,10));
 
-  // Cargar receta existente si se pasa recId
-  const recetas=exp.recetas||[];
-  const recExistente=recId?recetas.find(r=>r.id===recId):null;
-  if(recExistente){
-    setVal('rec-fecha',recExistente.fecha);
-    setVal('rec-clinica',recExistente.clinica);
-    setVal('rec-estudiante',recExistente.estudiante);
-    setVal('rec-diagnostico',recExistente.diagnostico);
-    setVal('rec-indicaciones',recExistente.indicaciones);
-    (recExistente.medicamentos||[]).forEach(m=>addMed(m));
-    if(recExistente.firma) loadFirma(recExistente.firma);
-    document.getElementById('badge-saved').style.display='';
-  } else {
-    addMed(null); // tarjeta inicial vacía
+  // Si viene recId → cargar receta existente desde tabla justificantes
+  if(recId){
+    const {data:rRow}=await sbRec.from('justificantes').select('*').eq('id',recId).single();
+    if(rRow){
+      const dt=rRow.datos||{};
+      setVal('rec-fecha', rRow.fecha_atencion||dt.fechaAtencion||'');
+      setVal('rec-clinica', dt.clinica||'');
+      setVal('rec-estudiante', rRow.alumno||'');
+      setVal('rec-diagnostico', dt.diagnostico||'');
+      setVal('rec-indicaciones', dt.indicaciones||'');
+      (dt.medicamentos||[]).forEach(m=>addMed(m));
+      if(rRow.firma) loadFirma(rRow.firma);
+      document.getElementById('badge-saved').style.display='';
+      return;
+    }
   }
+  addMed(null); // tarjeta inicial vacía
 }
+init();
 
 /* ── Guardar ── */
-document.getElementById('btn-guardar-rec').addEventListener('click',()=>{
+document.getElementById('btn-guardar-rec').addEventListener('click',async()=>{
   if(!exp)return;
   const meds=getMeds();
   if(!meds.length){showToast('Agrega al menos un medicamento.');return;}
-  const recetas=expData.expedientes[expIdx].recetas||[];
-  const existIdx=recId?recetas.findIndex(r=>r.id===recId):-1;
-  const rec={
-    id:existIdx>-1?recetas[existIdx].id:('rec-'+Date.now().toString(36)),
-    fecha:val('rec-fecha'),
-    clinica:val('rec-clinica'),
-    estudiante:val('rec-estudiante'),
-    diagnostico:val('rec-diagnostico'),
-    medicamentos:meds,
-    indicaciones:val('rec-indicaciones'),
-    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):(existIdx>-1?recetas[existIdx].firma:''),
-    fechaCreacion:existIdx>-1?recetas[existIdx].fechaCreacion:new Date().toISOString(),
-    fechaActualizacion:new Date().toISOString(),
+  const btn=document.getElementById('btn-guardar-rec');
+  btn.disabled=true;
+
+  const todayISO=()=>new Date().toISOString().slice(0,10);
+  const newId=(Date.now().toString(36)+Math.random().toString(36).slice(2,5)).toUpperCase();
+  const folio='REC-'+newId;
+
+  const row={
+    tipo:'rec',
+    paciente:exp.nombre,
+    alumno:val('rec-estudiante'),
+    maestro:'',
+    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):'',
+    fecha_atencion:val('rec-fecha')||todayISO(),
+    folio:recId?undefined:folio,
+    datos:{
+      clinica:val('rec-clinica'),
+      diagnostico:val('rec-diagnostico'),
+      medicamentos:meds,
+      indicaciones:val('rec-indicaciones'),
+      fechaEmision:todayISO(),
+      fechaAtencion:val('rec-fecha')||todayISO(),
+    },
   };
-  if(existIdx>-1) recetas[existIdx]=rec;
-  else recetas.push(rec);
-  expData.expedientes[expIdx].recetas=recetas;
-  saveExpData(expData);
+
+  let error, data;
+  if(recId){
+    delete row.folio;
+    ({error}=await sbRec.from('justificantes').update(row).eq('id',recId));
+  } else {
+    row.id=newId;
+    ({data,error}=await sbRec.from('justificantes').insert(row).select().single());
+  }
+
+  btn.disabled=false;
+  if(error){showToast('Error al guardar: '+error.message);return;}
   document.getElementById('badge-saved').style.display='';
   showToast('Receta guardada ✓');
-  // Actualizar la URL para que futuras ediciones sean sobre esta receta
-  if(existIdx===-1){
+  if(!recId && data){
     const url=new URL(location.href);
-    url.searchParams.set('recId',rec.id);
+    url.searchParams.set('recId',data.id);
     history.replaceState(null,'',url);
   }
 });
