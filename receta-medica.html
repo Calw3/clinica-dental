@@ -66,6 +66,25 @@
   .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1F1F1D;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:20;}
   .toast.show{opacity:1;}
   .error-msg{text-align:center;padding:60px 20px;color:var(--text-secondary);}
+  /* Buscador de paciente */
+  .pac-search-wrap{max-width:480px;margin:60px auto;padding:0 20px;}
+  .pac-search-wrap h2{font-size:18px;font-weight:600;color:var(--teal-900);margin-bottom:6px;}
+  .pac-search-wrap p{font-size:13px;color:var(--text-secondary);margin-bottom:20px;}
+  .pac-search-box{position:relative;}
+  .pac-search-box input{width:100%;height:42px;border:1px solid var(--border);border-radius:var(--radius);padding:0 36px 0 12px;font-size:15px;font-family:inherit;background:#fff;color:var(--text-primary);}
+  .pac-search-box input:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+  .pac-clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:var(--text-muted);cursor:pointer;display:none;padding:4px;line-height:1;}
+  .pac-clear-btn:hover{color:var(--text-primary);}
+  .pac-ac-list{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:220px;overflow-y:auto;}
+  .pac-ac-list.open{display:block;}
+  .pac-ac-item{padding:10px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--border);}
+  .pac-ac-item:last-child{border-bottom:none;}
+  .pac-ac-item:hover{background:var(--teal-50);}
+  .pac-ac-empty{padding:10px 14px;font-size:13px;color:var(--text-muted);}
+  /* Ficha con botón X */
+  .patient-card-x{position:relative;}
+  .patient-card-x .btn-cambiar-pac{position:absolute;top:10px;right:12px;background:none;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;padding:3px 8px;line-height:1.4;}
+  .patient-card-x .btn-cambiar-pac:hover{background:var(--teal-50);color:var(--teal-800);}
   .info-tag{display:inline-block;background:var(--blue-50);color:var(--blue-800);font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600;margin-bottom:10px;}
   /* Impresión */
   @media print{
@@ -100,6 +119,19 @@
         Imprimir
       </button>
     </header>
+  <!-- Buscador de paciente (se muestra cuando no viene pac= ni recId=) -->
+  <div id="rec-buscador" style="display:none;">
+    <div class="pac-search-wrap">
+      <h2>¿A quién va dirigida la receta?</h2>
+      <p>Busca al paciente en los expedientes clínicos registrados.</p>
+      <div class="pac-search-box">
+        <input type="text" id="pac-input" placeholder="Escribe el nombre del paciente..." autocomplete="off">
+        <button type="button" class="pac-clear-btn" id="pac-clear">✕</button>
+        <div class="pac-ac-list" id="pac-ac-list"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="rec-error" class="error-msg" style="display:none;">
     <p style="font-size:18px;font-weight:600;color:var(--text-primary);">Paciente no encontrado</p>
     <p>Regresa al expediente e intenta de nuevo.</p>
@@ -108,7 +140,9 @@
   <div id="rec-body" style="display:none;">
 
     <!-- Ficha del paciente -->
-    <div class="patient-card" id="ficha-paciente"></div>
+    <div class="patient-card patient-card-x" id="ficha-paciente">
+      <button type="button" class="btn-cambiar-pac" id="btn-cambiar-pac" style="display:none;" title="Cambiar paciente">✕ Cambiar</button>
+    </div>
 
     <!-- SECCIÓN 1: Datos del prescriptor (NOM — Art. 29 Reglamento de Insumos para la Salud) -->
     <div class="section-card">
@@ -310,16 +344,102 @@ async function generarFolio(){
   return`R-${y}-${String(next).padStart(4,'0')}`;
 }
 
+/* ── Autocomplete buscador de paciente ── */
+let _pacCache=[];
+async function cargarPacCache(){
+  const{data}=await sbRec.from('expedientes').select('nombre,sexo,edad,tipo_paciente,fotografia_paciente,fecha_nacimiento,alergia,alergia_especifique').order('nombre');
+  _pacCache=data||[];
+}
+
+function setupBuscador(){
+  const input=document.getElementById('pac-input');
+  const list=document.getElementById('pac-ac-list');
+  const clearBtn=document.getElementById('pac-clear');
+
+  input.addEventListener('input',()=>{
+    const q=input.value.trim().toLowerCase();
+    clearBtn.style.display=q?'block':'none';
+    if(!q){list.classList.remove('open');list.innerHTML='';return;}
+    const matches=_pacCache.filter(p=>(p.nombre||'').toLowerCase().includes(q)).slice(0,10);
+    if(!matches.length){
+      list.innerHTML=`<div class="pac-ac-empty">Sin resultados para "${input.value}"</div>`;
+      list.classList.add('open');return;
+    }
+    list.innerHTML=matches.map(p=>`<div class="pac-ac-item" data-nombre="${esc(p.nombre)}">${esc(p.nombre)}</div>`).join('');
+    list.classList.add('open');
+  });
+
+  list.addEventListener('click',e=>{
+    const item=e.target.closest('.pac-ac-item');
+    if(!item)return;
+    const nombre=item.dataset.nombre;
+    list.classList.remove('open');
+    input.value='';
+    clearBtn.style.display='none';
+    const exp=_pacCache.find(p=>p.nombre===nombre);
+    if(exp) mostrarPaciente(exp);
+  });
+
+  clearBtn.addEventListener('click',()=>{
+    input.value='';clearBtn.style.display='none';
+    list.classList.remove('open');list.innerHTML='';
+    input.focus();
+  });
+
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('.pac-search-box')) list.classList.remove('open');
+  });
+}
+
+function mostrarPaciente(exp){
+  const nombre=exp.nombre||'';
+  const avatar=exp.fotografia_paciente?`<img src="${exp.fotografia_paciente}">`:(initials(nombre));
+  const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipo_paciente].filter(Boolean).join(' · ');
+  const fichaEl=document.getElementById('ficha-paciente');
+  fichaEl.innerHTML=`
+    <div class="avatar">${avatar}</div>
+    <div style="flex:1"><p class="patient-name">${esc(nombre)}</p><p class="patient-meta">${esc(meta)}</p></div>
+    <button type="button" class="btn-cambiar-pac" id="btn-cambiar-pac">✕ Cambiar</button>`;
+  document.getElementById('btn-cambiar-pac').addEventListener('click',cambiarPaciente);
+
+  setVal('rec-paciente', nombre);
+  setVal('rec-fechanac', exp.fecha_nacimiento||'');
+  setVal('rec-edad', exp.edad?exp.edad+' años':'');
+  const alergia=[exp.alergia,exp.alergia_especifique].filter(Boolean).join(' — ');
+  setVal('rec-alergias', alergia||'Sin alergias registradas');
+
+  // Ocultar buscador, mostrar formulario
+  document.getElementById('rec-buscador').style.display='none';
+  document.getElementById('rec-body').style.display='';
+  document.querySelector('.sticky-bar').style.display='';
+}
+
+function cambiarPaciente(){
+  // Limpiar campos del paciente y volver al buscador
+  document.getElementById('rec-body').style.display='none';
+  document.querySelector('.sticky-bar').style.display='none';
+  document.getElementById('rec-buscador').style.display='';
+  setVal('rec-paciente','');setVal('rec-fechanac','');
+  setVal('rec-edad','');setVal('rec-alergias','');
+  setVal('rec-peso','');setVal('rec-talla','');
+  setVal('rec-diagnostico','');
+  document.getElementById('meds-list').innerHTML='';
+  document.getElementById('pac-input').value='';
+  document.getElementById('pac-input').focus();
+}
+
 /* ── Init: cargar expediente desde Supabase ── */
 async function init(){
+  document.getElementById('rec-buscador').style.display='none';
   document.getElementById('rec-error').style.display='none';
   document.getElementById('rec-body').style.display='none';
   document.querySelector('.sticky-bar').style.display='none';
 
-  let pacienteNombre = pacNombre || '';
+  await cargarPacCache();
+
   let recExistente = null;
 
-  // Si es edición, cargar la receta existente de Supabase
+  // CASO 1: edición de receta existente
   if(recId){
     const{data:row,error}=await sbRec.from('justificantes').select('*').eq('id',recId).single();
     if(error||!row){
@@ -327,43 +447,10 @@ async function init(){
       return;
     }
     recExistente=rowToRec(row);
-    pacienteNombre=recExistente.paciente;
-  }
-
-  if(!pacienteNombre){
-    document.getElementById('rec-error').style.display='';
-    return;
-  }
-
-  // Cargar datos del paciente desde expedientes
-  const{data:expRows}=await sbRec.from('expedientes').select('nombre,sexo,edad,tipo_paciente,fotografia_paciente,fecha_nacimiento,alergia,alergia_especifique').ilike('nombre',pacienteNombre.trim());
-  const exp=expRows&&expRows.length?expRows[0]:null;
-
-  // Mostrar ficha del paciente
-  document.getElementById('rec-body').style.display='';
-  document.querySelector('.sticky-bar').style.display='';
-
-  if(exp){
-    const avatar=exp.fotografia_paciente?`<img src="${exp.fotografia_paciente}">`:(initials(exp.nombre||pacienteNombre));
-    const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipo_paciente].filter(Boolean).join(' · ');
-    document.getElementById('ficha-paciente').innerHTML=`
-      <div class="avatar">${avatar}</div>
-      <div><p class="patient-name">${esc(exp.nombre||pacienteNombre)}</p><p class="patient-meta">${esc(meta)}</p></div>`;
-    setVal('rec-paciente', exp.nombre||pacienteNombre);
-    setVal('rec-fechanac', exp.fecha_nacimiento||'');
-    setVal('rec-edad', exp.edad?exp.edad+' años':'');
-    const alergia=[exp.alergia,exp.alergia_especifique].filter(Boolean).join(' — ');
-    setVal('rec-alergias', alergia||'Sin alergias registradas');
-  } else {
-    document.getElementById('ficha-paciente').innerHTML=`<div class="avatar">${initials(pacienteNombre)}</div><div><p class="patient-name">${esc(pacienteNombre)}</p></div>`;
-    setVal('rec-paciente', pacienteNombre);
-    setVal('rec-alergias','Sin alergias registradas');
-  }
-
-  setVal('rec-fecha', todayISO());
-
-  if(recExistente){
-    // Modo edición — rellenar campos
+    const exp=_pacCache.find(p=>(p.nombre||'').toLowerCase().trim()===(recExistente.paciente||'').toLowerCase().trim())
+              || {nombre:recExistente.paciente};
+    mostrarPaciente(exp);
+    // Rellenar campos de edición
     setVal('rec-fecha', recExistente.fechaEmision||todayISO());
     setVal('rec-clinica', recExistente.clinica);
     setVal('rec-docente', recExistente.maestro);
@@ -379,9 +466,24 @@ async function init(){
     (recExistente.medicamentos||[]).forEach(m=>addMed(m));
     if(recExistente.firma) loadFirma(recExistente.firma);
     document.getElementById('badge-saved').style.display='';
-  } else {
-    addMed(null);
+    return;
   }
+
+  // CASO 2: viene con pac= en la URL (desde expediente)
+  if(pacNombre){
+    const exp=_pacCache.find(p=>(p.nombre||'').toLowerCase().trim()===pacNombre.toLowerCase().trim())
+              || {nombre:pacNombre};
+    mostrarPaciente(exp);
+    setVal('rec-fecha', todayISO());
+    addMed(null);
+    return;
+  }
+
+  // CASO 3: sin parámetros — mostrar buscador
+  document.getElementById('rec-buscador').style.display='';
+  setVal('rec-fecha', todayISO());
+  setupBuscador();
+  addMed(null);
 }
 
 init();
