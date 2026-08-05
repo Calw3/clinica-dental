@@ -675,7 +675,13 @@ function closePanel(silent){
 }
 document.getElementById('panel-overlay').addEventListener('click',closePanel);
 
-document.getElementById('btn-nuevo').addEventListener('click',()=>openPanel(S.tab));
+document.getElementById('btn-nuevo').addEventListener('click',()=>{
+  if(S.tab==='rec'){
+    location.href='receta-medica.html';
+  } else {
+    openPanel(S.tab);
+  }
+});
 
 /* ─── Guardar justificante ─── */
 document.getElementById('pj-save').addEventListener('click',async()=>{
@@ -783,9 +789,9 @@ function verRec(id){
   document.getElementById('vr-body').innerHTML=html;
   document.getElementById('modal-ver-rec').classList.add('open');
 }
-document.getElementById('vr-editar').addEventListener('click',()=>{document.getElementById('modal-ver-rec').classList.remove('open');openPanel('rec',S.verId);});
+document.getElementById('vr-editar').addEventListener('click',()=>{document.getElementById('modal-ver-rec').classList.remove('open');location.href='receta-medica.html?recId='+encodeURIComponent(S.verId);});
 document.getElementById('vr-eliminar').addEventListener('click',()=>{document.getElementById('modal-ver-rec').classList.remove('open');abrirEliminarDirect(S.verId,'rec');});
-document.getElementById('vr-imprimir').addEventListener('click',()=>imprimirRec(S.verId));
+document.getElementById('vr-imprimir').addEventListener('click',()=>window.open('receta-medica.html?recId='+encodeURIComponent(S.verId),'_blank'));
 
 /* ─── Eliminar ─── */
 function abrirEliminar(e,id,type){e.stopPropagation();abrirEliminarDirect(id,type);}
@@ -970,12 +976,16 @@ document.getElementById('buscar').addEventListener('input',renderLista);
   const doPrint=qp.get('print')==='1';
   if(tab && tab!==S.tab) switchTab(tab);
   if(openId){
-    if(doPrint){
-      if(tipo==='just') imprimirJust(openId);
-      else imprimirRec(openId);
+    if(tipo==='rec'){
+      // Recetas siempre van a receta-medica.html (misma vista normalizada)
+      location.replace('receta-medica.html?recId='+encodeURIComponent(openId));
     } else {
-      if(tipo!==S.tab) switchTab(tipo);
-      openPanel(tipo, openId);
+      if(doPrint){
+        imprimirJust(openId);
+      } else {
+        if(tipo!==S.tab) switchTab(tipo);
+        openPanel(tipo, openId);
+      }
     }
   }
 })();
