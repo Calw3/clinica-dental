@@ -137,16 +137,37 @@
         <div class="field"><label>Domicilio del consultorio<span class="req">*</span></label><input type="text" id="rec-domicilio" readonly value="Circuito Arco Sur s/n, Lomas Verdes, C.P. 91098, Xalapa Enríquez, Ver."></div>
       </div>
       <div class="grid-2">
-        <div class="field"><label>Clínica / Materia<span class="req">*</span></label><input type="text" id="rec-clinica" placeholder="Ej. Cirugía Oral"></div>
+        <div class="field">
+          <label>Clínica / Materia<span class="req">*</span></label>
+          <div class="pac-search-box">
+            <input type="text" id="rec-clinica" placeholder="Buscar materia..." autocomplete="off">
+            <button type="button" class="pac-clear-btn" id="clear-clinica">✕</button>
+            <div class="pac-ac-list" id="ac-clinica"></div>
+          </div>
+        </div>
         <div class="field"><label>Fecha de emisión<span class="req">*</span></label><input type="date" id="rec-fecha"></div>
       </div>
       <div class="grid-2">
-        <div class="field"><label>Médico supervisor / Docente<span class="req">*</span></label><input type="text" id="rec-docente" placeholder="Nombre completo del maestro"></div>
-        <div class="field"><label>Cédula profesional del supervisor<span class="req">*</span></label><input type="text" id="rec-cedula-docente" placeholder="Ej. 12345678"></div>
+        <div class="field">
+          <label>Médico supervisor / Docente<span class="req">*</span></label>
+          <div class="pac-search-box">
+            <input type="text" id="rec-docente" placeholder="Buscar maestro..." autocomplete="off">
+            <button type="button" class="pac-clear-btn" id="clear-docente">✕</button>
+            <div class="pac-ac-list" id="ac-docente"></div>
+          </div>
+        </div>
+        <div class="field"><label>Cédula profesional del supervisor</label><input type="text" id="rec-cedula-docente" placeholder="Se llena al seleccionar maestro"></div>
       </div>
       <div class="grid-2">
-        <div class="field"><label>Estudiante que prescribe</label><input type="text" id="rec-estudiante" placeholder="Nombre del alumno"></div>
-        <div class="field"><label>Matrícula / Cédula del estudiante</label><input type="text" id="rec-matricula" placeholder="Número de matrícula"></div>
+        <div class="field">
+          <label>Estudiante que prescribe</label>
+          <div class="pac-search-box">
+            <input type="text" id="rec-estudiante" placeholder="Buscar alumno..." autocomplete="off">
+            <button type="button" class="pac-clear-btn" id="clear-estudiante">✕</button>
+            <div class="pac-ac-list" id="ac-estudiante"></div>
+          </div>
+        </div>
+        <div class="field"><label>Matrícula / ID institucional del estudiante</label><input type="text" id="rec-matricula" placeholder="Se llena al seleccionar alumno"></div>
       </div>
     </div>
 
@@ -346,13 +367,57 @@ async function generarFolio(){
   return`R-${y}-${String(next).padStart(4,'0')}`;
 }
 
-/* ── Autocomplete buscador de paciente ── */
-let _pacCache=[];
-async function cargarPacCache(){
-  const{data}=await sbRec.from('expedientes').select('nombre,sexo,edad,tipo_paciente,fotografia_paciente,fecha_nacimiento,alergia,alergia_especifique').order('nombre');
-  _pacCache=data||[];
+/* ── Caches de datos ── */
+let _pacCache=[], _maestrosCache=[], _alumnosCache=[], _materiasCache=[];
+
+async function cargarCaches(){
+  const [rPac,rMae,rAlu,rMat] = await Promise.all([
+    sbRec.from('expedientes').select('nombre,sexo,edad,tipo_paciente,fotografia_paciente,fecha_nacimiento,alergia,alergia_especifique').order('nombre'),
+    sbRec.from('maestros').select('nombre,id_institucional').order('nombre'),
+    sbRec.from('alumnos').select('nombre,id_institucional').order('nombre'),
+    sbRec.from('materias').select('nombre').order('nombre'),
+  ]);
+  _pacCache=rPac.data||[];
+  _maestrosCache=rMae.data||[];
+  _alumnosCache=rAlu.data||[];
+  _materiasCache=rMat.data||[];
 }
 
+/* ── Helper: setup autocomplete genérico ── */
+function setupAC(inputId, listId, clearId, getItems, onSelect){
+  const input=document.getElementById(inputId);
+  const list=document.getElementById(listId);
+  const clearBtn=document.getElementById(clearId);
+  if(!input||!list) return;
+  input.addEventListener('input',()=>{
+    const q=input.value.trim().toLowerCase();
+    if(clearBtn) clearBtn.style.display=q?'block':'none';
+    if(!q){list.classList.remove('open');list.innerHTML='';return;}
+    const items=getItems();
+    const matches=items.filter(i=>(i.label||'').toLowerCase().includes(q)).slice(0,10);
+    if(!matches.length){list.innerHTML=`<div class="pac-ac-empty">Sin resultados</div>`;list.classList.add('open');return;}
+    list.innerHTML=matches.map(i=>`<div class="pac-ac-item" data-val="${esc(i.val)}" data-extra="${esc(i.extra||'')}">${esc(i.label)}</div>`).join('');
+    list.classList.add('open');
+  });
+  list.addEventListener('click',e=>{
+    const item=e.target.closest('.pac-ac-item');
+    if(!item)return;
+    input.value=item.dataset.val;
+    if(clearBtn) clearBtn.style.display='block';
+    list.classList.remove('open');
+    if(onSelect) onSelect(item.dataset.val, item.dataset.extra);
+  });
+  if(clearBtn) clearBtn.addEventListener('click',()=>{
+    input.value='';clearBtn.style.display='none';
+    list.classList.remove('open');input.focus();
+    if(onSelect) onSelect('','');
+  });
+  document.addEventListener('click',e=>{
+    if(!e.target.closest(`#${listId}`)&&!e.target.closest(`#${inputId}`)) list.classList.remove('open');
+  });
+}
+
+/* ── Autocomplete buscador de paciente ── */
 function setupBuscador(){
   const input=document.getElementById('pac-input');
   const list=document.getElementById('pac-ac-list');
@@ -408,8 +473,26 @@ async function init(){
   document.querySelector('.sticky-bar').style.display='';
   setVal('rec-fecha',todayISO());
 
-  await cargarPacCache();
+  await cargarCaches();
   setupBuscador();
+
+  // Autocomplete: Materia
+  setupAC('rec-clinica','ac-clinica','clear-clinica',
+    ()=>_materiasCache.map(m=>({label:m.nombre,val:m.nombre,extra:''})),
+    ()=>{}
+  );
+
+  // Autocomplete: Maestro → rellena cédula automáticamente
+  setupAC('rec-docente','ac-docente','clear-docente',
+    ()=>_maestrosCache.map(m=>({label:m.nombre,val:m.nombre,extra:m.id_institucional||''})),
+    (nombre,cedula)=>{ setVal('rec-cedula-docente', cedula); }
+  );
+
+  // Autocomplete: Alumno → rellena matrícula automáticamente
+  setupAC('rec-estudiante','ac-estudiante','clear-estudiante',
+    ()=>_alumnosCache.map(a=>({label:a.nombre,val:a.nombre,extra:a.id_institucional||''})),
+    (nombre,matricula)=>{ setVal('rec-matricula', matricula); }
+  );
 
   document.getElementById('btn-cambiar-pac').addEventListener('click',cambiarPaciente);
 
