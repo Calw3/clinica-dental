@@ -973,7 +973,7 @@ async function verExpediente(id){
       html += `</tbody></table></div>`;
     }
     html += `<div style="display:flex;gap:8px;margin-top:8px;">
-      <button type="button" class="btn-nueva-just" data-tipo="just" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--teal-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nuevo justificante</button>
+      <button type="button" class="btn-nueva-just" data-tipo="just" data-exp="${e.id}" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--teal-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nuevo justificante</button>
       <button type="button" class="btn-nueva-just" data-tipo="rec" data-pac="${escapeHtml(e.nombre)}" style="flex:1;background:var(--surface);border:1px dashed var(--border);color:var(--blue-800);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;">＋ Nueva receta</button>
     </div>`;
   } catch(err){}
@@ -1139,8 +1139,8 @@ document.getElementById('modal-ver-expediente').addEventListener('click', (e) =>
   if(btnNuevaJust){
     if(btnNuevaJust.dataset.tipo==='rec' && btnNuevaJust.dataset.pac){
       location.href = 'receta-medica.html?pac=' + encodeURIComponent(btnNuevaJust.dataset.pac);
-    } else {
-      location.href = 'justificantes.html?tab=' + encodeURIComponent(btnNuevaJust.dataset.tipo);
+    } else if(btnNuevaJust.dataset.tipo==='just'){
+      location.href = 'nuevo-justificante.html?expId=' + encodeURIComponent(btnNuevaJust.dataset.exp||'');
     }
     return;
   }
