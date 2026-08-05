@@ -310,13 +310,13 @@ document.getElementById('btn-guardar-rec').addEventListener('click',async()=>{
   const newId=(Date.now().toString(36)+Math.random().toString(36).slice(2,5)).toUpperCase();
   const folio='REC-'+newId;
 
+  const fechaAtencion=val('rec-fecha')||todayISO();
   const row={
     tipo:'rec',
     paciente:exp.nombre,
     alumno:val('rec-estudiante'),
     maestro:'',
     firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):'',
-    fecha_atencion:val('rec-fecha')||todayISO(),
     folio:recId?undefined:folio,
     datos:{
       clinica:val('rec-clinica'),
@@ -324,7 +324,7 @@ document.getElementById('btn-guardar-rec').addEventListener('click',async()=>{
       medicamentos:meds,
       indicaciones:val('rec-indicaciones'),
       fechaEmision:todayISO(),
-      fechaAtencion:val('rec-fecha')||todayISO(),
+      fechaAtencion:fechaAtencion,
     },
   };
 
