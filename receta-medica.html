@@ -5,119 +5,130 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Receta Médica · Clínica Dental Anáhuac</title>
 <style>
-  :root{
-    --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
-    --amber-50:#FAEEDA;--amber-600:#854F0B;
-    --red-50:#FCEBEB;--red-600:#A32D2D;
-    --green-50:#EAF3DE;--green-800:#27500A;
-    --blue-50:#E6F1FB;--blue-800:#0C447C;
-    --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
-    --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
-    --border:#E3E1D8;--radius:8px;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);}
-  .wrap{max-width:820px;margin:0 auto;padding:20px 20px 100px;}
-  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
-  .eyebrow{font-size:13px;color:var(--text-muted);margin:0;letter-spacing:.02em;}
-  h1{font-size:21px;font-weight:600;margin:4px 0 0;color:var(--teal-900);}
-  .patient-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
-  .avatar{width:46px;height:46px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;overflow:hidden;}
-  .avatar img{width:100%;height:100%;object-fit:cover;}
-  .patient-name{font-size:16px;font-weight:600;margin:0;}
-  .patient-meta{font-size:12px;color:var(--text-secondary);margin:3px 0 0;}
-  .section-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
-  .section-title{font-size:12px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-  .field{margin-bottom:12px;}
-  .field label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;}
-  input[type=text],input[type=date],select,textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
-  input[type=text],input[type=date],select{height:36px;}
-  input[readonly]{background:var(--surface-1);color:var(--text-secondary);}
-  textarea{padding:8px 10px;resize:vertical;min-height:72px;}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
-  .grid-2{display:grid;gap:12px;}
-  @media(min-width:540px){.grid-2{grid-template-columns:1fr 1fr;}}
-  /* Medicamentos */
-  .med-card{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:14px 14px 10px;margin-bottom:10px;position:relative;}
-  .med-card-header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
-  .med-card-num{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.04em;}
-  .btn-remove-med{background:var(--red-50);border:none;color:var(--red-600);border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer;}
-  .btn-remove-med:hover{background:#fadadd;}
-  .add-med-btn{display:flex;align-items:center;gap:7px;background:var(--teal-50);border:1px dashed var(--teal-600);color:var(--teal-800);border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;justify-content:center;margin-top:4px;}
-  .add-med-btn:hover{background:#fbe4d3;}
-  .grid-med{display:grid;gap:10px;}
-  @media(min-width:540px){.grid-med{grid-template-columns:2fr 1fr 1fr;}}
-  @media(min-width:700px){.grid-med{grid-template-columns:2.5fr 1fr 1fr 1.2fr;}}
-  /* Firma */
-  .firma-wrap canvas{width:100%;height:130px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;touch-action:none;display:block;}
-  /* Botones */
-  button{cursor:pointer;font-family:inherit;font-size:14px;}
-  .btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:38px;padding:0 20px;font-weight:600;}
-  .btn-primary:hover{background:var(--teal-800);}
-  .btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:38px;padding:0 16px;color:var(--text-secondary);}
-  .btn-sm{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:28px;padding:0 10px;font-size:12px;color:var(--text-secondary);margin-top:6px;}
-  .sticky-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:flex-end;gap:10px;z-index:10;}
-  .badge-saved{background:var(--green-50);color:var(--green-800);font-size:12px;padding:3px 10px;border-radius:5px;font-weight:600;margin-left:10px;display:none;}
-  .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1F1F1D;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:20;}
-  .toast.show{opacity:1;}
-  .error-msg{text-align:center;padding:60px 20px;color:var(--text-secondary);}
-  /* Buscador de paciente */
-  .pac-search-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px;margin-bottom:20px;}
-  .pac-search-wrap h2{font-size:16px;font-weight:600;margin:0 0 6px;color:var(--text-primary);}
-  .pac-search-wrap p{font-size:13px;color:var(--text-secondary);margin:0 0 16px;}
-  .pac-search-row{display:flex;gap:8px;}
-  .pac-search-row input{flex:1;height:38px;border:1px solid var(--border);border-radius:var(--radius);padding:0 12px;font-size:14px;font-family:inherit;}
-  .pac-search-row input:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
-  .pac-results{margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;}
-  .pac-result-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:9px;cursor:pointer;background:#fff;transition:background .15s;}
-  .pac-result-item:hover{background:var(--teal-50);border-color:var(--teal-600);}
-  .pac-result-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden;}
-  .pac-result-avatar img{width:100%;height:100%;object-fit:cover;}
-  .pac-result-name{font-size:14px;font-weight:600;}
-  .pac-result-meta{font-size:12px;color:var(--text-secondary);}
-  .patient-card{position:relative;}
-  /* Impresión */
-  @media print{
-    .sticky-bar,.btn-secondary,.btn-sm,.add-med-btn,.btn-remove-med,.btn-primary{display:none!important;}
-    body{background:#fff;}
-    .wrap{max-width:100%;padding:0 10mm;}
-    .section-card{border:1px solid #ccc;break-inside:avoid;}
-    .patient-card{border:1px solid #ccc;}
-    header{margin-bottom:8px;}
-    h1{font-size:16px;}
-    .print-sep{border-top:2px dashed #bbb;text-align:center;padding:5px 0;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#aaa;}
-  }
+:root{
+  --teal-50:#FDEEE2;--teal-600:#C2570D;--teal-800:#8C3F09;--teal-900:#5C2906;
+  --red-50:#FCEBEB;--red-600:#A32D2D;
+  --green-50:#EAF3DE;--green-800:#27500A;
+  --blue-50:#E6F1FB;--blue-800:#0C447C;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface-1:#F1F0EA;
+  --text-primary:#1F1F1D;--text-secondary:#5F5E5A;--text-muted:#888780;
+  --border:#E3E1D8;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-primary);font-size:14px;}
+.wrap{max-width:820px;margin:0 auto;padding:20px 20px 100px;}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+.eyebrow{font-size:13px;color:var(--text-muted);margin:0;letter-spacing:.02em;}
+h1{font-size:21px;font-weight:600;margin:4px 0 0;color:var(--teal-900);}
+.badge-saved{background:var(--green-50);color:var(--green-800);font-size:12px;padding:3px 10px;border-radius:5px;font-weight:600;margin-left:10px;display:none;}
+/* Ficha paciente */
+.patient-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.avatar{width:46px;height:46px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;overflow:hidden;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.patient-name{font-size:16px;font-weight:600;margin:0;}
+.patient-meta{font-size:12px;color:var(--text-secondary);margin:3px 0 0;}
+/* Secciones */
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+.section-title{font-size:12px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.field{margin-bottom:12px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;}
+.field label .req{color:var(--red-600);}
+input[type=text],input[type=date],input[type=tel],input[type=number],select,textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
+input[type=text],input[type=date],input[type=tel],input[type=number],select{height:36px;}
+input[readonly]{background:var(--surface-1);color:var(--text-secondary);}
+textarea{padding:8px 10px;resize:vertical;min-height:72px;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+.grid-2{display:grid;gap:12px;}
+.grid-3{display:grid;gap:12px;}
+@media(min-width:540px){.grid-2{grid-template-columns:1fr 1fr;}.grid-3{grid-template-columns:1fr 1fr 1fr;}}
+/* Autocomplete */
+.ac-wrap{position:relative;}
+.ac-list{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:200px;overflow-y:auto;}
+.ac-list.open{display:block;}
+.ac-item{padding:9px 12px;cursor:pointer;font-size:13px;}
+.ac-item:hover,.ac-item.focused{background:var(--teal-50);color:var(--teal-800);}
+/* Medicamentos */
+.med-card{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.med-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.med-card-num{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.04em;}
+.btn-remove-med{background:var(--red-50);border:none;color:var(--red-600);border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit;}
+.btn-remove-med:hover{background:#fadadd;}
+.add-med-btn{display:flex;align-items:center;gap:7px;background:var(--teal-50);border:1px dashed var(--teal-600);color:var(--teal-800);border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;justify-content:center;margin-top:4px;font-family:inherit;}
+.add-med-btn:hover{background:#fbe4d3;}
+/* Firma */
+.firma-wrap canvas{width:100%;height:130px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;touch-action:none;display:block;}
+.canvas-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface-1);border-top:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);}
+.canvas-toolbar span{font-size:11px;color:var(--text-muted);}
+.btn-sm{background:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--text-secondary);font-family:inherit;}
+.btn-sm:hover{border-color:var(--red-600);color:var(--red-600);}
+/* Botones */
+button{cursor:pointer;font-family:inherit;font-size:14px;}
+.btn-primary{background:var(--teal-600);color:#fff;border:none;border-radius:var(--radius);height:38px;padding:0 20px;font-weight:600;}
+.btn-primary:hover{background:var(--teal-800);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+.btn-secondary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);height:38px;padding:0 16px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;}
+.btn-secondary:hover{border-color:var(--teal-600);color:var(--teal-800);}
+/* Sticky bar */
+.sticky-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:flex-end;gap:10px;z-index:10;}
+/* Toast */
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1F1F1D;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:20;}
+.toast.show{opacity:1;}
+/* Buscador paciente */
+.pac-search-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px;margin-bottom:20px;}
+.pac-search-wrap h2{font-size:16px;font-weight:600;margin:0 0 6px;}
+.pac-search-wrap p{font-size:13px;color:var(--text-secondary);margin:0 0 16px;}
+.pac-search-row input{width:100%;height:38px;border:1px solid var(--border);border-radius:var(--radius);padding:0 12px;font-size:14px;font-family:inherit;}
+.pac-search-row input:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
+.pac-results{margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;}
+.pac-result-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:9px;cursor:pointer;background:#fff;}
+.pac-result-item:hover{background:var(--teal-50);border-color:var(--teal-600);}
+.pac-result-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden;}
+.pac-result-avatar img{width:100%;height:100%;object-fit:cover;}
+.pac-result-name{font-size:14px;font-weight:600;}
+.pac-result-meta{font-size:12px;color:var(--text-secondary);}
+/* Impresión */
+@media print{
+  .sticky-bar,.btn-secondary,.btn-sm,.add-med-btn,.btn-remove-med,.btn-primary,header,.pac-search-wrap{display:none!important;}
+  body{background:#fff;}
+  .wrap{max-width:100%;padding:0 10mm;}
+  .section-card,.patient-card{border:1px solid #ccc;break-inside:avoid;}
+  header{margin-bottom:8px;}
+  h1{font-size:16px;}
+  .print-sep{border-top:2px dashed #bbb;text-align:center;padding:5px 0;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#aaa;}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script>initAuth(['coordinador','maestro','administrador']);</script>
 </head>
 <body>
-  <div class="wrap">
+<div class="wrap">
   <header>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <button type="button" class="btn-secondary" id="btn-volver" style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>
-          Volver
-        </button>
-        <div>
-          <p class="eyebrow">Clínica Dental Universitaria Anáhuac Xalapa</p>
-          <h1>Receta Médica <span class="badge-saved" id="badge-saved">✓ Guardada</span></h1>
-        </div>
-      </div>
-      <button type="button" class="btn-secondary" onclick="window.print()" style="font-size:13px;display:flex;align-items:center;gap:6px;">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke-linecap="round" stroke-linejoin="round"/><rect x="6" y="14" width="12" height="8" rx="1" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Imprimir
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button type="button" class="btn-secondary" id="btn-volver">
+        <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3L5 7l4 4"/></svg>
+        Volver
       </button>
-    </header>
-  <!-- Buscador de paciente (visible cuando no hay expId o se quiere cambiar) -->
+      <div>
+        <p class="eyebrow">Clínica Dental Universitaria · Anáhuac Xalapa</p>
+        <h1>Receta Médica <span class="badge-saved" id="badge-saved">✓ Guardada</span></h1>
+      </div>
+    </div>
+    <button type="button" class="btn-secondary" onclick="window.print()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+      Imprimir
+    </button>
+  </header>
+
+  <!-- Buscador de paciente -->
   <div id="pac-search-panel" style="display:none;">
     <div class="pac-search-wrap">
       <h2>Seleccionar paciente</h2>
       <p>Escribe el nombre del paciente para buscar en el expediente.</p>
       <div class="pac-search-row">
-        <input type="text" id="pac-search-input" placeholder="Nombre del paciente..." autocomplete="off" list="pac-datalist">
-        <datalist id="pac-datalist"></datalist>
+        <input type="text" id="pac-search-input" placeholder="Nombre del paciente..." autocomplete="off">
       </div>
       <div class="pac-results" id="pac-results"></div>
     </div>
@@ -128,37 +139,126 @@
     <!-- Ficha del paciente -->
     <div class="patient-card" id="ficha-paciente"></div>
 
-    <!-- SECCIÓN 1: Datos generales -->
+    <!-- ① DATOS DEL MÉDICO PRESCRIPTOR -->
     <div class="section-card">
-      <p class="section-title">Datos de la receta</p>
+      <p class="section-title">① Datos del médico prescriptor</p>
       <div class="grid-2">
-        <div class="field"><label>Fecha de emisión</label><input type="date" id="rec-fecha"></div>
-        <div class="field"><label>Clínica / Materia</label><input type="text" id="rec-clinica"></div>
+        <div class="field">
+          <label>Médico supervisor / Docente <span class="req">*</span></label>
+          <div class="ac-wrap">
+            <input type="text" id="rec-maestro" placeholder="Buscar en base de maestros..." autocomplete="off">
+            <div class="ac-list" id="ac-maestro"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Cédula profesional <span class="req">*</span></label>
+          <input type="text" id="rec-cedula" placeholder="Ej. 12345678">
+        </div>
       </div>
-      <div class="field"><label>Estudiante / Médico que prescribe</label><input type="text" id="rec-estudiante"></div>
-      <div class="field"><label>Diagnóstico</label><textarea id="rec-diagnostico" rows="2" placeholder="Diagnóstico que motiva la prescripción..."></textarea></div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Cédula de especialidad (si aplica)</label>
+          <input type="text" id="rec-cedula-esp" placeholder="Ej. 87654321">
+        </div>
+        <div class="field">
+          <label>Institución que emitió el título</label>
+          <input type="text" id="rec-institucion" value="Universidad Anáhuac Xalapa">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Domicilio del consultorio <span class="req">*</span></label>
+          <input type="text" id="rec-domicilio" value="Circuito Arco Sur s/n, Lomas Verdes, C.P. 91098, Xalapa Enríquez, Ver.">
+        </div>
+        <div class="field">
+          <label>Teléfono del consultorio <span class="req">*</span></label>
+          <input type="tel" id="rec-telefono" placeholder="Ej. (228) 123-4567" value="(228) 141-0310">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Estudiante que prescribe</label>
+          <div class="ac-wrap">
+            <input type="text" id="rec-estudiante" placeholder="Buscar en base de alumnos..." autocomplete="off">
+            <div class="ac-list" id="ac-alumno"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Matrícula del estudiante</label>
+          <input type="text" id="rec-matricula" placeholder="Número de matrícula">
+        </div>
+      </div>
     </div>
 
-    <!-- SECCIÓN 2: Medicamentos -->
+    <!-- ② DATOS DEL PACIENTE -->
     <div class="section-card">
-      <p class="section-title">Medicamentos prescritos</p>
+      <p class="section-title">② Datos del paciente</p>
+      <div class="grid-3">
+        <div class="field">
+          <label>Edad</label>
+          <input type="text" id="rec-edad" readonly>
+        </div>
+        <div class="field">
+          <label>Peso (kg)</label>
+          <input type="number" id="rec-peso" placeholder="Ej. 70" min="1" max="300" step="0.1">
+        </div>
+        <div class="field">
+          <label>Talla (cm)</label>
+          <input type="number" id="rec-talla" placeholder="Ej. 170" min="30" max="250" step="0.5">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Presión arterial</label>
+          <input type="text" id="rec-presion" placeholder="Ej. 120/80 mmHg">
+        </div>
+        <div class="field">
+          <label>Alergias conocidas</label>
+          <input type="text" id="rec-alergias" readonly>
+        </div>
+      </div>
+      <div class="field">
+        <label>Diagnóstico <span class="req">*</span></label>
+        <textarea id="rec-diagnostico" rows="2" placeholder="Diagnóstico que motiva la prescripción..."></textarea>
+      </div>
+    </div>
+
+    <!-- ③ MEDICAMENTOS -->
+    <div class="section-card">
+      <p class="section-title">③ Medicamentos prescritos <span class="req" style="font-size:11px;">* Al menos uno</span></p>
       <div id="meds-list"></div>
       <button type="button" class="add-med-btn" id="btn-add-med">＋ Agregar medicamento</button>
     </div>
 
-    <!-- SECCIÓN 3: Indicaciones generales -->
+    <!-- ④ INDICACIONES Y FECHA -->
     <div class="section-card">
-      <p class="section-title">Indicaciones generales</p>
-      <div class="field"><label>Indicaciones al paciente</label><textarea id="rec-indicaciones" rows="3" placeholder="Instrucciones adicionales, cuidados, restricciones..."></textarea></div>
-      <div class="field"><label>Alergias conocidas del paciente</label><input type="text" id="rec-alergias" readonly></div>
+      <p class="section-title">④ Indicaciones y datos de emisión</p>
+      <div class="field">
+        <label>Indicaciones generales al paciente</label>
+        <textarea id="rec-indicaciones" rows="3" placeholder="Instrucciones adicionales, cuidados, restricciones..."></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Clínica / Materia</label>
+          <input type="text" id="rec-clinica" placeholder="Ej. Cirugía Oral">
+        </div>
+        <div class="field">
+          <label>Fecha de expedición <span class="req">*</span></label>
+          <input type="date" id="rec-fecha">
+        </div>
+      </div>
     </div>
 
-    <!-- SECCIÓN 4: Firma del prescriptor -->
+    <!-- ⑤ FIRMA AUTÓGRAFA -->
     <div class="section-card">
-      <p class="section-title">Firma del prescriptor</p>
+      <p class="section-title">⑤ Firma autógrafa del médico prescriptor <span class="req">*</span></p>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Dibuja la firma del médico supervisor con el ratón o en pantalla táctil.</p>
       <div class="firma-wrap">
         <canvas id="rec-firma-canvas" width="760" height="130"></canvas>
-        <button type="button" class="btn-sm" id="rec-limpiar-firma">Limpiar firma</button>
+        <div class="canvas-toolbar">
+          <span>Ratón o pantalla táctil</span>
+          <button type="button" class="btn-sm" id="rec-limpiar-firma">Limpiar firma</button>
+        </div>
       </div>
     </div>
 
@@ -174,23 +274,71 @@
 <script>
 const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
-const sbRec = supabase.createClient(SB_URL, SB_KEY);
+const sbRec=supabase.createClient(SB_URL,SB_KEY);
 
 const params=new URLSearchParams(location.search);
 const expId=params.get('expId');
 const recId=params.get('recId');
-const pacNombre=params.get('pac'); // fallback cuando solo viene nombre
+const pacNombre=params.get('pac');
 
-let exp=null; // se llena async en init()
+let exp=null;
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function todayISO(){const d=new Date();const p=v=>String(v).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function volver(){history.length>1?history.back():(location.href='control-clinica-dental.html');}
-document.getElementById('btn-volver').addEventListener('click',volver);
-document.getElementById('btn-volver-bottom').addEventListener('click',volver);
 function val(id){return(document.getElementById(id)||{}).value||'';}
 function setVal(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
+
+document.getElementById('btn-volver').addEventListener('click',volver);
+document.getElementById('btn-volver-bottom').addEventListener('click',volver);
+
+/* ── Autocomplete ── */
+function setupAC(inputId,listId,getItems,onSelect){
+  const inp=document.getElementById(inputId);
+  const list=document.getElementById(listId);
+  let focused=-1,items=[];
+  function render(term){
+    items=getItems().filter(n=>n.toLowerCase().includes(term.toLowerCase())).slice(0,16);
+    if(!items.length){list.classList.remove('open');return;}
+    list.innerHTML=items.map(n=>`<div class="ac-item">${esc(n)}</div>`).join('');
+    list.classList.add('open');focused=-1;
+    list.querySelectorAll('.ac-item').forEach((el,i)=>{
+      el.addEventListener('mousedown',ev=>{ev.preventDefault();inp.value=items[i];list.classList.remove('open');if(onSelect)onSelect(items[i]);});
+    });
+  }
+  inp.addEventListener('input',()=>render(inp.value));
+  inp.addEventListener('focus',()=>render(inp.value));
+  inp.addEventListener('blur',()=>setTimeout(()=>list.classList.remove('open'),150));
+  inp.addEventListener('keydown',e=>{
+    const its=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();focused=Math.min(focused+1,its.length-1);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='ArrowUp'){e.preventDefault();focused=Math.max(focused-1,0);its.forEach((el,i)=>el.classList.toggle('focused',i===focused));}
+    else if(e.key==='Enter'&&focused>=0){e.preventDefault();inp.value=items[focused];list.classList.remove('open');if(onSelect)onSelect(items[focused]);}
+    else if(e.key==='Escape'){list.classList.remove('open');}
+  });
+}
+
+let alumnosCache=[],maestrosCache=[];
+async function cargarCaches(){
+  const[a,m]=await Promise.all([
+    sbRec.from('alumnos').select('nombre').order('nombre'),
+    sbRec.from('maestros').select('nombre,cedula,especialidad').order('nombre'),
+  ]);
+  alumnosCache=(a.data||[]).map(x=>x.nombre).filter(Boolean);
+  maestrosCache=(m.data||[]).filter(x=>x.nombre);
+  // Llenar AC con nombres
+  setupAC('rec-maestro','ac-maestro',()=>maestrosCache.map(x=>x.nombre),(nombre)=>{
+    const m=maestrosCache.find(x=>x.nombre===nombre);
+    if(m){
+      setVal('rec-cedula',m.cedula||'');
+      setVal('rec-cedula-esp',m.especialidad||'');
+    }
+  });
+  setupAC('rec-estudiante','ac-alumno',()=>alumnosCache);
+}
+cargarCaches();
 
 /* ── Canvas firma ── */
 const firmaCanvas=document.getElementById('rec-firma-canvas');
@@ -208,29 +356,34 @@ function loadFirma(dataUrl){const img=new Image();img.onload=()=>{firmaCtx.clear
 
 /* ── Medicamentos ── */
 let medCount=0;
+const FORMAS=['Tableta','Cápsula','Cápsula de liberación prolongada','Solución oral','Suspensión oral','Jarabe','Comprimido','Gragea','Ampolleta','Solución inyectable','Crema','Ungüento','Gel','Parche transdérmico','Colirio / Gotas oftálmicas','Gotas óticas','Spray nasal','Supositorio'];
+const VIAS=['Oral','Sublingual','Tópica','Inyectable (IM)','Inyectable (IV)','Inhalatoria','Ótica','Oftálmica','Rectal','Transdérmica'];
+
 function addMed(data){
   medCount++;
   const id='med-'+medCount;
+  const formasOpts=FORMAS.map(f=>`<option value="${f}"${data?.forma===f?' selected':''}>${f}</option>`).join('');
+  const viasOpts=VIAS.map(v=>`<option value="${v}"${data?.via===v?' selected':''}>${v}</option>`).join('');
   const div=document.createElement('div');
-  div.className='med-card';
-  div.id=id;
+  div.className='med-card';div.id=id;
   div.innerHTML=`
     <div class="med-card-header">
       <span class="med-card-num">Medicamento ${medCount}</span>
       <button type="button" class="btn-remove-med" onclick="removeMed('${id}')">✕ Quitar</button>
     </div>
-    <div class="grid-med">
-      <div class="field" style="margin:0"><label>Nombre del medicamento</label><input type="text" class="med-nombre" placeholder="Ej. Amoxicilina 500 mg" value="${esc(data?.nombre||'')}"></div>
-      <div class="field" style="margin:0"><label>Dosis</label><input type="text" class="med-dosis" placeholder="Ej. 1 cápsula" value="${esc(data?.dosis||'')}"></div>
-      <div class="field" style="margin:0"><label>Frecuencia</label><input type="text" class="med-frecuencia" placeholder="Ej. cada 8 h" value="${esc(data?.frecuencia||'')}"></div>
-      <div class="field" style="margin:0"><label>Duración</label><input type="text" class="med-duracion" placeholder="Ej. 7 días" value="${esc(data?.duracion||'')}"></div>
+    <div class="grid-2" style="margin-bottom:10px;">
+      <div class="field" style="margin:0;"><label>Nombre genérico (sustancia activa) <span class="req">*</span></label><input type="text" class="med-nombre" placeholder="Ej. Amoxicilina" value="${esc(data?.nombre||'')}"></div>
+      <div class="field" style="margin:0;"><label>Concentración</label><input type="text" class="med-conc" placeholder="Ej. 500 mg" value="${esc(data?.concentracion||data?.conc||'')}"></div>
     </div>
-    <div class="field" style="margin-top:10px;margin-bottom:0;">
-      <label>Vía de administración</label>
-      <select class="med-via">
-        <option value="">Seleccionar...</option>
-        ${['Oral','Sublingual','Tópica','Inyectable (IM)','Inyectable (IV)','Inhalatoria','Ótica','Oftálmica','Rectal','Transdérmica'].map(v=>`<option value="${v}" ${data?.via===v?'selected':''}>${v}</option>`).join('')}
-      </select>
+    <div class="grid-3" style="margin-bottom:10px;">
+      <div class="field" style="margin:0;"><label>Forma farmacéutica <span class="req">*</span></label><select class="med-forma"><option value="">Seleccionar...</option>${formasOpts}</select></div>
+      <div class="field" style="margin:0;"><label>Vía de administración <span class="req">*</span></label><select class="med-via"><option value="">Seleccionar...</option>${viasOpts}</select></div>
+      <div class="field" style="margin:0;"><label>Cantidad a surtir</label><input type="text" class="med-cant" placeholder="Ej. 15 piezas" value="${esc(data?.cantidad||'')}"></div>
+    </div>
+    <div class="grid-3">
+      <div class="field" style="margin:0;"><label>Dosis por toma <span class="req">*</span></label><input type="text" class="med-dosis" placeholder="Ej. 1 cápsula" value="${esc(data?.dosis||'')}"></div>
+      <div class="field" style="margin:0;"><label>Frecuencia <span class="req">*</span></label><input type="text" class="med-freq" placeholder="Ej. cada 8 h" value="${esc(data?.frecuencia||data?.freq||'')}"></div>
+      <div class="field" style="margin:0;"><label>Duración del tratamiento <span class="req">*</span></label><input type="text" class="med-dur" placeholder="Ej. 7 días" value="${esc(data?.duracion||data?.dur||'')}"></div>
     </div>`;
   document.getElementById('meds-list').appendChild(div);
   renumberMeds();
@@ -238,149 +391,20 @@ function addMed(data){
 function removeMed(id){const el=document.getElementById(id);if(el)el.remove();renumberMeds();}
 function renumberMeds(){document.querySelectorAll('.med-card-num').forEach((el,i)=>el.textContent='Medicamento '+(i+1));}
 function getMeds(){
-  return [...document.querySelectorAll('.med-card')].map(card=>({
-    nombre:card.querySelector('.med-nombre')?.value||'',
-    dosis:card.querySelector('.med-dosis')?.value||'',
-    frecuencia:card.querySelector('.med-frecuencia')?.value||'',
-    duracion:card.querySelector('.med-duracion')?.value||'',
-    via:card.querySelector('.med-via')?.value||'',
-  })).filter(m=>m.nombre.trim());
+  return[...document.querySelectorAll('.med-card')].map(c=>({
+    nombre:c.querySelector('.med-nombre')?.value?.trim()||'',
+    concentracion:c.querySelector('.med-conc')?.value?.trim()||'',
+    forma:c.querySelector('.med-forma')?.value||'',
+    via:c.querySelector('.med-via')?.value||'',
+    cantidad:c.querySelector('.med-cant')?.value?.trim()||'',
+    dosis:c.querySelector('.med-dosis')?.value?.trim()||'',
+    frecuencia:c.querySelector('.med-freq')?.value?.trim()||'',
+    duracion:c.querySelector('.med-dur')?.value?.trim()||'',
+  })).filter(m=>m.nombre);
 }
 document.getElementById('btn-add-med').addEventListener('click',()=>addMed(null));
 
-/* ── Init async (Supabase) ── */
-async function init(){
-  // 1. Cargar expediente desde Supabase
-  if(expId){
-    const {data,error}=await sbRec.from('expedientes').select('*').eq('id',expId).single();
-    if(!error && data) exp=data;
-  } else if(pacNombre){
-    const {data,error}=await sbRec.from('expedientes').select('*').ilike('nombre',pacNombre.trim()).limit(1);
-    if(!error && data && data.length) exp=data[0];
-  }
-
-  if(!exp){
-    document.getElementById('pac-search-panel').style.display='';
-    document.getElementById('rec-body').style.display='none';
-    document.querySelector('.sticky-bar').style.display='none';
-    return;
-  }
-
-  document.getElementById('pac-search-panel').style.display='none';
-  document.getElementById('rec-body').style.display='';
-  renderFicha(exp);
-
-  // Alergias (read-only)
-  const hc=exp.historia_clinica||{};
-  const alergiaTexto=[hc.alergia,hc.alergiaEspecifique].filter(Boolean).join(' — ');
-  setVal('rec-alergias', alergiaTexto||'Sin alergias registradas');
-
-  // Fecha de hoy por defecto
-  setVal('rec-fecha', new Date().toISOString().slice(0,10));
-
-  // Si viene recId → cargar receta existente desde tabla justificantes
-  if(recId){
-    const {data:rRow}=await sbRec.from('justificantes').select('*').eq('id',recId).single();
-    if(rRow){
-      const dt=rRow.datos||{};
-      setVal('rec-fecha', rRow.fecha_atencion||dt.fechaAtencion||'');
-      setVal('rec-clinica', dt.clinica||'');
-      setVal('rec-estudiante', rRow.alumno||'');
-      setVal('rec-diagnostico', dt.diagnostico||'');
-      setVal('rec-indicaciones', dt.indicaciones||'');
-      (dt.medicamentos||[]).forEach(m=>addMed(m));
-      if(rRow.firma) loadFirma(rRow.firma);
-      document.getElementById('badge-saved').style.display='';
-      return;
-    }
-  }
-  addMed(null); // tarjeta inicial vacía
-}
-init();
-
-/* ── Guardar ── */
-document.getElementById('btn-guardar-rec').addEventListener('click',async()=>{
-  if(!exp)return;
-  const meds=getMeds();
-  if(!meds.length){showToast('Agrega al menos un medicamento.');return;}
-  const btn=document.getElementById('btn-guardar-rec');
-  btn.disabled=true;
-
-  const todayISO=()=>new Date().toISOString().slice(0,10);
-  const newId=(Date.now().toString(36)+Math.random().toString(36).slice(2,5)).toUpperCase();
-  const folio='REC-'+newId;
-
-  const fechaAtencion=val('rec-fecha')||todayISO();
-  const row={
-    tipo:'rec',
-    paciente:exp.nombre,
-    alumno:val('rec-estudiante'),
-    maestro:'',
-    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):'',
-    folio:recId?undefined:folio,
-    datos:{
-      clinica:val('rec-clinica'),
-      diagnostico:val('rec-diagnostico'),
-      medicamentos:meds,
-      indicaciones:val('rec-indicaciones'),
-      fechaEmision:todayISO(),
-      fechaAtencion:fechaAtencion,
-    },
-  };
-
-  let error, data;
-  if(recId){
-    delete row.folio;
-    ({error}=await sbRec.from('justificantes').update(row).eq('id',recId));
-  } else {
-    row.id=newId;
-    ({data,error}=await sbRec.from('justificantes').insert(row).select().single());
-  }
-
-  btn.disabled=false;
-  if(error){showToast('Error al guardar: '+error.message);return;}
-  showToast('Receta guardada ✓');
-  setTimeout(()=>volver(),1200);
-});
-
-/* ── Impresión duplicada ── */
-let _printClones=[];
-window.addEventListener('beforeprint',()=>{
-  const wrap=document.querySelector('.wrap');
-  const body=document.getElementById('rec-body');
-  if(!body||body.style.display==='none')return;
-  // Captura la firma del canvas como imagen antes de clonar
-  const canvas=document.getElementById('rec-firma-canvas');
-  const firmaDataUrl=canvas?canvas.toDataURL('image/png'):'';
-  const sep=document.createElement('div');sep.className='print-sep';
-  sep.textContent='✂  Copia para archivo — recortar y conservar  ✂';
-  const clone=body.cloneNode(true);
-  // Remplaza canvas por img en el clon
-  if(firmaDataUrl){
-    const cc=clone.querySelector('#rec-firma-canvas');
-    if(cc){const img=document.createElement('img');img.src=firmaDataUrl;img.style.cssText='width:100%;max-height:100px;border:1px solid #ccc;border-radius:6px;display:block;';cc.replaceWith(img);}
-  }
-  // Quita botones del clon
-  clone.querySelectorAll('button').forEach(b=>b.remove());
-  clone.removeAttribute('id');
-  // Firma de recibido del paciente
-  const acuse=document.createElement('div');
-  acuse.style.cssText='margin-top:18px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;';
-  const iDiv=document.createElement('div');iDiv.style.cssText='font-size:11px;color:#444;line-height:1.9;';
-  const pname=document.querySelector('.patient-name');
-  iDiv.innerHTML='<p style="margin:0"><strong>Paciente:</strong> '+(pname?pname.textContent:'')+'</p>';
-  const sDiv=document.createElement('div');sDiv.style.cssText='text-align:center;min-width:220px;';
-  sDiv.innerHTML='<div style="border-top:1px solid #333;margin-top:52px;padding-top:6px;"><p style="font-size:11px;font-weight:700;color:#333;margin:0;">Firma de recibido del paciente</p></div>';
-  acuse.appendChild(iDiv);acuse.appendChild(sDiv);clone.appendChild(acuse);
-  wrap.appendChild(sep);wrap.appendChild(clone);
-  _printClones=[sep,clone];
-});
-window.addEventListener('afterprint',()=>{
-  _printClones.forEach(el=>el.remove());
-  _printClones=[];
-});
-
-/* ── Render ficha paciente con boton X ── */
+/* ── Render ficha paciente ── */
 function renderFicha(e){
   const avatar=e.foto_paciente?`<img src="${e.foto_paciente}">`:(initials(e.nombre));
   const meta=[e.sexo,e.edad?e.edad+' años':'',e.tipo_paciente].filter(Boolean).join(' · ');
@@ -392,63 +416,183 @@ function renderFicha(e){
     </div>`;
 }
 
+/* ── Init ── */
+async function init(){
+  if(expId){
+    const{data,error}=await sbRec.from('expedientes').select('*').eq('id',expId).single();
+    if(!error&&data) exp=data;
+  } else if(pacNombre){
+    const{data,error}=await sbRec.from('expedientes').select('*').ilike('nombre',pacNombre.trim()).limit(1);
+    if(!error&&data&&data.length) exp=data[0];
+  }
 
-
-/* ── Buscador de pacientes: precarga todos los expedientes y filtra localmente ── */
-let _todosExpedientes=[];
-
-async function precargarExpedientes(){
-  const {data,error}=await sbRec.from('expedientes')
-    .select('id,nombre,sexo,edad,tipo_paciente,foto_paciente')
-    .order('nombre',{ascending:true});
-  if(error||!data) return;
-  _todosExpedientes=data;
-  // Llenar datalist para autocompletado nativo
-  const dl=document.getElementById('pac-datalist');
-  dl.innerHTML=data.map(p=>`<option value="${esc(p.nombre)}">`).join('');
-}
-precargarExpedientes();
-
-function renderResultados(q){
-  const res=document.getElementById('pac-results');
-  const lista = q.length===0 ? _todosExpedientes.slice(0,10)
-    : _todosExpedientes.filter(p=>(p.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0,10);
-  if(!lista.length){
-    res.innerHTML='<p style="font-size:13px;color:var(--text-muted);padding:8px 4px;">Sin resultados.</p>';
+  if(!exp){
+    document.getElementById('pac-search-panel').style.display='';
+    document.getElementById('rec-body').style.display='none';
+    document.querySelector('.sticky-bar').style.display='none';
+    precargarExpedientes();
     return;
   }
+
+  mostrarFormulario();
+
+  if(recId){
+    const{data:rRow}=await sbRec.from('justificantes').select('*').eq('id',recId).single();
+    if(rRow){
+      const dt=rRow.datos||{};
+      setVal('rec-fecha',dt.fechaAtencion||dt.fechaEmision||'');
+      setVal('rec-clinica',dt.clinica||'');
+      setVal('rec-estudiante',rRow.alumno||'');
+      setVal('rec-matricula',dt.matricula||'');
+      setVal('rec-maestro',rRow.maestro||'');
+      setVal('rec-cedula',dt.cedula||'');
+      setVal('rec-cedula-esp',dt.cedulaEsp||'');
+      setVal('rec-institucion',dt.institucion||'Universidad Anáhuac Xalapa');
+      setVal('rec-domicilio',dt.domicilio||'Circuito Arco Sur s/n, Lomas Verdes, C.P. 91098, Xalapa Enríquez, Ver.');
+      setVal('rec-telefono',dt.telefono||'(228) 141-0310');
+      setVal('rec-edad',dt.edad||'');
+      setVal('rec-peso',dt.peso||'');
+      setVal('rec-talla',dt.talla||'');
+      setVal('rec-presion',dt.presion||'');
+      setVal('rec-diagnostico',dt.diagnostico||'');
+      setVal('rec-indicaciones',dt.indicaciones||'');
+      (dt.medicamentos||[]).forEach(m=>addMed(m));
+      if(rRow.firma) loadFirma(rRow.firma);
+      document.getElementById('badge-saved').style.display='';
+      return;
+    }
+  }
+  addMed(null);
+}
+
+function mostrarFormulario(){
+  document.getElementById('pac-search-panel').style.display='none';
+  document.getElementById('rec-body').style.display='';
+  document.querySelector('.sticky-bar').style.display='';
+  renderFicha(exp);
+  const hc=exp.historia_clinica||{};
+  const alergias=[hc.alergia,hc.alergiaEspecifique].filter(Boolean).join(' — ');
+  setVal('rec-alergias',alergias||'Sin alergias registradas');
+  setVal('rec-edad',exp.edad?exp.edad+' años':'');
+  setVal('rec-fecha',todayISO());
+}
+
+init();
+
+/* ── Guardar ── */
+document.getElementById('btn-guardar-rec').addEventListener('click',async()=>{
+  if(!exp) return;
+  const meds=getMeds();
+  if(!val('rec-maestro')){document.getElementById('rec-maestro').focus();showToast('Indica el médico supervisor.');return;}
+  if(!val('rec-cedula')){document.getElementById('rec-cedula').focus();showToast('Indica la cédula profesional.');return;}
+  if(!val('rec-domicilio')){document.getElementById('rec-domicilio').focus();showToast('Indica el domicilio del consultorio.');return;}
+  if(!val('rec-telefono')){document.getElementById('rec-telefono').focus();showToast('Indica el teléfono del consultorio.');return;}
+  if(!val('rec-diagnostico')){document.getElementById('rec-diagnostico').focus();showToast('Escribe el diagnóstico.');return;}
+  if(!meds.length){showToast('Agrega al menos un medicamento.');return;}
+  if(!val('rec-fecha')){document.getElementById('rec-fecha').focus();showToast('Indica la fecha de expedición.');return;}
+
+  const btn=document.getElementById('btn-guardar-rec');
+  btn.disabled=true;btn.textContent='Guardando...';
+
+  const newId=(Date.now().toString(36)+Math.random().toString(36).slice(2,5)).toUpperCase();
+  const row={
+    tipo:'rec',
+    paciente:exp.nombre,
+    alumno:val('rec-estudiante'),
+    maestro:val('rec-maestro'),
+    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):'',
+    folio:recId?undefined:('REC-'+newId),
+    datos:{
+      fechaAtencion:val('rec-fecha'),
+      fechaEmision:val('rec-fecha'),
+      clinica:val('rec-clinica'),
+      cedula:val('rec-cedula'),
+      cedulaEsp:val('rec-cedula-esp'),
+      institucion:val('rec-institucion'),
+      domicilio:val('rec-domicilio'),
+      telefono:val('rec-telefono'),
+      matricula:val('rec-matricula'),
+      edad:val('rec-edad'),
+      peso:val('rec-peso'),
+      talla:val('rec-talla'),
+      presion:val('rec-presion'),
+      diagnostico:val('rec-diagnostico'),
+      indicaciones:val('rec-indicaciones'),
+      medicamentos:meds,
+    },
+  };
+
+  let error,data;
+  if(recId){
+    delete row.folio;
+    ({error}=await sbRec.from('justificantes').update(row).eq('id',recId));
+  } else {
+    row.id=newId;
+    ({data,error}=await sbRec.from('justificantes').insert(row).select().single());
+  }
+
+  btn.disabled=false;btn.textContent='Guardar receta';
+  if(error){showToast('Error al guardar: '+error.message);return;}
+  showToast('Receta guardada ✓');
+  setTimeout(()=>volver(),1200);
+});
+
+/* ── Buscador de pacientes ── */
+let _todosExpedientes=[];
+async function precargarExpedientes(){
+  const{data}=await sbRec.from('expedientes').select('id,nombre,sexo,edad,tipo_paciente,foto_paciente').order('nombre');
+  _todosExpedientes=data||[];
+}
+function renderResultados(q){
+  const res=document.getElementById('pac-results');
+  const lista=q.length===0?_todosExpedientes.slice(0,10):_todosExpedientes.filter(p=>(p.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0,10);
+  if(!lista.length){res.innerHTML='<p style="font-size:13px;color:var(--text-muted);padding:8px 4px;">Sin resultados.</p>';return;}
   res.innerHTML=lista.map(p=>{
     const av=p.foto_paciente?`<img src="${esc(p.foto_paciente)}">`:(initials(p.nombre));
     const meta=[p.sexo,p.edad?p.edad+' años':'',p.tipo_paciente].filter(Boolean).join(' · ');
-    return `<div class="pac-result-item" onclick="seleccionarPaciente('${esc(p.id)}')">
+    return`<div class="pac-result-item" onclick="seleccionarPaciente('${esc(p.id)}')">
       <div class="pac-result-avatar">${av}</div>
-      <div>
-        <p class="pac-result-name">${esc(p.nombre)}</p>
-        <p class="pac-result-meta">${esc(meta||'')}</p>
-      </div>
+      <div><p class="pac-result-name">${esc(p.nombre)}</p><p class="pac-result-meta">${esc(meta||'')}</p></div>
     </div>`;
   }).join('');
 }
-
 const pacInput=document.getElementById('pac-search-input');
 pacInput.addEventListener('focus',()=>renderResultados(pacInput.value.trim()));
 pacInput.addEventListener('input',function(){renderResultados(this.value.trim());});
 
 async function seleccionarPaciente(id){
-  const {data,error}=await sbRec.from('expedientes').select('*').eq('id',id).single();
+  const{data,error}=await sbRec.from('expedientes').select('*').eq('id',id).single();
   if(error||!data){showToast('No se pudo cargar el expediente.');return;}
   exp=data;
-  // Alergias
-  const hc=exp.historia_clinica||{};
-  const alergiaTexto=[hc.alergia,hc.alergiaEspecifique].filter(Boolean).join(' — ');
-  setVal('rec-alergias',alergiaTexto||'Sin alergias registradas');
-  // Ocultar buscador, actualizar ficha (formulario ya visible)
-  document.getElementById('pac-search-panel').style.display='none';
-  document.getElementById('rec-body').style.display='';
-  document.querySelector('.sticky-bar').style.display='';
-  renderFicha(exp);
+  mostrarFormulario();
   if(!document.querySelectorAll('.med-card').length) addMed(null);
 }
+
+/* ── Impresión duplicada ── */
+let _printClones=[];
+window.addEventListener('beforeprint',()=>{
+  const wrap=document.querySelector('.wrap');
+  const body=document.getElementById('rec-body');
+  if(!body||body.style.display==='none') return;
+  const firmaDataUrl=firmaCanvas?firmaCanvas.toDataURL('image/png'):'';
+  const sep=document.createElement('div');sep.className='print-sep';
+  sep.textContent='✂  Copia para archivo — recortar y conservar  ✂';
+  const clone=body.cloneNode(true);
+  if(firmaDataUrl){const cc=clone.querySelector('#rec-firma-canvas');if(cc){const img=document.createElement('img');img.src=firmaDataUrl;img.style.cssText='width:100%;max-height:100px;border:1px solid #ccc;border-radius:6px;display:block;';cc.replaceWith(img);}}
+  clone.querySelectorAll('button').forEach(b=>b.remove());
+  clone.removeAttribute('id');
+  const acuse=document.createElement('div');
+  acuse.style.cssText='margin-top:18px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;';
+  const iDiv=document.createElement('div');iDiv.style.cssText='font-size:11px;color:#444;line-height:1.9;';
+  const pname=document.querySelector('.patient-name');
+  iDiv.innerHTML='<p style="margin:0"><strong>Paciente:</strong> '+(pname?pname.textContent:'')+'</p>';
+  const sDiv=document.createElement('div');sDiv.style.cssText='text-align:center;min-width:220px;';
+  sDiv.innerHTML='<div style="border-top:1px solid #333;margin-top:52px;padding-top:6px;"><p style="font-size:11px;font-weight:700;color:#333;margin:0;">Firma de recibido del paciente</p></div>';
+  acuse.appendChild(iDiv);acuse.appendChild(sDiv);clone.appendChild(acuse);
+  wrap.appendChild(sep);wrap.appendChild(clone);
+  _printClones=[sep,clone];
+});
+window.addEventListener('afterprint',()=>{_printClones.forEach(el=>el.remove());_printClones=[];});
 </script>
 </body>
 </html>
