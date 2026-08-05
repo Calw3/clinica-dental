@@ -30,29 +30,24 @@
   .section-title{font-size:12px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.05em;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
   .field{margin-bottom:12px;}
   .field label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;}
-  .field label .req{color:var(--teal-600);margin-left:2px;}
-  input[type=text],input[type=date],input[type=number],select,textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
-  input[type=text],input[type=date],input[type=number],select{height:36px;}
+  input[type=text],input[type=date],select,textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:0 10px;font-size:14px;font-family:inherit;background:#fff;color:var(--text-primary);}
+  input[type=text],input[type=date],select{height:36px;}
   input[readonly]{background:var(--surface-1);color:var(--text-secondary);}
   textarea{padding:8px 10px;resize:vertical;min-height:72px;}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
   .grid-2{display:grid;gap:12px;}
   @media(min-width:540px){.grid-2{grid-template-columns:1fr 1fr;}}
-  .grid-3{display:grid;gap:12px;}
-  @media(min-width:540px){.grid-3{grid-template-columns:1fr 1fr 1fr;}}
   /* Medicamentos */
   .med-card{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:14px 14px 10px;margin-bottom:10px;position:relative;}
-  .med-card-header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .med-card-header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
   .med-card-num{font-size:11px;font-weight:700;color:var(--teal-800);text-transform:uppercase;letter-spacing:.04em;}
   .btn-remove-med{background:var(--red-50);border:none;color:var(--red-600);border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer;}
   .btn-remove-med:hover{background:#fadadd;}
   .add-med-btn{display:flex;align-items:center;gap:7px;background:var(--teal-50);border:1px dashed var(--teal-600);color:var(--teal-800);border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;justify-content:center;margin-top:4px;}
   .add-med-btn:hover{background:#fbe4d3;}
   .grid-med{display:grid;gap:10px;}
-  @media(min-width:540px){.grid-med{grid-template-columns:1fr 1fr;}}
-  @media(min-width:700px){.grid-med{grid-template-columns:2fr 1fr 1fr 1fr;}}
-  .grid-med2{display:grid;gap:10px;margin-top:10px;}
-  @media(min-width:540px){.grid-med2{grid-template-columns:1fr 1fr 1fr;}}
+  @media(min-width:540px){.grid-med{grid-template-columns:2fr 1fr 1fr;}}
+  @media(min-width:700px){.grid-med{grid-template-columns:2.5fr 1fr 1fr 1.2fr;}}
   /* Firma */
   .firma-wrap canvas{width:100%;height:130px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;touch-action:none;display:block;}
   /* Botones */
@@ -66,26 +61,6 @@
   .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1F1F1D;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:20;}
   .toast.show{opacity:1;}
   .error-msg{text-align:center;padding:60px 20px;color:var(--text-secondary);}
-  /* Buscador de paciente */
-  .pac-search-wrap{max-width:480px;margin:60px auto;padding:0 20px;}
-  .pac-search-wrap h2{font-size:18px;font-weight:600;color:var(--teal-900);margin-bottom:6px;}
-  .pac-search-wrap p{font-size:13px;color:var(--text-secondary);margin-bottom:20px;}
-  .pac-search-box{position:relative;}
-  .pac-search-box input{width:100%;height:42px;border:1px solid var(--border);border-radius:var(--radius);padding:0 36px 0 12px;font-size:15px;font-family:inherit;background:#fff;color:var(--text-primary);}
-  .pac-search-box input:focus{outline:none;border-color:var(--teal-600);box-shadow:0 0 0 2px var(--teal-50);}
-  .pac-clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:var(--text-muted);cursor:pointer;display:none;padding:4px;line-height:1;}
-  .pac-clear-btn:hover{color:var(--text-primary);}
-  .pac-ac-list{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:220px;overflow-y:auto;}
-  .pac-ac-list.open{display:block;}
-  .pac-ac-item{padding:10px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--border);}
-  .pac-ac-item:last-child{border-bottom:none;}
-  .pac-ac-item:hover{background:var(--teal-50);}
-  .pac-ac-empty{padding:10px 14px;font-size:13px;color:var(--text-muted);}
-  /* Ficha con botón X */
-  .patient-card-x{position:relative;}
-  .patient-card-x .btn-cambiar-pac{position:absolute;top:10px;right:12px;background:none;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;padding:3px 8px;line-height:1.4;}
-  .patient-card-x .btn-cambiar-pac:hover{background:var(--teal-50);color:var(--teal-800);}
-  .info-tag{display:inline-block;background:var(--blue-50);color:var(--blue-800);font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600;margin-bottom:10px;}
   /* Impresión */
   @media print{
     .sticky-bar,.btn-secondary,.btn-sm,.add-med-btn,.btn-remove-med,.btn-primary{display:none!important;}
@@ -100,13 +75,14 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script>initAuth(['coordinador','maestro']);</script>
 </head>
 <body>
   <div class="wrap">
   <header>
       <div style="display:flex;align-items:center;gap:12px;">
         <button type="button" class="btn-secondary" id="btn-volver" style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 14 14"><path d="M9 3L5 7l4 4" stroke-linejoin="round"/></svg>
           Volver
         </button>
         <div>
@@ -126,101 +102,37 @@
 
   <div id="rec-body" style="display:none;">
 
+    <!-- Ficha del paciente -->
+    <div class="patient-card" id="ficha-paciente"></div>
 
-
-    <!-- SECCIÓN 1: Datos del prescriptor (NOM — Art. 29 Reglamento de Insumos para la Salud) -->
+    <!-- SECCIÓN 1: Datos generales -->
     <div class="section-card">
-      <p class="section-title">Datos del prescriptor</p>
-      <span class="info-tag">Datos fijos de la institución</span>
+      <p class="section-title">Datos de la receta</p>
       <div class="grid-2">
-        <div class="field"><label>Institución<span class="req">*</span></label><input type="text" id="rec-institucion" readonly value="Universidad Anáhuac Xalapa — Clínica Dental Universitaria"></div>
-        <div class="field"><label>Domicilio del consultorio<span class="req">*</span></label><input type="text" id="rec-domicilio" readonly value="Circuito Arco Sur s/n, Lomas Verdes, C.P. 91098, Xalapa Enríquez, Ver."></div>
+        <div class="field"><label>Fecha de emisión</label><input type="date" id="rec-fecha"></div>
+        <div class="field"><label>Clínica / Materia</label><input type="text" id="rec-clinica"></div>
       </div>
-      <div class="grid-2">
-        <div class="field">
-          <label>Clínica / Materia<span class="req">*</span></label>
-          <div class="pac-search-box">
-            <input type="text" id="rec-clinica" placeholder="Buscar materia..." autocomplete="off">
-            <button type="button" class="pac-clear-btn" id="clear-clinica">✕</button>
-            <div class="pac-ac-list" id="ac-clinica"></div>
-          </div>
-        </div>
-        <div class="field"><label>Fecha de emisión<span class="req">*</span></label><input type="date" id="rec-fecha"></div>
-      </div>
-      <div class="grid-2">
-        <div class="field">
-          <label>Médico supervisor / Docente<span class="req">*</span></label>
-          <div class="pac-search-box">
-            <input type="text" id="rec-docente" placeholder="Buscar maestro..." autocomplete="off">
-            <button type="button" class="pac-clear-btn" id="clear-docente">✕</button>
-            <div class="pac-ac-list" id="ac-docente"></div>
-          </div>
-        </div>
-        <div class="field"><label>Cédula profesional del supervisor</label><input type="text" id="rec-cedula-docente" placeholder="Se llena al seleccionar maestro"></div>
-      </div>
-      <div class="grid-2">
-        <div class="field">
-          <label>Estudiante que prescribe</label>
-          <div class="pac-search-box">
-            <input type="text" id="rec-estudiante" placeholder="Buscar alumno..." autocomplete="off">
-            <button type="button" class="pac-clear-btn" id="clear-estudiante">✕</button>
-            <div class="pac-ac-list" id="ac-estudiante"></div>
-          </div>
-        </div>
-        <div class="field"><label>Matrícula / ID institucional del estudiante</label><input type="text" id="rec-matricula" placeholder="Se llena al seleccionar alumno"></div>
-      </div>
+      <div class="field"><label>Estudiante / Médico que prescribe</label><input type="text" id="rec-estudiante"></div>
+      <div class="field"><label>Diagnóstico</label><textarea id="rec-diagnostico" rows="2" placeholder="Diagnóstico que motiva la prescripción..."></textarea></div>
     </div>
 
-    <!-- SECCIÓN 2: Datos del paciente (Art. 29 Reglamento — CONAMED) -->
-    <div class="section-card">
-      <p class="section-title">Datos del paciente</p>
-      <!-- Buscador (visible cuando no hay paciente seleccionado) -->
-      <div id="pac-search-row" class="field">
-        <label>Nombre del paciente<span class="req">*</span></label>
-        <div class="pac-search-box">
-          <input type="text" id="pac-input" placeholder="Escribe el nombre para buscar..." autocomplete="off">
-          <button type="button" class="pac-clear-btn" id="pac-clear" title="Limpiar">✕</button>
-          <div class="pac-ac-list" id="pac-ac-list"></div>
-        </div>
-      </div>
-      <!-- Ficha paciente seleccionado (visible cuando hay paciente) -->
-      <div id="pac-selected-row" style="display:none;">
-        <div class="field" style="margin-bottom:8px;">
-          <label>Nombre completo<span class="req">*</span></label>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="text" id="rec-paciente" readonly style="flex:1;">
-            <button type="button" id="btn-cambiar-pac" style="white-space:nowrap;height:36px;padding:0 12px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text-secondary);cursor:pointer;flex-shrink:0;">✕ Cambiar</button>
-          </div>
-        </div>
-      </div>
-      <div class="grid-2">
-        <div class="field"><label>Fecha de nacimiento</label><input type="date" id="rec-fechanac" readonly></div>
-        <div class="field"><label>Edad</label><input type="text" id="rec-edad" readonly></div>
-      </div>
-      <div class="grid-2">
-        <div class="field"><label>Peso (kg)</label><input type="number" id="rec-peso" placeholder="Ej. 65" step="0.1" min="1" max="300"></div>
-        <div class="field"><label>Talla (cm)</label><input type="number" id="rec-talla" placeholder="Ej. 170" step="0.5" min="30" max="250"></div>
-      </div>
-      <div class="field"><label>Alergias conocidas</label><input type="text" id="rec-alergias" readonly></div>
-      <div class="field"><label>Diagnóstico<span class="req">*</span></label><textarea id="rec-diagnostico" rows="2" placeholder="Diagnóstico que motiva la prescripción..."></textarea></div>
-    </div>
-
-    <!-- SECCIÓN 3: Medicamentos prescritos -->
+    <!-- SECCIÓN 2: Medicamentos -->
     <div class="section-card">
       <p class="section-title">Medicamentos prescritos</p>
       <div id="meds-list"></div>
       <button type="button" class="add-med-btn" id="btn-add-med">＋ Agregar medicamento</button>
     </div>
 
-    <!-- SECCIÓN 4: Indicaciones generales -->
+    <!-- SECCIÓN 3: Indicaciones generales -->
     <div class="section-card">
       <p class="section-title">Indicaciones generales</p>
       <div class="field"><label>Indicaciones al paciente</label><textarea id="rec-indicaciones" rows="3" placeholder="Instrucciones adicionales, cuidados, restricciones..."></textarea></div>
+      <div class="field"><label>Alergias conocidas del paciente</label><input type="text" id="rec-alergias" readonly></div>
     </div>
 
-    <!-- SECCIÓN 5: Firma del prescriptor -->
+    <!-- SECCIÓN 4: Firma del prescriptor -->
     <div class="section-card">
-      <p class="section-title">Firma del prescriptor (médico supervisor)</p>
+      <p class="section-title">Firma del prescriptor</p>
       <div class="firma-wrap">
         <canvas id="rec-firma-canvas" width="760" height="130"></canvas>
         <button type="button" class="btn-sm" id="rec-limpiar-firma">Limpiar firma</button>
@@ -236,63 +148,27 @@
 </div>
 <div class="toast" id="toast"></div>
 
-
 <script>
-const SB_URL='https://mkatcueeyxgetschqplm.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYXRjdWVleXhnZXRzY2hxcGxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjUyNTgsImV4cCI6MjEwMDQwMTI1OH0.YQgp2pYMKHyv21GpYLaO3u8VXOuPWMqWuUaYbgzcXwY';
-const sbRec=window.supabase.createClient(SB_URL,SB_KEY);
+const EXP_KEY='clinica_dental_data_v1';
+function loadExpData(){try{const r=localStorage.getItem(EXP_KEY);if(r)return JSON.parse(r);}catch(e){}return{expedientes:[]};}
+function saveExpData(d){localStorage.setItem(EXP_KEY,JSON.stringify(d));}
 
 const params=new URLSearchParams(location.search);
-const recId=params.get('recId');   // id en tabla justificantes (edición)
-const pacNombre=params.get('pac'); // nombre del paciente (nueva receta desde expediente)
+const expId=params.get('expId');
+const recId=params.get('recId');
+
+const expData=loadExpData();
+const expIdx=expData.expedientes.findIndex(x=>x.id===expId);
+const exp=expIdx>-1?expData.expedientes[expIdx]:null;
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function initials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
-function showToast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-function volver(){history.length>1?history.back():(location.href='justificantes.html?tab=rec');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function volver(){history.length>1?history.back():(location.href='control-clinica-dental.html');}
 document.getElementById('btn-volver').addEventListener('click',volver);
 document.getElementById('btn-volver-bottom').addEventListener('click',volver);
 function val(id){return(document.getElementById(id)||{}).value||'';}
 function setVal(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
-function todayISO(){const d=new Date();const p=v=>String(v).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
-
-/* ── Mapeo Supabase ↔ objeto receta (mismo patrón que justificantes.html) ── */
-function rowToRec(r){
-  const d=r.datos||{};
-  return{
-    id:r.id, folio:r.folio||'', paciente:r.paciente||'',
-    alumno:r.alumno||'', maestro:r.maestro||'', firma:r.firma||'',
-    fechaEmision:d.fechaEmision||'', clinica:d.clinica||'',
-    cedulaDocente:d.cedulaDocente||'', matricula:d.matricula||'',
-    peso:d.peso||'', talla:d.talla||'',
-    fechaNacimiento:d.fechaNacimiento||'', edad:d.edad||'',
-    diagnostico:d.diagnostico||'',
-    medicamentos:d.medicamentos||[], indicaciones:d.indicaciones||'',
-  };
-}
-function recToRow(rec){
-  return{
-    tipo:'rec',
-    folio:rec.folio||'',
-    paciente:rec.paciente||'',
-    alumno:rec.alumno||'',
-    maestro:rec.maestro||'',
-    firma:rec.firma||'',
-    datos:{
-      fechaEmision:rec.fechaEmision||'',
-      clinica:rec.clinica||'',
-      cedulaDocente:rec.cedulaDocente||'',
-      matricula:rec.matricula||'',
-      peso:rec.peso||'',
-      talla:rec.talla||'',
-      fechaNacimiento:rec.fechaNacimiento||'',
-      edad:rec.edad||'',
-      diagnostico:rec.diagnostico||'',
-      medicamentos:rec.medicamentos||[],
-      indicaciones:rec.indicaciones||'',
-    }
-  };
-}
 
 /* ── Canvas firma ── */
 const firmaCanvas=document.getElementById('rec-firma-canvas');
@@ -316,27 +192,23 @@ function addMed(data){
   const div=document.createElement('div');
   div.className='med-card';
   div.id=id;
-  const formas=['Tableta','Cápsula','Cápsula de liberación prolongada','Solución oral','Suspensión oral','Jarabe','Comprimido','Gragea','Gránulos','Polvo para suspensión','Ampolleta','Solución inyectable','Crema','Ungüento','Gel','Parche transdérmico','Colirio / Gotas oftálmicas','Gotas óticas','Spray nasal','Supositorio','Óvulo'].map(f=>`<option value="${f}" ${data?.forma===f?'selected':''}>${f}</option>`).join('');
-  const vias=['Oral','Sublingual','Tópica','Inyectable (IM)','Inyectable (IV)','Inhalatoria','Ótica','Oftálmica','Rectal','Transdérmica'].map(v=>`<option value="${v}" ${data?.via===v?'selected':''}>${v}</option>`).join('');
   div.innerHTML=`
     <div class="med-card-header">
       <span class="med-card-num">Medicamento ${medCount}</span>
       <button type="button" class="btn-remove-med" onclick="removeMed('${id}')">✕ Quitar</button>
     </div>
     <div class="grid-med">
-      <div class="field" style="margin:0"><label>Nombre genérico<span class="req">*</span></label><input type="text" class="med-nombre" placeholder="Ej. Amoxicilina" value="${esc(data?.nombre||'')}"></div>
-      <div class="field" style="margin:0"><label>Concentración / Gramaje</label><input type="text" class="med-concentracion" placeholder="Ej. 500 mg" value="${esc(data?.concentracion||'')}"></div>
-      <div class="field" style="margin:0"><label>Dosis por toma</label><input type="text" class="med-dosis" placeholder="Ej. 1 cápsula" value="${esc(data?.dosis||'')}"></div>
-      <div class="field" style="margin:0"><label>Cantidad a surtir</label><input type="text" class="med-cantidad" placeholder="Ej. 15 piezas" value="${esc(data?.cantidad||'')}"></div>
-    </div>
-    <div class="grid-med2">
-      <div class="field" style="margin:0"><label>Forma farmacéutica</label><select class="med-forma"><option value="">Seleccionar...</option>${formas}</select></div>
-      <div class="field" style="margin:0"><label>Vía de administración</label><select class="med-via"><option value="">Seleccionar...</option>${vias}</select></div>
+      <div class="field" style="margin:0"><label>Nombre del medicamento</label><input type="text" class="med-nombre" placeholder="Ej. Amoxicilina 500 mg" value="${esc(data?.nombre||'')}"></div>
+      <div class="field" style="margin:0"><label>Dosis</label><input type="text" class="med-dosis" placeholder="Ej. 1 cápsula" value="${esc(data?.dosis||'')}"></div>
       <div class="field" style="margin:0"><label>Frecuencia</label><input type="text" class="med-frecuencia" placeholder="Ej. cada 8 h" value="${esc(data?.frecuencia||'')}"></div>
+      <div class="field" style="margin:0"><label>Duración</label><input type="text" class="med-duracion" placeholder="Ej. 7 días" value="${esc(data?.duracion||'')}"></div>
     </div>
-    <div class="grid-2" style="margin-top:10px;">
-      <div class="field" style="margin:0"><label>Duración del tratamiento</label><input type="text" class="med-duracion" placeholder="Ej. 7 días" value="${esc(data?.duracion||'')}"></div>
-      <div class="field" style="margin:0"><label>Nombre comercial (opcional)</label><input type="text" class="med-comercial" placeholder="Ej. Amoxil" value="${esc(data?.comercial||'')}"></div>
+    <div class="field" style="margin-top:10px;margin-bottom:0;">
+      <label>Vía de administración</label>
+      <select class="med-via">
+        <option value="">Seleccionar...</option>
+        ${['Oral','Sublingual','Tópica','Inyectable (IM)','Inyectable (IV)','Inhalatoria','Ótica','Oftálmica','Rectal','Transdérmica'].map(v=>`<option value="${v}" ${data?.via===v?'selected':''}>${v}</option>`).join('')}
+      </select>
     </div>`;
   document.getElementById('meds-list').appendChild(div);
   renumberMeds();
@@ -346,242 +218,85 @@ function renumberMeds(){document.querySelectorAll('.med-card-num').forEach((el,i
 function getMeds(){
   return [...document.querySelectorAll('.med-card')].map(card=>({
     nombre:card.querySelector('.med-nombre')?.value||'',
-    concentracion:card.querySelector('.med-concentracion')?.value||'',
     dosis:card.querySelector('.med-dosis')?.value||'',
-    cantidad:card.querySelector('.med-cantidad')?.value||'',
-    forma:card.querySelector('.med-forma')?.value||'',
-    via:card.querySelector('.med-via')?.value||'',
     frecuencia:card.querySelector('.med-frecuencia')?.value||'',
     duracion:card.querySelector('.med-duracion')?.value||'',
-    comercial:card.querySelector('.med-comercial')?.value||'',
+    via:card.querySelector('.med-via')?.value||'',
   })).filter(m=>m.nombre.trim());
 }
 document.getElementById('btn-add-med').addEventListener('click',()=>addMed(null));
 
-/* ── Generar folio ── */
-async function generarFolio(){
-  const y=new Date().getFullYear();
-  const{data}=await sbRec.from('justificantes').select('folio').eq('tipo','rec').like('folio',`R-${y}-%`);
-  const nums=(data||[]).map(r=>parseInt((r.folio||'').split('-')[2])||0);
-  const next=(nums.length?Math.max(...nums):0)+1;
-  return`R-${y}-${String(next).padStart(4,'0')}`;
-}
-
-/* ── Caches de datos ── */
-let _pacCache=[], _maestrosCache=[], _alumnosCache=[], _materiasCache=[];
-
-async function cargarCaches(){
-  const [rPac,rMae,rAlu,rMat] = await Promise.all([
-    sbRec.from('expedientes').select('nombre,sexo,edad,tipo_paciente,fotografia_paciente,fecha_nacimiento,alergia,alergia_especifique').order('nombre'),
-    sbRec.from('maestros').select('nombre,id_institucional').order('nombre'),
-    sbRec.from('alumnos').select('nombre,id_institucional').order('nombre'),
-    sbRec.from('materias').select('nombre').order('nombre'),
-  ]);
-  _pacCache=rPac.data||[];
-  _maestrosCache=rMae.data||[];
-  _alumnosCache=rAlu.data||[];
-  _materiasCache=rMat.data||[];
-}
-
-/* ── Helper: setup autocomplete genérico ── */
-function setupAC(inputId, listId, clearId, getItems, onSelect){
-  const input=document.getElementById(inputId);
-  const list=document.getElementById(listId);
-  const clearBtn=document.getElementById(clearId);
-  if(!input||!list) return;
-  input.addEventListener('input',()=>{
-    const q=input.value.trim().toLowerCase();
-    if(clearBtn) clearBtn.style.display=q?'block':'none';
-    if(!q){list.classList.remove('open');list.innerHTML='';return;}
-    const items=getItems();
-    const matches=items.filter(i=>(i.label||'').toLowerCase().includes(q)).slice(0,10);
-    if(!matches.length){list.innerHTML=`<div class="pac-ac-empty">Sin resultados</div>`;list.classList.add('open');return;}
-    list.innerHTML=matches.map(i=>`<div class="pac-ac-item" data-val="${esc(i.val)}" data-extra="${esc(i.extra||'')}">${esc(i.label)}</div>`).join('');
-    list.classList.add('open');
-  });
-  list.addEventListener('click',e=>{
-    const item=e.target.closest('.pac-ac-item');
-    if(!item)return;
-    input.value=item.dataset.val;
-    if(clearBtn) clearBtn.style.display='block';
-    list.classList.remove('open');
-    if(onSelect) onSelect(item.dataset.val, item.dataset.extra);
-  });
-  if(clearBtn) clearBtn.addEventListener('click',()=>{
-    input.value='';clearBtn.style.display='none';
-    list.classList.remove('open');input.focus();
-    if(onSelect) onSelect('','');
-  });
-  document.addEventListener('click',e=>{
-    if(!e.target.closest(`#${listId}`)&&!e.target.closest(`#${inputId}`)) list.classList.remove('open');
-  });
-}
-
-/* ── Autocomplete buscador de paciente ── */
-function setupBuscador(){
-  const input=document.getElementById('pac-input');
-  const list=document.getElementById('pac-ac-list');
-  const clearBtn=document.getElementById('pac-clear');
-  input.addEventListener('input',()=>{
-    const q=input.value.trim().toLowerCase();
-    clearBtn.style.display=q?'block':'none';
-    if(!q){list.classList.remove('open');list.innerHTML='';return;}
-    const matches=_pacCache.filter(p=>(p.nombre||'').toLowerCase().includes(q)).slice(0,10);
-    if(!matches.length){list.innerHTML=`<div class="pac-ac-empty">Sin resultados</div>`;list.classList.add('open');return;}
-    list.innerHTML=matches.map(p=>`<div class="pac-ac-item" data-nombre="${esc(p.nombre)}">${esc(p.nombre)}</div>`).join('');
-    list.classList.add('open');
-  });
-  list.addEventListener('click',e=>{
-    const item=e.target.closest('.pac-ac-item');
-    if(!item)return;
-    list.classList.remove('open');
-    const exp=_pacCache.find(p=>p.nombre===item.dataset.nombre)||{nombre:item.dataset.nombre};
-    seleccionarPaciente(exp);
-  });
-  clearBtn.addEventListener('click',()=>{input.value='';clearBtn.style.display='none';list.classList.remove('open');input.focus();});
-  document.addEventListener('click',e=>{if(!e.target.closest('.pac-search-box'))list.classList.remove('open');});
-}
-
-function seleccionarPaciente(exp){
-  const nombre=exp.nombre||'';
-  setVal('rec-paciente',nombre);
-  setVal('rec-fechanac',exp.fecha_nacimiento||'');
-  setVal('rec-edad',exp.edad?exp.edad+' años':'');
-  const alergia=[exp.alergia,exp.alergia_especifique].filter(Boolean).join(' — ');
-  setVal('rec-alergias',alergia||'Sin alergias registradas');
-  // Ocultar buscador, mostrar fila con nombre + botón cambiar
-  document.getElementById('pac-search-row').style.display='none';
-  document.getElementById('pac-selected-row').style.display='';
-}
-
-function cambiarPaciente(){
-  setVal('rec-paciente','');setVal('rec-fechanac','');
-  setVal('rec-edad','');setVal('rec-alergias','');
-  document.getElementById('pac-selected-row').style.display='none';
-  document.getElementById('pac-search-row').style.display='';
-  document.getElementById('pac-input').value='';
-  document.getElementById('pac-clear').style.display='none';
-  document.getElementById('pac-ac-list').classList.remove('open');
-  document.getElementById('pac-input').focus();
-}
-
 /* ── Init ── */
-async function init(){
-  document.getElementById('rec-error').style.display='none';
-  // El formulario siempre visible
+if(!exp){
+  document.getElementById('rec-error').style.display='';
+  document.getElementById('rec-body').style.display='none';
+  document.querySelector('.sticky-bar').style.display='none';
+} else {
   document.getElementById('rec-body').style.display='';
-  document.querySelector('.sticky-bar').style.display='';
-  setVal('rec-fecha',todayISO());
+  const avatar=exp.fotografiaPaciente?`<img src="${exp.fotografiaPaciente}">`:(initials(exp.nombre));
+  const meta=[exp.sexo,exp.edad?exp.edad+' años':'',exp.tipoPaciente].filter(Boolean).join(' · ');
+  document.getElementById('ficha-paciente').innerHTML=`
+    <div class="avatar">${avatar}</div>
+    <div>
+      <p class="patient-name">${esc(exp.nombre)}</p>
+      <p class="patient-meta">${esc(meta||'')}</p>
+    </div>`;
 
-  await cargarCaches();
-  setupBuscador();
+  // Alergias del expediente (read-only)
+  const alergiaTexto=[exp.alergia, exp.alergiaEspecifique].filter(Boolean).join(' — ');
+  setVal('rec-alergias', alergiaTexto||'Sin alergias registradas');
 
-  // Autocomplete: Materia
-  setupAC('rec-clinica','ac-clinica','clear-clinica',
-    ()=>_materiasCache.map(m=>({label:m.nombre,val:m.nombre,extra:''})),
-    ()=>{}
-  );
+  // Fecha de hoy por defecto
+  setVal('rec-fecha', new Date().toISOString().slice(0,10));
 
-  // Autocomplete: Maestro → rellena cédula automáticamente
-  setupAC('rec-docente','ac-docente','clear-docente',
-    ()=>_maestrosCache.map(m=>({label:m.nombre,val:m.nombre,extra:m.id_institucional||''})),
-    (nombre,cedula)=>{ setVal('rec-cedula-docente', cedula); }
-  );
-
-  // Autocomplete: Alumno → rellena matrícula automáticamente
-  setupAC('rec-estudiante','ac-estudiante','clear-estudiante',
-    ()=>_alumnosCache.map(a=>({label:a.nombre,val:a.nombre,extra:a.id_institucional||''})),
-    (nombre,matricula)=>{ setVal('rec-matricula', matricula); }
-  );
-
-  document.getElementById('btn-cambiar-pac').addEventListener('click',cambiarPaciente);
-
-  // CASO 1: edición de receta existente
-  if(recId){
-    const{data:row,error}=await sbRec.from('justificantes').select('*').eq('id',recId).single();
-    if(error||!row){document.getElementById('rec-error').style.display='';document.getElementById('rec-body').style.display='none';document.querySelector('.sticky-bar').style.display='none';return;}
-    const rec=rowToRec(row);
-    const exp=_pacCache.find(p=>(p.nombre||'').toLowerCase().trim()===(rec.paciente||'').toLowerCase().trim())||{nombre:rec.paciente};
-    seleccionarPaciente(exp);
-    setVal('rec-fecha',rec.fechaEmision||todayISO());
-    setVal('rec-clinica',rec.clinica);
-    setVal('rec-docente',rec.maestro);
-    setVal('rec-cedula-docente',rec.cedulaDocente);
-    setVal('rec-estudiante',rec.alumno);
-    setVal('rec-matricula',rec.matricula);
-    setVal('rec-peso',rec.peso);
-    setVal('rec-talla',rec.talla);
-    setVal('rec-diagnostico',rec.diagnostico);
-    setVal('rec-indicaciones',rec.indicaciones);
-    if(rec.fechaNacimiento)setVal('rec-fechanac',rec.fechaNacimiento);
-    if(rec.edad)setVal('rec-edad',rec.edad);
-    (rec.medicamentos||[]).forEach(m=>addMed(m));
-    if(rec.firma)loadFirma(rec.firma);
+  // Cargar receta existente si se pasa recId
+  const recetas=exp.recetas||[];
+  const recExistente=recId?recetas.find(r=>r.id===recId):null;
+  if(recExistente){
+    setVal('rec-fecha',recExistente.fecha);
+    setVal('rec-clinica',recExistente.clinica);
+    setVal('rec-estudiante',recExistente.estudiante);
+    setVal('rec-diagnostico',recExistente.diagnostico);
+    setVal('rec-indicaciones',recExistente.indicaciones);
+    (recExistente.medicamentos||[]).forEach(m=>addMed(m));
+    if(recExistente.firma) loadFirma(recExistente.firma);
     document.getElementById('badge-saved').style.display='';
-    return;
+  } else {
+    addMed(null); // tarjeta inicial vacía
   }
-
-  // CASO 2: viene con pac= en la URL
-  if(pacNombre){
-    const exp=_pacCache.find(p=>(p.nombre||'').toLowerCase().trim()===pacNombre.toLowerCase().trim())||{nombre:pacNombre};
-    seleccionarPaciente(exp);
-    addMed(null);
-    return;
-  }
-
-  // CASO 3: sin parámetros — buscador visible, formulario disponible
-  addMed(null);
 }
 
-init();
-
-/* ── Guardar en Supabase ── */
-document.getElementById('btn-guardar-rec').addEventListener('click',async()=>{
+/* ── Guardar ── */
+document.getElementById('btn-guardar-rec').addEventListener('click',()=>{
+  if(!exp)return;
   const meds=getMeds();
   if(!meds.length){showToast('Agrega al menos un medicamento.');return;}
-  if(!val('rec-docente')){showToast('El médico supervisor es obligatorio.');return;}
-  if(!val('rec-diagnostico')){showToast('El diagnóstico es obligatorio.');return;}
-
-  const btn=document.getElementById('btn-guardar-rec');
-  btn.disabled=true;
-  btn.textContent='Guardando...';
-
-  const folio=recId?(document.getElementById('badge-saved').dataset.folio||await generarFolio()):await generarFolio();
-
+  const recetas=expData.expedientes[expIdx].recetas||[];
+  const existIdx=recId?recetas.findIndex(r=>r.id===recId):-1;
   const rec={
-    id:recId||undefined,
-    folio,
-    paciente:val('rec-paciente'),
-    maestro:val('rec-docente'),
-    alumno:val('rec-estudiante'),
-    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):(recId?document.getElementById('badge-saved').dataset.firma||'':''),
-    fechaEmision:val('rec-fecha'),
+    id:existIdx>-1?recetas[existIdx].id:('rec-'+Date.now().toString(36)),
+    fecha:val('rec-fecha'),
     clinica:val('rec-clinica'),
-    cedulaDocente:val('rec-cedula-docente'),
-    matricula:val('rec-matricula'),
-    peso:val('rec-peso'),
-    talla:val('rec-talla'),
-    fechaNacimiento:val('rec-fechanac'),
-    edad:val('rec-edad'),
+    estudiante:val('rec-estudiante'),
     diagnostico:val('rec-diagnostico'),
     medicamentos:meds,
     indicaciones:val('rec-indicaciones'),
+    firma:firmaHasContent?firmaCanvas.toDataURL('image/png'):(existIdx>-1?recetas[existIdx].firma:''),
+    fechaCreacion:existIdx>-1?recetas[existIdx].fechaCreacion:new Date().toISOString(),
+    fechaActualizacion:new Date().toISOString(),
   };
-
-  const row=recToRow(rec);
-  let error;
-  if(recId){
-    ({error}=await sbRec.from('justificantes').update(row).eq('id',recId));
-  } else {
-    ({error}=await sbRec.from('justificantes').insert(row));
-  }
-
-  btn.disabled=false;
-  btn.textContent='Guardar receta';
-
-  if(error){showToast('Error al guardar: '+error.message,4000);return;}
+  if(existIdx>-1) recetas[existIdx]=rec;
+  else recetas.push(rec);
+  expData.expedientes[expIdx].recetas=recetas;
+  saveExpData(expData);
   document.getElementById('badge-saved').style.display='';
   showToast('Receta guardada ✓');
+  // Actualizar la URL para que futuras ediciones sean sobre esta receta
+  if(existIdx===-1){
+    const url=new URL(location.href);
+    url.searchParams.set('recId',rec.id);
+    history.replaceState(null,'',url);
+  }
 });
 
 /* ── Impresión duplicada ── */
@@ -590,17 +305,21 @@ window.addEventListener('beforeprint',()=>{
   const wrap=document.querySelector('.wrap');
   const body=document.getElementById('rec-body');
   if(!body||body.style.display==='none')return;
+  // Captura la firma del canvas como imagen antes de clonar
   const canvas=document.getElementById('rec-firma-canvas');
   const firmaDataUrl=canvas?canvas.toDataURL('image/png'):'';
   const sep=document.createElement('div');sep.className='print-sep';
   sep.textContent='✂  Copia para archivo — recortar y conservar  ✂';
   const clone=body.cloneNode(true);
+  // Remplaza canvas por img en el clon
   if(firmaDataUrl){
     const cc=clone.querySelector('#rec-firma-canvas');
     if(cc){const img=document.createElement('img');img.src=firmaDataUrl;img.style.cssText='width:100%;max-height:100px;border:1px solid #ccc;border-radius:6px;display:block;';cc.replaceWith(img);}
   }
+  // Quita botones del clon
   clone.querySelectorAll('button').forEach(b=>b.remove());
   clone.removeAttribute('id');
+  // Firma de recibido del paciente
   const acuse=document.createElement('div');
   acuse.style.cssText='margin-top:18px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;';
   const iDiv=document.createElement('div');iDiv.style.cssText='font-size:11px;color:#444;line-height:1.9;';
