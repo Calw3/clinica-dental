@@ -117,9 +117,10 @@
   <div id="pac-search-panel" style="display:none;">
     <div class="pac-search-wrap">
       <h2>Seleccionar paciente</h2>
-      <p>Busca el expediente del paciente para el que deseas crear la receta.</p>
+      <p>Escribe el nombre del paciente para buscar en el expediente.</p>
       <div class="pac-search-row">
-        <input type="text" id="pac-search-input" placeholder="Nombre del paciente..." autocomplete="off">
+        <input type="text" id="pac-search-input" placeholder="Nombre del paciente..." autocomplete="off" list="pac-datalist">
+        <datalist id="pac-datalist"></datalist>
       </div>
       <div class="pac-results" id="pac-results"></div>
     </div>
@@ -400,36 +401,41 @@ function renderFicha(e){
     <button type="button" class="btn-cambiar-pac" title="Cambiar paciente" onclick="cambiarPaciente()">✕</button>`;
 }
 
-/* ── Cambiar paciente: ocultar formulario y mostrar buscador ── */
+/* ── Cambiar paciente: solo limpiar ficha y mostrar buscador, el formulario se mantiene ── */
 function cambiarPaciente(){
   exp=null;
-  document.getElementById('rec-body').style.display='none';
-  document.querySelector('.sticky-bar').style.display='none';
+  document.getElementById('ficha-paciente').innerHTML='';
   document.getElementById('pac-search-panel').style.display='';
   document.getElementById('pac-search-input').value='';
   document.getElementById('pac-results').innerHTML='';
   setTimeout(()=>document.getElementById('pac-search-input').focus(),100);
 }
 
-/* ── Buscador de pacientes ── */
-let _searchTimer=null;
-document.getElementById('pac-search-input').addEventListener('input',function(){
-  clearTimeout(_searchTimer);
-  const q=this.value.trim();
-  if(q.length<2){document.getElementById('pac-results').innerHTML='';return;}
-  _searchTimer=setTimeout(()=>buscarPacientes(q),300);
-});
+/* ── Buscador de pacientes: precarga todos los expedientes y filtra localmente ── */
+let _todosExpedientes=[];
 
-async function buscarPacientes(q){
+async function precargarExpedientes(){
+  const {data,error}=await sbRec.from('expedientes')
+    .select('id,nombre,sexo,edad,tipo_paciente,foto_paciente')
+    .order('nombre',{ascending:true});
+  if(error||!data) return;
+  _todosExpedientes=data;
+  // Llenar datalist para autocompletado nativo
+  const dl=document.getElementById('pac-datalist');
+  dl.innerHTML=data.map(p=>`<option value="${esc(p.nombre)}">`).join('');
+}
+precargarExpedientes();
+
+document.getElementById('pac-search-input').addEventListener('input',function(){
+  const q=this.value.trim().toLowerCase();
+  if(q.length<2){document.getElementById('pac-results').innerHTML='';return;}
+  const matches=_todosExpedientes.filter(p=>(p.nombre||'').toLowerCase().includes(q)).slice(0,8);
   const res=document.getElementById('pac-results');
-  res.innerHTML='<p style="font-size:13px;color:var(--text-muted);padding:8px 4px;">Buscando...</p>';
-  const {data,error}=await sbRec.from('expedientes').select('id,nombre,sexo,edad,tipo_paciente,foto_paciente')
-    .ilike('nombre','%'+q+'%').limit(8);
-  if(error||!data||!data.length){
+  if(!matches.length){
     res.innerHTML='<p style="font-size:13px;color:var(--text-muted);padding:8px 4px;">Sin resultados.</p>';
     return;
   }
-  res.innerHTML=data.map(p=>{
+  res.innerHTML=matches.map(p=>{
     const av=p.foto_paciente?`<img src="${esc(p.foto_paciente)}">`:(initials(p.nombre));
     const meta=[p.sexo,p.edad?p.edad+' años':'',p.tipo_paciente].filter(Boolean).join(' · ');
     return `<div class="pac-result-item" onclick="seleccionarPaciente('${esc(p.id)}')">
@@ -440,7 +446,7 @@ async function buscarPacientes(q){
       </div>
     </div>`;
   }).join('');
-}
+});
 
 async function seleccionarPaciente(id){
   const {data,error}=await sbRec.from('expedientes').select('*').eq('id',id).single();
@@ -450,12 +456,11 @@ async function seleccionarPaciente(id){
   const hc=exp.historia_clinica||{};
   const alergiaTexto=[hc.alergia,hc.alergiaEspecifique].filter(Boolean).join(' — ');
   setVal('rec-alergias',alergiaTexto||'Sin alergias registradas');
-  // Mostrar formulario
+  // Ocultar buscador, actualizar ficha (formulario ya visible)
   document.getElementById('pac-search-panel').style.display='none';
   document.getElementById('rec-body').style.display='';
   document.querySelector('.sticky-bar').style.display='';
   renderFicha(exp);
-  // Limpiar medicamentos y agregar uno vacío si no hay
   if(!document.querySelectorAll('.med-card').length) addMed(null);
 }
 </script>
