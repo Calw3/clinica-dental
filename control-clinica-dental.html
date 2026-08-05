@@ -967,6 +967,7 @@ async function verExpediente(id){
           <td style="white-space:nowrap;display:flex;gap:5px;">
             <button type="button" class="btn-edit-just" data-id="${escapeHtml(doc.id)}" data-tipo="${doc._tipo}" style="background:#fff;border:1px solid var(--border);color:var(--text-secondary);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;">✏️ Editar</button>
             <button type="button" class="btn-print-just" data-id="${escapeHtml(doc.id)}" data-tipo="${doc._tipo}" style="background:${esJust?'var(--teal-50)':'var(--blue-50)'};border:1px solid ${esJust?'var(--teal-600)':'var(--blue-800)'};color:${esJust?'var(--teal-800)':'var(--blue-800)'};border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;">🖨️ Imprimir</button>
+            <button type="button" class="btn-del-just" data-id="${escapeHtml(doc.id)}" data-tipo="${doc._tipo}" data-folio="${escapeHtml(doc.folio||'')}" style="background:var(--red-50);border:1px solid var(--red-600);color:var(--red-600);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;">🗑️</button>
           </td>
         </tr>`;
       });
@@ -980,6 +981,7 @@ async function verExpediente(id){
 
   document.getElementById('ver-expediente-body').innerHTML = html;
   document.getElementById('eliminar-expediente-actual').dataset.id = id;
+  document.getElementById('modal-ver-expediente').dataset.expid = id;
   document.getElementById('modal-ver-expediente').classList.add('open');
 }
 document.getElementById('cerrar-modal-ver').addEventListener('click', () => document.getElementById('modal-ver-expediente').classList.remove('open'));
@@ -1135,6 +1137,23 @@ document.getElementById('modal-ver-expediente').addEventListener('click', (e) =>
     }
     return;
   }
+  const btnDelJust = e.target.closest('.btn-del-just');
+  if(btnDelJust){
+    const id = btnDelJust.dataset.id;
+    const tipo = btnDelJust.dataset.tipo;
+    const folio = btnDelJust.dataset.folio || id;
+    const label = tipo === 'rec' ? 'receta' : 'justificante';
+    if(!confirm(`¿Eliminar ${label} ${folio}? Esta acción no se puede deshacer.`)) return;
+    (async()=>{
+      const{error} = await sbExp.from('justificantes').delete().eq('id', id);
+      if(error){ alert('Error al eliminar: ' + error.message); return; }
+      // Re-abrir el expediente para refrescar
+      const expId = document.getElementById('modal-ver-expediente').dataset.expid;
+      if(expId) verExpediente(expId);
+    })();
+    return;
+  }
+
   const btnNuevaJust = e.target.closest('.btn-nueva-just');
   if(btnNuevaJust){
     if(btnNuevaJust.dataset.tipo==='rec' && btnNuevaJust.dataset.pac){
