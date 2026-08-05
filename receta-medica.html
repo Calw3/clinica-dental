@@ -426,16 +426,15 @@ async function precargarExpedientes(){
 }
 precargarExpedientes();
 
-document.getElementById('pac-search-input').addEventListener('input',function(){
-  const q=this.value.trim().toLowerCase();
-  if(q.length<2){document.getElementById('pac-results').innerHTML='';return;}
-  const matches=_todosExpedientes.filter(p=>(p.nombre||'').toLowerCase().includes(q)).slice(0,8);
+function renderResultados(q){
   const res=document.getElementById('pac-results');
-  if(!matches.length){
+  const lista = q.length===0 ? _todosExpedientes.slice(0,10)
+    : _todosExpedientes.filter(p=>(p.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0,10);
+  if(!lista.length){
     res.innerHTML='<p style="font-size:13px;color:var(--text-muted);padding:8px 4px;">Sin resultados.</p>';
     return;
   }
-  res.innerHTML=matches.map(p=>{
+  res.innerHTML=lista.map(p=>{
     const av=p.foto_paciente?`<img src="${esc(p.foto_paciente)}">`:(initials(p.nombre));
     const meta=[p.sexo,p.edad?p.edad+' años':'',p.tipo_paciente].filter(Boolean).join(' · ');
     return `<div class="pac-result-item" onclick="seleccionarPaciente('${esc(p.id)}')">
@@ -446,7 +445,11 @@ document.getElementById('pac-search-input').addEventListener('input',function(){
       </div>
     </div>`;
   }).join('');
-});
+}
+
+const pacInput=document.getElementById('pac-search-input');
+pacInput.addEventListener('focus',()=>renderResultados(pacInput.value.trim()));
+pacInput.addEventListener('input',function(){renderResultados(this.value.trim());});
 
 async function seleccionarPaciente(id){
   const {data,error}=await sbRec.from('expedientes').select('*').eq('id',id).single();
