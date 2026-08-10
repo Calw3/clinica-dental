@@ -323,20 +323,20 @@ function setupAC(inputId,listId,getItems,onSelect){
 let alumnosCache=[],maestrosCache=[];
 async function cargarCaches(){
   const[a,m]=await Promise.all([
-    sbRec.from('alumnos').select('nombre').order('nombre'),
-    sbRec.from('maestros').select('nombre,cedula,especialidad').order('nombre'),
+    sbRec.from('alumnos').select('nombre,id_institucional').order('nombre'),
+    sbRec.from('maestros').select('nombre,cedula_profesional,puesto,clinica').order('nombre'),
   ]);
-  alumnosCache=(a.data||[]).map(x=>x.nombre).filter(Boolean);
+  alumnosCache=(a.data||[]).filter(x=>x.nombre);
   maestrosCache=(m.data||[]).filter(x=>x.nombre);
   // Llenar AC con nombres
   setupAC('rec-maestro','ac-maestro',()=>maestrosCache.map(x=>x.nombre),(nombre)=>{
     const m=maestrosCache.find(x=>x.nombre===nombre);
     if(m){
-      setVal('rec-cedula',m.cedula||'');
-      setVal('rec-cedula-esp',m.especialidad||'');
+      setVal('rec-cedula',m.cedula_profesional||'');
+      setVal('rec-cedula-esp',m.puesto||'');
     }
   });
-  setupAC('rec-estudiante','ac-alumno',()=>alumnosCache);
+  setupAC('rec-estudiante','ac-alumno',()=>alumnosCache.map(x=>x.nombre),(nombre)=>{const a=alumnosCache.find(x=>x.nombre===nombre);if(a)setVal('rec-matricula',a.id_institucional||'');});
 }
 cargarCaches();
 
