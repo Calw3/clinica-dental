@@ -315,16 +315,16 @@ function setupAC(inputId,listId,getItems,onSelect){
 let alumnosCache=[],maestrosCache=[];
 async function cargarCaches(){
   const[a,m]=await Promise.all([
-    sb.from('alumnos').select('nombre').order('nombre'),
-    sb.from('maestros').select('nombre,cedula,especialidad').order('nombre'),
+    sb.from('alumnos').select('nombre,id_institucional').order('nombre'),
+    sb.from('maestros').select('nombre,cedula_profesional,puesto,clinica').order('nombre'),
   ]);
-  alumnosCache=(a.data||[]).map(x=>x.nombre).filter(Boolean);
+  alumnosCache=(a.data||[]).filter(x=>x.nombre);
   maestrosCache=(m.data||[]).filter(x=>x.nombre);
   setupAC('j-maestro','ac-maestro',()=>maestrosCache.map(x=>x.nombre),(nombre)=>{
     const m=maestrosCache.find(x=>x.nombre===nombre);
-    if(m){setVal('j-cedula',m.cedula||'');setVal('j-cedula-esp',m.especialidad||'');}
+    if(m){setVal('j-cedula',m.cedula_profesional||'');setVal('j-cedula-esp',m.puesto||'');}
   });
-  setupAC('j-alumno','ac-alumno',()=>alumnosCache);
+  setupAC('j-alumno','ac-alumno',()=>alumnosCache.map(x=>x.nombre),(nombre)=>{const a=alumnosCache.find(x=>x.nombre===nombre);if(a)setVal('j-matricula',a.id_institucional||'');});
 }
 cargarCaches();
 
