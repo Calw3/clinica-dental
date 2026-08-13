@@ -170,13 +170,13 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
   <div class="toolbar">
     <div class="toolbar-left">
       <input type="text" class="search-input" id="buscar" placeholder="Buscar paciente...">
-      <button class="btn-secondary" id="btn-sel">Seleccionar</button>
+      <button class="btn-secondary" id="btn-sel" data-role="coordinador,administrador">Seleccionar</button>
       <button class="btn-secondary" id="btn-corte" style="border-color:var(--teal-600);color:var(--teal-800);display:flex;align-items:center;gap:5px;">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 9h4"/></svg>
         Corte del día
       </button>
     </div>
-    <button class="btn-primary" id="btn-nuevo">+ Nuevo registro</button>
+    <button class="btn-primary" id="btn-nuevo" data-role="servicio_social,coordinador,administrador">+ Nuevo registro</button>
   </div>
 
   <div id="sel-bar">
@@ -221,9 +221,9 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
   <div id="sec-eliminados" style="display:none;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="btn-secondary" id="btn-sel-pap">Seleccionar</button>
+        <button class="btn-secondary" id="btn-sel-pap" data-role="coordinador,administrador">Seleccionar</button>
       </div>
-      <button id="btn-vaciar" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Vaciar papelera</button>
+      <button id="btn-vaciar" data-role="coordinador,administrador" style="background:var(--red-600);color:#fff;border:none;border-radius:var(--radius);height:36px;padding:0 14px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Vaciar papelera</button>
     </div>
     <div id="sel-bar-pap" style="display:none;align-items:center;justify-content:space-between;background:var(--red-50);border:1px solid var(--red-600);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;gap:10px;flex-wrap:wrap;">
       <span id="sel-pap-count" style="font-size:13px;color:var(--red-600);font-weight:600;">0 seleccionados</span>
@@ -849,6 +849,12 @@ function openPanel(id){
   }
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('panel').classList.add('open');
+
+  /* Guardar solo visible si el rol puede persistir este cambio:
+     coordinador/administrador siempre; servicio_social solo al crear (no editar) */
+  const rol = window.currentUserRole;
+  const puedeGuardar = rol === 'coordinador' || rol === 'administrador' || (rol === 'servicio_social' && !id);
+  document.getElementById('btn-panel-save').style.display = puedeGuardar ? '' : 'none';
 }
 function closePanel(){
   document.getElementById('panel-overlay').classList.remove('open');
@@ -1006,8 +1012,10 @@ function renderPapelera(){
       <td style="padding:8px 12px;font-size:12px;color:var(--text-secondary);">${esc(p.registradoPor||'—')}</td>
       <td style="padding:8px 12px;font-size:11px;color:var(--text-muted);">${p._eliminadoEl||'—'}</td>
       <td style="padding:8px 12px;text-align:center;white-space:nowrap;">
+        ${['coordinador','administrador'].includes(window.currentUserRole) ? `
         <button onclick="restaurar('${p.id}')" style="background:var(--teal-50);color:var(--teal-800);border:1px solid var(--teal-600);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-right:4px;">↩ Restaurar</button>
         <button onclick="eliminarDefinitivo('${p.id}')" style="background:var(--red-50);color:var(--red-600);border:1px solid var(--red-600);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Eliminar</button>
+        ` : `<span style="color:var(--text-muted);font-size:12px;">—</span>`}
       </td>
     </tr>`;
   }).join('');
