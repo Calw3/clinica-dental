@@ -112,8 +112,8 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
         <option value="Formación Universitaria">Formación Universitaria</option>
       </select>
     </div>
-    <button class="btn-primary" id="btn-nuevo" data-role="servicio_social,maestro,coordinador,administrador">+ Nueva materia</button>
-    <button class="btn-secondary" id="btn-reset" data-role="servicio_social,maestro,coordinador,administrador">Restablecer</button>
+    <button class="btn-primary" id="btn-nuevo" data-role="coordinador,administrador">+ Nueva materia</button>
+    <button class="btn-secondary" id="btn-reset" data-role="coordinador,administrador">Restablecer</button>
   </div>
 
   <div class="lista-wrap">
@@ -295,7 +295,7 @@ function renderLista(){
 
   let html='';
   let globalN=0;
-  const esAlumno=window.currentUserRole==='alumno';
+  const soloLectura=['alumno','servicio_social','maestro'].includes(window.currentUserRole);
   GRUPO_ORDEN.forEach(grupo=>{
     const items=grouped[grupo]||[];
     if(!items.length)return;
@@ -303,7 +303,7 @@ function renderLista(){
     items.forEach(m=>{
       globalN++;
       const css=TIPO_CSS[m.tipo]||'';
-      const acciones=esAlumno
+      const acciones=soloLectura
         ? `<span class="toggle-btn ${m.activa!==false?'activa':'inactiva'}" style="cursor:default;">${m.activa!==false?'Activa':'Inactiva'}</span>`
         : `<button class="toggle-btn ${m.activa!==false?'activa':'inactiva'}" onclick="toggleActiva('${m.id}',event)">${m.activa!==false?'Activa':'Inactiva'}</button>
         <button class="btn-icon" title="Editar" onclick="openPanel('${m.id}',event)">✏</button>
