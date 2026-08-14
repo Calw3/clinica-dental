@@ -68,7 +68,7 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:40px;
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
-<script>initAuth(['alumno','servicio_social','maestro','coordinador','administrador']);</script>
+<script>initAuth(['alumno','maestro','coordinador','administrador']);</script>
 </head>
 <body>
   <div class="wrap">
@@ -148,6 +148,77 @@ async function cargarTodo(){
 
 function icon(paths,strokeColor){
   return`<svg viewBox="0 0 24 24" style="stroke:${strokeColor}">${paths}</svg>`;
+}
+
+/* ── Vista para alumno: su propio avance (RLS ya lo limita a sus propios registros) ── */
+async function renderAvanceAlumno(){
+  const{data,error}=await sbStats.from('pagos_visitas').select('paciente,clinica');
+  if(error)console.error('Error cargando avance:',error);
+  const rows=data||[];
+  const porMateria={};
+  const pacientesUnicos=new Set();
+  rows.forEach(r=>{
+    const cli=r.clinica||'Sin materia asignada';
+    if(!porMateria[cli])porMateria[cli]=new Set();
+    if(r.paciente){porMateria[cli].add(r.paciente);pacientesUnicos.add(r.paciente);}
+  });
+  const items=Object.entries(porMateria).map(([cli,set])=>[cli,set.size]).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(...items.map(i=>i[1]),1);
+
+  document.getElementById('dashboard').innerHTML=`
+    <div class="hero-grid">
+      <div class="hero-card"><p class="hero-value">${pacientesUnicos.size}</p><p class="hero-label">Pacientes atendidos</p></div>
+      <div class="hero-card"><p class="hero-value">${rows.length}</p><p class="hero-label">Visitas registradas</p></div>
+      <div class="hero-card"><p class="hero-value">${items.length}</p><p class="hero-label">Materias con pacientes</p></div>
+    </div>
+    <div class="mod-grid">
+      <div class="mod-card">
+        <div class="mod-header"><div><p class="mod-title">Mi avance por materia</p><p class="mod-sub">Pacientes distintos atendidos en cada clínica</p></div></div>
+        ${barChart(items,max)}
+      </div>
+    </div>`;
+}
+
+/* ── Vista para maestro: avance de todos los alumnos (sin datos financieros/clínicos generales) ── */
+async function renderAvanceMaestro(){
+  const{data,error}=await sbStats.from('pagos_visitas').select('paciente,estudiante,clinica');
+  if(error)console.error('Error cargando avance:',error);
+  const rows=data||[];
+  const porAlumno={};
+  rows.forEach(r=>{
+    const est=r.estudiante||'Sin asignar';
+    if(!porAlumno[est])porAlumno[est]=new Set();
+    if(r.paciente)porAlumno[est].add(r.paciente);
+  });
+  const items=Object.entries(porAlumno).map(([est,set])=>[est,set.size]).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(...items.map(i=>i[1]),1);
+
+  document.getElementById('dashboard').innerHTML=`
+    <div class="hero-grid">
+      <div class="hero-card"><p class="hero-value">${items.length}</p><p class="hero-label">Alumnos con pacientes</p></div>
+      <div class="hero-card"><p class="hero-value">${rows.length}</p><p class="hero-label">Visitas totales</p></div>
+    </div>
+    <div class="mod-grid">
+      <div class="mod-card">
+        <div class="mod-header"><div><p class="mod-title">Pacientes por alumno</p><p class="mod-sub">Total de pacientes distintos atendidos por cada alumno</p></div></div>
+        ${barChart(items,max)}
+      </div>
+    </div>`;
+}
+
+/* ── Enrutador: decide qué vista mostrar según el rol ── */
+async function esperarRol(maxMs=3000){
+  const inicio=Date.now();
+  while(!window.currentUserRole && Date.now()-inicio<maxMs){
+    await new Promise(r=>setTimeout(r,50));
+  }
+  return window.currentUserRole;
+}
+async function refrescarDashboard(){
+  const rol=await esperarRol();
+  if(rol==='alumno'){await renderAvanceAlumno();}
+  else if(rol==='maestro'){await renderAvanceMaestro();}
+  else{await cargarTodo();renderAll();}
 }
 
 function barChart(items,max){
@@ -544,16 +615,14 @@ function renderAll(){
 }
 
 (async()=>{
-  await cargarTodo();
-  renderAll();
+  await refrescarDashboard();
 })();
 
 const TABLAS_STATS=['expedientes','alumnos','maestros','justificantes','prestamos','ceye','banco_pacientes','asistencia','consentimientos','pagos_visitas'];
 TABLAS_STATS.forEach(t=>{
   sbStats.channel('stats-'+t+'-changes')
     .on('postgres_changes',{event:'*',schema:'public',table:t},async()=>{
-      await cargarTodo();
-      renderAll();
+      await refrescarDashboard();
     })
     .subscribe();
 });
