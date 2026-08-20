@@ -134,9 +134,9 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
         <option>5°</option><option>6°</option><option>7°</option><option>8°</option>
         <option>9°</option><option>10°+</option>
       </select>
-      <button class="btn-secondary" id="btn-sel">Seleccionar</button>
+      <button class="btn-secondary" id="btn-sel" data-role="coordinador,administrador">Seleccionar</button>
     </div>
-    <button class="btn-primary" id="btn-nuevo">+ Nuevo alumno</button>
+    <button class="btn-primary" id="btn-nuevo" data-role="coordinador,administrador">+ Nuevo alumno</button>
   </div>
 
   <div class="sel-bar" id="sel-bar">
@@ -247,8 +247,8 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
     </div>
     <div id="ver-body"></div>
     <div class="modal-actions">
-      <button class="btn-secondary" id="btn-ver-editar">Editar</button>
-      <button class="btn-secondary" id="btn-ver-eliminar" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-secondary" id="btn-ver-editar" data-role="coordinador,administrador">Editar</button>
+      <button class="btn-secondary" id="btn-ver-eliminar" data-role="coordinador,administrador" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
       <button class="btn-primary" id="btn-ver-cerrar">Cerrar</button>
     </div>
   </div>
@@ -344,7 +344,7 @@ function renderLista(){
         <p class="row-sub">${esc(a.idInstitucional||'Sin ID')}${a.correoInstitucional?' · '+esc(a.correoInstitucional):''}${a.telefono?' · '+esc(a.telefono):''}</p>
       </div>
       <span class="sem-badge">${esc(a.semestre||'—')}</span>
-      ${!S.selMode?`<button class="btn-icon" onclick="abrirEliminar(event,'${a.id}')">✕</button>`:''}
+      ${(!S.selMode && ['coordinador','administrador'].includes(window.currentUserRole))?`<button class="btn-icon" onclick="abrirEliminar(event,'${a.id}')">✕</button>`:''}
     </div>`;
   }).join('');
 }
