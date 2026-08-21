@@ -341,8 +341,8 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
     </div>
     <div id="vp-body"></div>
     <div class="modal-actions">
-      <button class="btn-secondary" id="vp-editar">Editar</button>
-      <button class="btn-secondary" id="vp-eliminar" data-role="coordinador,maestro" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-secondary" id="vp-editar" data-role="coordinador,administrador,maestro,servicio_social">Editar</button>
+      <button class="btn-secondary" id="vp-eliminar" data-role="coordinador,administrador,maestro,servicio_social" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
       <button class="btn-primary" id="vp-devolver" style="display:none;background:var(--green-800);">Registrar devolución</button>
       <button class="btn-primary" onclick="document.getElementById('modal-ver-p').classList.remove('open')">Cerrar</button>
     </div>
@@ -357,8 +357,8 @@ footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:32px;
     </div>
     <div id="ve-body"></div>
     <div class="modal-actions">
-      <button class="btn-secondary" id="ve-editar">Editar</button>
-      <button class="btn-secondary" id="ve-eliminar" data-role="coordinador,maestro" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
+      <button class="btn-secondary" id="ve-editar" data-role="coordinador,administrador,maestro,servicio_social">Editar</button>
+      <button class="btn-secondary" id="ve-eliminar" data-role="coordinador,administrador,maestro,servicio_social" style="color:var(--red-600);border-color:var(--red-600);">Eliminar</button>
       <button class="btn-primary" onclick="document.getElementById('modal-ver-e').classList.remove('open')">Cerrar</button>
     </div>
   </div>
@@ -428,7 +428,13 @@ function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function fmtDT(s){if(!s)return'—';const d=new Date(s);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});}
 function nowDT(){const n=new Date();const p=v=>String(v).padStart(2,'0');return`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`;}
 
-const S={data:{equipos:[],prestamos:[]},tab:'prestamos',verPId:null,verEId:null,editPId:null,editEId:null,tipoResp:'alumno'};
+const S={data:{equipos:[],prestamos:[]},tab:'prestamos',verPId:null,verEId:null,editPId:null,editEId:null,tipoResp:'alumno',miNombre:''};
+
+async function cargarMiNombre(){
+  if(window.currentUserRole!=='alumno')return;
+  const{data}=await sbPrest.from('profiles').select('nombre').limit(1).single();
+  S.miNombre=(data&&data.nombre)||'';
+}
 
 /* ─── Foto helpers ─── */
 function bindFoto(inputId,imgId,phId,clearId){
@@ -541,6 +547,11 @@ function renderStats(){
 }
 
 /* ─── Lista préstamos ─── */
+function esMiPrestamo(p){
+  if(window.currentUserRole!=='alumno')return true;
+  return (p.responsable||'').trim().toLowerCase()===(S.miNombre||'').trim().toLowerCase();
+}
+
 function renderPrestamos(){
   const term=(document.getElementById('buscar-p').value||'').toLowerCase();
   const estFiltro=document.getElementById('filtro-estado').value;
@@ -562,8 +573,8 @@ function renderPrestamos(){
         <p class="row-sub">${esc(p.tipoResp==='maestro'?'Maestro':'Alumno')}: ${esc(p.responsable)} · Salida: ${fmtDT(p.fechaSalida)}</p>
       </div>
       <span class="status-badge ${p.estado==='Prestado'?'badge-prestado':'badge-devuelto'}">${esc(p.estado)}</span>
-      ${p.estado==='Prestado'?`<button class="btn-devolver" onclick="abrirModalDevolver(event,'${p.id}')">Devolver</button>`:''}
-      <button class="btn-icon" data-role="coordinador,maestro" onclick="abrirConfirm(event,'prestamo','${p.id}')">✕</button>
+      ${(p.estado==='Prestado'&&esMiPrestamo(p))?`<button class="btn-devolver" onclick="abrirModalDevolver(event,'${p.id}')">Devolver</button>`:''}
+      <button class="btn-icon" data-role="coordinador,administrador,maestro,servicio_social" onclick="abrirConfirm(event,'prestamo','${p.id}')">✕</button>
     </div>`;
   }).join('');
 }
@@ -588,7 +599,7 @@ function renderEquipos(){
       </div>
       <span class="status-badge ${disp>0?'badge-disponible':'badge-agotado'}">${disp>0?disp+' disp.':'Prestado'}</span>
       <span class="cant-badge">×${e.cantidad||1}</span>
-      <button class="btn-icon" data-role="coordinador,maestro" onclick="abrirConfirm(event,'equipo','${e.id}')">✕</button>
+      <button class="btn-icon" data-role="coordinador,administrador,maestro,servicio_social" onclick="abrirConfirm(event,'equipo','${e.id}')">✕</button>
     </div>`;
   }).join('');
 }
@@ -834,7 +845,7 @@ function verPrestamo(id){
   }
 
   document.getElementById('vp-body').innerHTML=html;
-  document.getElementById('vp-devolver').style.display=p.estado==='Prestado'?'':'none';
+  document.getElementById('vp-devolver').style.display=(p.estado==='Prestado'&&esMiPrestamo(p))?'':'none';
   document.getElementById('modal-ver-p').classList.add('open');
 }
 
@@ -910,6 +921,7 @@ document.getElementById('buscar-e').addEventListener('input',renderEquipos);
   S.data=await loadData();
   await cargarAlumnoNombresCache();
   await cargarMaestroNombresCache();
+  await cargarMiNombre();
   renderAll();
 })();
 
