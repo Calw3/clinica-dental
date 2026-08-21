@@ -66,7 +66,7 @@ textarea{resize:vertical;min-height:60px}
 
 <div class="wrap">
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('form')">Nuevo Consentimiento</button>
+    <button class="tab active" id="tab-btn-form" data-role="coordinador,administrador,maestro,servicio_social" onclick="switchTab('form')">Nuevo Consentimiento</button>
     <button class="tab" onclick="switchTab('list')">Historial</button>
   </div>
 
@@ -229,7 +229,7 @@ textarea{resize:vertical;min-height:60px}
 
     <div class="rowbtn">
       <button class="btn bout" onclick="resetForm()">Limpiar</button>
-      <button class="btn bor" onclick="guardar()">💾 Guardar Consentimiento</button>
+      <button class="btn bor" data-role="coordinador,administrador,maestro,servicio_social" onclick="guardar()">💾 Guardar Consentimiento</button>
     </div>
   </div>
 
@@ -608,7 +608,7 @@ function renderList(){
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn bout bsm" onclick="imprimir('${c.folio}')">🖨 Imprimir</button>
-        <button class="btn bred bsm" onclick="eliminar('${c.folio}')">✕</button>
+        ${['coordinador','administrador','maestro'].includes(window.currentUserRole)?`<button class="btn bred bsm" onclick="eliminar('${c.folio}')">✕</button>`:''}
       </div>
     </div>`).join('');
 }
@@ -979,6 +979,7 @@ document.getElementById('f-fecha').value=new Date().toISOString().slice(0,10);
 
 (async()=>{
   await Promise.all([cargarConsCache(),cargarPacsCache(),cargarAlusCache(),cargarDocsCache()]);
+  if(window.currentUserRole==='alumno') switchTab('list');
 })();
 
 sbCons.channel('consentimientos-changes')
